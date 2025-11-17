@@ -26,6 +26,16 @@ AdminPlus/
 
 ```
 
+## 📌 Current Version
+
+**Version**: 2.0.0 (See `version.js` for details)  
+**Last Updated**: November 17, 2024  
+**Changelog**: See [CHANGELOG.md](CHANGELOG.md) for version history
+
+The version number is displayed in the top-right corner of the main popup.
+
+---
+
 ## 🚀 Features
 
 ### 1. Advanced Find Classic
@@ -120,6 +130,11 @@ var s=document.createElement('script');s.src='https://atisehat.github.io/AdminPl
 2. Add tool-specific CSS to `styles/tools.css`
 3. Load script in `CRMDevTools.js`
 4. Add button/menu item in main popup
+5. Update version in `version.js` (minor bump)
+6. Document in `CHANGELOG.md`
+
+### Updating Version
+See [UPDATE_VERSION.md](UPDATE_VERSION.md) for detailed instructions on version management.
 
 ## 📄 License
 

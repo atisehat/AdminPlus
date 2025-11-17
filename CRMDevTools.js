@@ -23,7 +23,10 @@ function loadScript(src, callback) {
   document.head.appendChild(script);
 }
 
-// Load utility scripts first
+// Load version info first
+loadScript('version.js');
+
+// Load utility scripts
 loadScript('utils/api.js');
 loadScript('utils/ui.js');
 
@@ -54,6 +57,9 @@ function openPopup() {
     Xrm.Navigation.openAlertDialog({ text: "You do not have permission to execute this action."});
     return;    
   }	 
+  // Get version info (will be loaded from version.js)
+  var versionInfo = typeof getVersionString === 'function' ? getVersionString() : 'v2.0.0';
+  
   var popupHtml = `  
     <style>       
 	.popup { position: fixed; left: 50%; top: 50%; background-color: #f9f9f9; border: 1px solid #888; border-radius: 10px; box-shadow: 0px 4px 16px rgba(0, 0, 0, 0.2); transform: translate(-50%, -50%); max-height: 80vh; overflow-y: auto; width: 420px; }	 	
@@ -70,10 +76,12 @@ function openPopup() {
 	.dropdown-content { display: none; position: absolute; min-width: 100%; z-index: 1; }
 	.dropdown-content button { display: block; background-color: white; color: black; padding: 5px; text-align: center; border: none; width: 100%; }
 	.popup button.close-btn { margin-top: 10px; font-size: 15px; }
+	.version-badge { position: absolute; top: 12px; right: 15px; background-color: rgba(255, 255, 255, 0.2); color: white; padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: normal; }
     </style>
     <div class="popup">
 	<div class="commonPopup-header">	            
 	    Admin Plus
+	    <span class="version-badge">${versionInfo}</span>
 	</div>
 	<div class="button-container">
 	  <div class="button-row">
