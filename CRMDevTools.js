@@ -13,7 +13,8 @@ function loadCSS(href) {
   document.head.appendChild(link); 
 }
 // Load CSS
-loadCSS('styles.css');
+loadCSS('styles/common.css');
+loadCSS('styles/tools.css');
 
 function loadScript(src, callback) {
   const script = document.createElement('script');
@@ -22,17 +23,20 @@ function loadScript(src, callback) {
   document.head.appendChild(script);
 }
 
-// Load scripts 
-loadScript('common.js');
-loadScript('aFuPrB.js');
-loadScript('entityInfo.js');
-loadScript('fieldsControl.js');
-loadScript('shf_uf.js');
-loadScript('dirtyFields.js');
-loadScript('cSecurity.js');
-loadScript('aSecurity.js');
-loadScript('commonSecurity.js');
-loadScript('dateCalc.js');
+// Load utility scripts first
+loadScript('utils/api.js');
+loadScript('utils/ui.js');
+
+// Load tool scripts 
+loadScript('tools/advancedFind.js');
+loadScript('tools/entityInfo.js');
+loadScript('tools/fieldsControl.js');
+loadScript('tools/showLogicalNames.js');
+loadScript('tools/dirtyFields.js');
+loadScript('tools/copySecurity.js');
+loadScript('tools/assignSecurity.js');
+loadScript('tools/securityOperations.js');
+loadScript('tools/dateCalculator.js');
 
 function openPopup() {
   closeSubPopups();

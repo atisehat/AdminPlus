@@ -1,0 +1,540 @@
+/* Tool-Specific Styles for AdminPlus */
+
+/* ========== Show Dirty Fields ========== */
+.dirtyFieldsPopup-content { 
+    padding: 15px; 
+    height: 158%; 
+}
+
+.userProvision-content { 
+    height: 95%; 
+}
+
+.scrollable-section { 
+    height: 52%; 
+    overflow-y: auto; 
+}
+
+/* ========== Entity Info ========== */
+.content-section { 
+    text-align: left; 
+    height: 100%; 
+    width: 100%; 
+}
+
+.entityInfoPopup-row { 
+    display: flex; 
+    height: 96%; 
+}
+
+.scroll-section { 
+    height: 82%; 
+    overflow-y: auto; 
+}
+
+/* ========== Copy Security ========== */
+.user-section h3 { 
+    text-align: center; 
+    margin-bottom: 10px; 
+    color: #444; 
+}
+
+.user-section { 
+    text-align: center; 
+    height: 270px; 
+    width: 50%;
+}
+
+.user-section input { 
+    margin-bottom: 10px; 
+    width: 230px; 
+    padding: 10px; 
+    border: 1px solid #ccc; 
+    border-radius: 5px; 
+}
+
+.user-section #userList { 
+    margin-bottom: 15px; 
+    max-height: 130px; 
+    overflow-y: scroll; 
+    scrollbar-width: thin; 
+    -ms-overflow-style: auto; 
+}
+
+.user-section #userList::-webkit-scrollbar { 
+    display: none; 
+}
+
+.user-section #userList::-webkit-scrollbar-thumb { 
+    background: #ccc; 
+}
+
+.user-list-container { 
+    max-height: 70%; 
+    overflow-y: auto; 
+}
+
+.roles-and-teams-list-row { 
+    max-height: 88%; 
+    margin-left: 10px; 
+    overflow-y: auto; 
+}
+
+.details-section-row { 
+    display: inline-block; 
+    width: 50%; 
+    height: 200px; 
+    margin-left: 10px; 
+    vertical-align: top; 
+    box-sizing: border-box; 
+    text-align: left; 
+}
+
+/* ========== Assign Security ========== */
+.assignPopup { 
+    background-color: #f9f9f9; 
+    border: 3px solid #102e55; 
+    border-radius: 20px; 
+    width: 55%; 
+    height: 90%; 
+    overflow: hidden; 
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5); 
+    font-family: Arial, sans-serif; 
+    position: fixed; 
+    top: 50%; 
+    left: 50%; 
+    transform: translate(-50%, -50%); 
+}
+
+.assignSection { 
+    padding: 10px; 
+    border-right: 3px solid #ccc; 
+}
+
+.assignSecurityPopup-row { 
+    display: flex; 
+}
+
+.leftUser-section h3 { 
+    text-align: left; 
+    margin-bottom: 10px; 
+    color: #444; 
+}
+
+.leftUser-section { 
+    height: 200px; 
+    width: 40%; 
+    margin-left: 15px; 
+    box-sizing: border-box; 
+}
+
+.leftUser-section input { 
+    margin-bottom: 10px; 
+    width: 230px; 
+    padding: 10px; 
+    border: 1px solid #ccc; 
+    border-radius: 5px; 
+}
+
+.leftUser-section #userList { 
+    margin-bottom: 15px; 
+    max-height: 130px; 
+    overflow-y: scroll; 
+    scrollbar-width: thin; 
+    -ms-overflow-style: auto; 
+}
+
+.leftUser-section #userList::-webkit-scrollbar { 
+    display: none; 
+}
+
+.leftUser-section #userList::-webkit-scrollbar-thumb { 
+    background: #ccc; 
+}
+
+.leftUser-list-container { 
+    max-height: 64%; 
+    overflow-y: auto; 
+}
+
+.leftDetails-section-row { 
+    display: inline-block; 
+    width: 40%; 
+    height: 260px; 
+    margin-left: 15px; 
+    box-sizing: border-box; 
+}
+
+.rightBuss-section h3 { 
+    text-align: left; 
+    margin-bottom: 10px; 
+    color: #444; 
+}
+
+.rightBuss-section { 
+    text-align: left; 
+    width: 60%; 
+    margin-left: 15px; 
+}
+
+.rightTeam-section { 
+    text-align: left; 
+    width: 60%; 
+    margin-left: 15px; 
+}
+
+.rightBuss-section input { 
+    margin-bottom: 10px; 
+    width: 230px; 
+    padding: 10px; 
+    border: 1px solid #ccc; 
+    border-radius: 5px; 
+}
+
+.rightTeam-section input { 
+    margin-bottom: 10px; 
+    width: 230px; 
+    padding: 10px; 
+    border: 1px solid #ccc; 
+    border-radius: 5px; 
+}
+
+.rightBuss-section #userList { 
+    margin-bottom: 15px; 
+    max-height: 130px; 
+    overflow-y: scroll; 
+    scrollbar-width: thin; 
+    -ms-overflow-style: auto; 
+}
+
+.rightBuss-section #userList::-webkit-scrollbar { 
+    display: none; 
+}
+
+.rightBuss-section #userList::-webkit-scrollbar-thumb { 
+    background: #ccc; 
+}
+
+.rightBuss-list-container { 
+    max-height: 110px; 
+    overflow-y: auto; 
+}
+
+.rightDetails-section-row { 
+    display: inline-block; 
+    width: 60%; 
+    height: 150px; 
+    margin-left: 19px; 
+    vertical-align: top; 
+    box-sizing: border-box; 
+    text-align: left; 
+}
+
+.leftRoles-and-teams-list-row { 
+    max-height: 95%; 
+    margin-left: 10px; 
+    overflow-y: auto; 
+}
+
+.businessUnit-list-container { 
+    flex: 1; 
+    max-height: 100px; 
+    overflow-y: auto; 
+    text-align: left; 
+}
+
+.teamsRoles-list-container { 
+    flex: 1; 
+    max-height: 145px; 
+    overflow-y: auto; 
+    text-align: left; 
+}
+
+.teamsRoles-input-wrapper { 
+    padding: 10px; 
+    width: 255px; 
+}
+
+.team-action-checkboxes { 
+    width: 34%; 
+    height: 145px; 
+    padding-left: 15px;
+}
+
+.team-action-checkboxes input[type="checkbox"] { 
+    margin-right: 8px; 
+}
+
+.team-action-checkboxes label { 
+    margin-right: 16px; 
+}
+
+.teams-wrapper { 
+    display: flex; 
+    align-items: flex-start; 
+}
+
+.assignSubmit-button-container { 
+    display: flex; 
+    margin-top: 2%; 
+    margin-left: 3% 
+}
+
+#assignSubmitButton { 
+    margin-left: 20%; 
+    padding: 10px 20px; 
+    font-size: 16px; 
+    width: 240px; 
+    background-color: #102e55; 
+    color: white; 
+    border: none; 
+    cursor: pointer; 
+    border-radius: 10px; 
+    transition: background-color 0.3s; 
+}
+
+#assignSubmitButton:hover { 
+    background-color: #103e89; 
+}
+
+/* ========== Date Calculator ========== */
+.holidaysList { 
+    max-height: 74%; 
+    overflow-y: auto; 
+    display: grid; 
+    margin-top: 15px; 
+    padding-left: 10px; 
+}
+
+.holidayRow { 
+    display: grid; 
+    grid-template-columns: 1fr 1fr; 
+    align-items: center; 
+}
+
+.holidayName { 
+    padding: 4px 8px; 
+    border: 1px solid #ddd; 
+    text-align: left; 
+    width: 290px; 
+}
+
+.holidayDate { 
+    padding: 4px; 
+    border: 1px solid #ddd; 
+    text-align: left; 
+}
+
+.headerWrapper { 
+    margin-left: 10px; 
+}
+
+.section1-row1 { 
+    display: inline-block; 
+    width: 50%; 
+    height: 310px; 
+    padding: 10px; 
+    border-bottom: 5px solid #ccc; 
+    box-sizing: border-box; 
+    text-align: left; 
+}
+
+.section1-row2 { 
+    display: inline-block; 
+    width: 50%; 
+    height: 475px; 
+    margin-left: 20px; 
+    vertical-align: top; 
+    box-sizing: border-box; 
+    text-align: left; 
+}
+
+.calendar { 
+    width: 92%; 
+    height: 80%; 
+    border: 1px solid #ddd; 
+    background-color: #f9f9f9; 
+    padding: 10px; 
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1); 
+}
+
+.calendarHeader { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    margin-bottom: 10px; 
+}
+
+.calendarDays, .calendarDates { 
+    display: grid; 
+    grid-template-columns: repeat(7, 1fr); 
+    gap: 5px; 
+}
+
+.calendarDays div { 
+    background-color: #102e55; 
+    color: white; 
+    padding: 5px 0; 
+    text-align: center; 
+    border-radius: 3px; 
+    margin-bottom: 5px; 
+}
+
+.calendarDates div { 
+    background-color: #e9ecef; 
+    height: 23px; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    border-radius: 3px; 
+    cursor: pointer; 
+    transition: background-color 0.2s; 
+    padding: 5px; 
+    box-sizing: border-box; 
+}
+
+.calendarDates div:hover { 
+    background-color: #333; 
+    color: white; 
+}
+
+.calendarDates .holidayDate { 
+    color: #2196F3; 
+}
+
+.todayDate { 
+    background-color: #056d05 !important; 
+    color: white; 
+}
+
+.excludeSettingsWrapper { 
+    border: 1px solid #d4d4d4; 
+    padding: 10px; 
+    border-radius: 5px; 
+    margin-bottom: 10px; 
+    margin-top: 10px; 
+    background-color: #f5f5f5; 
+}
+
+.excludeSettingsWrapper h4 { 
+    margin-top: 0; 
+    border-bottom: 1px solid #d4d4d4; 
+    padding-bottom: 5px; 
+    margin-bottom: 10px; 
+}
+
+.checkboxWrapper { 
+    margin-bottom: 5px; 
+}
+
+.dateRow { 
+    display: flex; 
+}
+
+.dateRow > div { 
+    margin-right: 10px; 
+}
+
+.dateSection { 
+    border: 1px solid #ccc; 
+    padding: 10px; 
+    border-radius: 4px; 
+    margin-top: 10px; 
+}
+
+.calculationsWrapper { 
+    margin-top: 20px; 
+}
+
+.calculationRow { 
+    display: flex; 
+    justify-content: space-between; 
+    margin-bottom: 5px; 
+}
+
+.calculationRow:last-child span { 
+    font-size: 16px; 
+    font-weight: bold; 
+}
+
+.section3-submitBtn { 
+    margin-top: 15px; 
+    text-align: center; 
+}
+
+#section3SubmitBtn { 
+    padding: 8px; 
+    font-size: 15px; 
+    width: 150px; 
+    background-color: #102e55; 
+    color: white; 
+    cursor: pointer; 
+    border-radius: 20px; 
+    transition: background-color 0.3s; 
+}
+
+#section3SubmitBtn:hover { 
+    background-color: #103e89; 
+}
+
+.separator { 
+    border-top: 2px solid black; 
+    margin: 10px 0; 
+}
+
+.notes { 
+    display: none; 
+    padding: 12px; 
+}
+
+.addSettingsWrapper { 
+    border: 1px solid #d4d4d4; 
+    padding: 11px; 
+    border-radius: 5px; 
+    margin-bottom: 10px; 
+    margin-top: 10px; 
+    background-color: #f5f5f5; 
+}
+
+.addSettingsWrapper h4 { 
+    margin-top: 0; 
+    border-bottom: 1px solid #d4d4d4; 
+    padding-bottom: 5px; 
+    margin-bottom: 10px; 
+}
+
+.addDateRow { 
+    display: flex; 
+    margin-top: 20px; 
+}
+
+.addCalculationsWrapper { 
+    margin-top: 30px; 
+}
+
+.addDateSeparator { 
+    border-top: 2px solid black; 
+    margin-top: 30px; 
+    margin-bottom: 10px; 
+}
+
+.section4-submitBtn { 
+    margin-top: 15px; 
+    text-align: center; 
+}
+
+#section4SubmitBtn { 
+    padding: 8px; 
+    font-size: 15px; 
+    width: 150px; 
+    background-color: #102e55; 
+    color: white; 
+    cursor: pointer; 
+    border-radius: 20px; 
+    transition: background-color 0.3s; 
+}
+
+#section4SubmitBtn:hover { 
+    background-color: #103e89; 
+}
+
