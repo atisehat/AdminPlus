@@ -3,7 +3,7 @@ var logicalNameBtnClickStatus = false;
 var unlockAllFieldsBtnClickStatus = false;
 var showAllTabsAndSectionsBtnClickStatus = false;
 
-const baseUrl = 'https://atisehat-va.github.io/DevToolsPublic/';
+const baseUrl = 'https://atisehat.github.io/AdminPlus2.0/';
 
 function loadCSS(href) {
   const link = document.createElement('link');
