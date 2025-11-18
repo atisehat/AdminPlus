@@ -153,7 +153,11 @@ function openPopup() {
   
   // Debug log to verify sidebar version is loaded
   console.log('%c✅ AdminPlus Sidebar Version Loaded', 'color: #102e55; font-weight: bold; font-size: 14px;');
-  console.log('Sidebar should be docked to the right side of the screen');
+  console.log('Sidebar pushes page content to the left');
+  
+  // Push page content to the left by adding margin to body
+  document.body.style.marginRight = '420px';
+  document.body.style.transition = 'margin-right 0.3s ease';
   
   // Force styles after DOM insertion to override any conflicts
   setTimeout(function() {
@@ -164,7 +168,7 @@ function openPopup() {
     var popupDiv = document.querySelector('#MenuPopup .popup');
     if (popupDiv) {
       popupDiv.style.cssText = 'position: fixed !important; right: 0px !important; top: 0px !important; bottom: 0px !important; left: auto !important; height: 100vh !important; width: 420px !important; transform: none !important; border-radius: 0px !important; margin: 0px !important; padding: 0px !important; overflow-y: auto !important; overflow-x: hidden !important;';
-      console.log('✅ Sidebar styles force-applied - Full height sidebar at right edge');
+      console.log('✅ Sidebar styles applied - Page content pushed left by 420px');
     }
   }, 50);
 }
@@ -193,6 +197,9 @@ function closePopup() {
     if (newContainer) {
         newContainer.remove();
     }
+    // Restore page content to full width
+    document.body.style.marginRight = '0px';
+    console.log('✅ Sidebar closed - Page content restored to full width');
     closeSubPopups();
 }
 
