@@ -59,7 +59,23 @@ function openPopup() {
   
   var popupHtml = `  
     <style>       
-	.popup { position: fixed; left: 50%; top: 50%; background-color: #f9f9f9; border: 1px solid #888; border-radius: 10px; box-shadow: 0px 4px 16px rgba(0, 0, 0, 0.2); transform: translate(-50%, -50%); max-height: 80vh; overflow-y: auto; width: 420px; }	 	
+	.popup { 
+	    position: fixed; 
+	    right: 0; 
+	    top: 0; 
+	    background-color: #f9f9f9; 
+	    border-left: 3px solid #102e55; 
+	    box-shadow: -2px 0 10px rgba(0, 0, 0, 0.3); 
+	    height: 100vh; 
+	    width: 420px; 
+	    overflow-y: auto; 
+	    z-index: 999999;
+	    animation: slideInRight 0.3s ease-out;
+	}
+	@keyframes slideInRight {
+	    from { transform: translateX(100%); }
+	    to { transform: translateX(0); }
+	}
 	.button-container { padding: 20px; width: 380px; }
 	.popup button { display: block; width: 100%; margin-bottom: 10px; padding: 10px; background-color: #102e55; color: white; border: none; border-radius: 20px; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2); }
 	.popup button:hover { background-color: #3c6690; transform: translateY(-2px); box-shadow: 0 7px 20px rgba(0, 0, 0, 0.25); }
@@ -115,14 +131,7 @@ function openPopup() {
   var newContainer = document.createElement('div');
   newContainer.id = 'MenuPopup';
   newContainer.innerHTML = popupHtml;
-  newContainer.style.position = 'fixed';  
-  newContainer.style.left = '50%';
-  newContainer.style.top = '50%';
-  newContainer.style.transform = 'translate(-50%, -50%)';  
   document.body.appendChild(newContainer);
-  
-  makePopupMovable(newContainer);
-	
 }
 function clearCacheFunction() {
     location.reload(true); // Forces a hard reload to bypassing cache.
