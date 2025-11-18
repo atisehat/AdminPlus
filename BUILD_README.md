@@ -2,7 +2,7 @@
 
 ## 📅 Build Timestamp System
 
-AdminPlus now displays the **last update timestamp** instead of a version number in the UI. This helps you track exactly when the tool was last updated on GitHub.
+AdminPlus now displays the **last update timestamp in Eastern Time** instead of a version number in the UI. This helps you track exactly when the tool was last updated on GitHub.
 
 ---
 
@@ -16,16 +16,19 @@ Run this script before committing and pushing:
 ```
 
 This will:
-- ✅ Update the `buildTimestamp` in `version.js` to the current UTC date/time
+- ✅ Update the `buildTimestamp` in `version.js` to the current Eastern Time (EST/EDT)
 - ✅ Update both the comment and the actual timestamp value
 - ✅ Show you the new timestamp
+- ✅ Automatically handles Daylight Saving Time (EST/EDT)
 
 ### Manual Update
 If you prefer to update manually, edit `version.js`:
 
 ```javascript
 // Change this line to the current date/time:
-buildTimestamp: "YYYY-MM-DD HH:MM:SS UTC",
+buildTimestamp: "YYYY-MM-DD HH:MM:SS AM/PM EST",
+// or during Daylight Saving Time:
+buildTimestamp: "YYYY-MM-DD HH:MM:SS AM/PM EDT",
 ```
 
 ---
@@ -39,7 +42,7 @@ The timestamp is visible in the UI badge:
 const SHOW_BUILD_INFO = true;  // Shows timestamp
 ```
 
-**What users see:** `2025-11-18 22:17:19 UTC`
+**What users see:** `2024-11-18 05:17:19 PM EST`
 
 ### Production Mode
 Before a major release, you can hide the timestamp and show the version number instead:
@@ -106,7 +109,7 @@ const SHOW_BUILD_INFO = false;  // Shows version number only
 
 | Value | UI Badge Shows | Use Case |
 |-------|---------------|----------|
-| `true` | Timestamp (`2025-11-18 22:17:19 UTC`) | Development, tracking updates |
+| `true` | Timestamp (`2024-11-18 05:17:19 PM EST`) | Development, tracking updates |
 | `false` | Version (`v2.0.0`) | Production releases |
 
 **Console logging always shows full information regardless of this flag!**
@@ -128,7 +131,7 @@ AdminPlus/
 ## ⚠️ Important Notes
 
 1. **Always update the timestamp before pushing** - This ensures users know when the tool was last updated
-2. **The script is timezone-aware** - Always uses UTC for consistency
+2. **The script is timezone-aware** - Always uses Eastern Time (EST/EDT) and handles Daylight Saving automatically
 3. **No breaking changes** - Toggling `SHOW_BUILD_INFO` doesn't break any functionality
 4. **Console logging persists** - Developers can always see full version info in the console
 
@@ -142,10 +145,11 @@ chmod +x update-timestamp.sh
 ```
 
 ### Wrong timezone?
-The script uses UTC by default. To change:
+The script uses Eastern Time by default. To change to a different timezone:
 ```bash
 # Edit update-timestamp.sh and modify:
-TIMESTAMP=$(date -u +"%Y-%m-%d %H:%M:%S UTC")
+TIMESTAMP=$(TZ="America/Chicago" date +"%Y-%m-%d %I:%M:%S %p %Z")  # For Central Time
+# Or use any valid timezone from: ls /usr/share/zoneinfo/
 ```
 
 ### Want to see what changed?

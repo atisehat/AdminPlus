@@ -1,11 +1,11 @@
 #!/bin/bash
 # AdminPlus Build Timestamp Updater
-# This script updates the buildTimestamp in version.js with the current date/time
+# This script updates the buildTimestamp in version.js with the current Eastern Time
 
 VERSION_FILE="version.js"
 
-# Get current timestamp in UTC
-TIMESTAMP=$(date -u +"%Y-%m-%d %H:%M:%S UTC")
+# Get current timestamp in Eastern Time (automatically handles EST/EDT)
+TIMESTAMP=$(TZ="America/New_York" date +"%Y-%m-%d %I:%M:%S %p %Z")
 
 # Check if version.js exists
 if [ ! -f "$VERSION_FILE" ]; then
