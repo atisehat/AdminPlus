@@ -134,3 +134,39 @@ function showCustomAlert(message) {
   alertBox.style.width = `${finalWidth}px`;
 }
 
+// Shared back button handler
+function attachBackButton(container, callback) {
+  const backButton = container.querySelector('#commonback-button');
+  if (backButton) {
+    backButton.addEventListener('click', function() {
+      container.remove();
+      if (callback) callback();
+      else if (typeof openPopup === 'function') openPopup();
+    });
+  }
+}
+
+// Generic search filter for lists
+function setupSearchFilter(searchInputId, targetClassSuffix) {
+  const searchInput = document.getElementById(searchInputId);
+  if (!searchInput) return;
+  
+  searchInput.oninput = function() {
+    const searchValue = this.value.toLowerCase();
+    document.querySelectorAll(`.${targetClassSuffix}`).forEach(el => {
+      const searchText = el.dataset.searchText || el.textContent;
+      el.style.display = searchText.toLowerCase().includes(searchValue) ? 'block' : 'none';
+    });
+  };
+}
+
+// Sort array of entities by property
+function sortByProperty(array, property) {
+  if (!array || !Array.isArray(array)) return array;
+  return array.sort((a, b) => {
+    const valA = a[property] || "";
+    const valB = b[property] || "";
+    return valA.localeCompare(valB);
+  });
+}
+

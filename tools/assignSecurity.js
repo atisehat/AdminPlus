@@ -71,10 +71,7 @@ function editSecurity() {
 	    </div>	    
 	  `;		
 	  document.body.appendChild(newContainer);
-	  document.getElementById('commonback-button').addEventListener('click', function() {
-	    newContainer.remove();
-	    openPopup();  
-	  });		
+	  attachBackButton(newContainer);		
 	  makePopupMovable(newContainer);	
 	}
  
@@ -614,24 +611,14 @@ function editSecurity() {
 	    sectionElement.appendChild(teamsWrapper);	    
 	}
 	
-	function setupSearchFilter(searchInputId, targetClassSuffix) {
-	    document.getElementById(searchInputId).oninput = function() {
-	        const searchValue = this.value.toLowerCase();
-	        document.querySelectorAll(`.${targetClassSuffix}`).forEach(el => {
-	            const searchText = el.dataset.searchText || el.textContent;
-	            el.style.display = searchText.toLowerCase().includes(searchValue) ? 'block' : 'none';
-	        });
-	    };
-	}
-	
 	function displayPopup(users, businessUnits) {
 	    if (users && users.entities) {
-	        users.entities.sort((a, b) => (a.fullname || "").localeCompare(b.fullname || ""));
+	        sortByProperty(users.entities, 'fullname');
 	    }	
 	    const newContainer = createAppendSecurityPopup();
-	
+
 	    if (businessUnits && businessUnits.entities) {
-	        businessUnits.entities.sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+	        sortByProperty(businessUnits.entities, 'name');
 	    }
 	    if (users && users.entities) {		    
 		renderGenericList(users.entities, user => selectUser(user, '1'), 'userList1', 'searchInput1', 'user', 'fullname', 'systemuserid', true);		
@@ -646,13 +633,4 @@ function editSecurity() {
 	    displayPopup(users, fetchedBusinessUnits);
 	    businessUnits = fetchedBusinessUnits;
 	});
-	
-	function loadScript(src, callback, errorCallback) {
-	    const script = document.createElement("script");
-	    script.type = "text/javascript";
-	    script.onload = callback;
-	    script.onerror = errorCallback;
-	    script.src = src;
-	    document.body.appendChild(script);
-	}
 }

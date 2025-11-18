@@ -61,13 +61,10 @@ function copySecurity() {
 		            <p style="margin-top: 1%; margin-left: 3%;"><strong>**Note: </strong> Only 'Owner' or 'Access' type teams are assignable.</p>
 			  </div>
 		    `;		
-			document.body.appendChild(newContainer);
-			document.getElementById('commonback-button').addEventListener('click', function() {
-			    newContainer.remove();
-			    openPopup();  
-			});		
-		makePopupMovable(newContainer);	
-	}
+		document.body.appendChild(newContainer);
+		attachBackButton(newContainer);		
+	makePopupMovable(newContainer);	
+}
 
 	function renderUserList(users, selectUserCallback, sectionId, searchInputId) {
 		const userListDiv = document.getElementById(sectionId);
@@ -200,22 +197,13 @@ function copySecurity() {
 		}
 	}
 
-	function setupSearchFilter(searchInputId) {
-		document.getElementById(searchInputId).oninput = function() {
-			const searchValue = this.value.toLowerCase();
-			document.querySelectorAll(`.user${searchInputId.charAt(searchInputId.length - 1)}`).forEach(el => {
-				el.style.display = el.textContent.toLowerCase().includes(searchValue) ? 'block' : 'none';
-			});
-		};
-	}
-
 	function displayPopup(users) {
-	    users.entities.sort((a, b) => a.fullname.localeCompare(b.fullname));
+	    sortByProperty(users.entities, 'fullname');
 	    const newContainer = createAppendSecurityPopup();
 	    renderUserList(users.entities, user => selectUser(user, '1'), 'userList1', 'searchInput1');
 	    renderUserList(users.entities, user => selectUser(user, '2'), 'userList2', 'searchInput2');
-	    setupSearchFilter('searchInput1');
-	    setupSearchFilter('searchInput2');	
+	    setupSearchFilter('searchInput1', 'user1');
+	    setupSearchFilter('searchInput2', 'user2');	
 
 	    const submitButton = document.getElementById("submitButton");
 	    if (submitButton) {	        
@@ -260,19 +248,4 @@ function copySecurity() {
 	fetchUsers(function(users) {
 		displayPopup(users);
 	});
-
-	function loadScript(src, callback, errorCallback) {
-		const script = document.createElement("script");
-		script.type = "text/javascript";
-		script.onload = function() {
-			console.log("Script loaded successfully.");
-			callback();
-		};
-		script.onerror = function() {
-			console.log("Error loading script.");
-			errorCallback();
-		};
-		script.src = src;
-		document.body.appendChild(script);
-	}
 }

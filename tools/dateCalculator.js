@@ -344,11 +344,7 @@ function setupSection4FormListeners() {
 }
 
 function attachModalEventHandlers(container) {
-    const backButton = container.querySelector('#commonback-button');
-    backButton.addEventListener('click', function() {
-        container.remove();
-        openPopup();  
-    });
+    attachBackButton(container);
     makePopupMovable(container); 
     setupDateFormListeners();
     setupSection4FormListeners();
@@ -361,48 +357,7 @@ async function dateCalc() {
     const defaultSchedule = await setupHolidayScheduleDropdown();   
 }
 
-const styles = `
-    .holidaysList { max-height: 74%; overflow-y: auto; display: grid; margin-top: 15px; padding-left: 10px; }    
-    .holidayRow { display: grid; grid-template-columns: 1fr 1fr; align-items: center; }
-    .holidayName { padding: 4px 8px; border: 1px solid #ddd; text-align: left; width: 290px; }    
-    .holidayDate { padding: 4px; border: 1px solid #ddd; text-align: left; }    
-    .headerWrapper { margin-left: 10px; }     
-    .section1-row1 { display: inline-block; width: 50%; height: 310px; padding: 10px; border-bottom: 5px solid #ccc; box-sizing: border-box; text-align: left; }
-    .section1-row2 { display: inline-block; width: 50%; height: 475px; margin-left: 20px; vertical-align: top; box-sizing: border-box; text-align: left; } 
-    .calendar { width: 92%; height: 80%; border: 1px solid #ddd; background-color: #f9f9f9; padding: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
-    .calendarHeader { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-    .calendarDays, .calendarDates { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
-    .calendarDays div { background-color: #102e55; color: white; padding: 5px 0; text-align: center; border-radius: 3px; margin-bottom: 5px; }
-    .calendarDates div { background-color: #e9ecef; height: 23px; display: flex; align-items: center; justify-content: center; border-radius: 3px; cursor: pointer; transition: background-color 0.2s; padding: 5px; box-sizing: border-box; }
-    .calendarDates div:hover { background-color: #333; color: white; }
-    .calendarDates .holidayDate { color: #2196F3; }
-    .todayDate { background-color: #056d05 !important; color: white; }
-    .excludeSettingsWrapper { border: 1px solid #d4d4d4; padding: 10px; border-radius: 5px; margin-bottom: 10px; margin-top: 10px; background-color: #f5f5f5; }
-    .excludeSettingsWrapper h4 { margin-top: 0; border-bottom: 1px solid #d4d4d4; padding-bottom: 5px; margin-bottom: 10px; }    
-    .checkboxWrapper { margin-bottom: 5px; }  
-    .dateRow { display: flex; }
-    .dateRow > div { margin-right: 10px; } 
-    .dateSection { border: 1px solid #ccc; padding: 10px; border-radius: 4px; margin-top: 10px; }     
-    .calculationsWrapper { margin-top: 20px; }    
-    .calculationRow { display: flex; justify-content: space-between; margin-bottom: 5px; } 
-    .calculationRow:last-child span { font-size: 16px; font-weight: bold; }
-    .section3-submitBtn { margin-top: 15px; text-align: center; }
-    #section3SubmitBtn { padding: 8px; font-size: 15px; width: 150px; background-color: #102e55; color: white; cursor: pointer; border-radius: 20px; transition: background-color 0.3s; }
-    #section3SubmitBtn:hover { background-color: #103e89; }
-    .separator { border-top: 2px solid black; margin: 10px 0; } 
-    .notes { display: none; padding: 12px; }
-
-    /* Right Section */ 
-    .addSettingsWrapper { border: 1px solid #d4d4d4; padding: 11px; border-radius: 5px; margin-bottom: 10px; margin-top: 10px; background-color: #f5f5f5; }
-    .addSettingsWrapper h4 { margin-top: 0; border-bottom: 1px solid #d4d4d4; padding-bottom: 5px; margin-bottom: 10px; }
-    .addDateRow { display: flex; margin-top: 20px; }
-    .addCalculationsWrapper { margin-top: 30px; }
-    .addDateSeparator { border-top: 2px solid black; margin-top: 30px; margin-bottom: 10px; } 
-    .section4-submitBtn { margin-top: 15px; text-align: center; }
-    #section4SubmitBtn { padding: 8px; font-size: 15px; width: 150px; background-color: #102e55; color: white; cursor: pointer; border-radius: 20px; transition: background-color 0.3s; }
-    #section4SubmitBtn:hover { background-color: #103e89; }
-`;
-
+// Calendar functionality
 function initCalendar(holidays) {    
     let currentMonth = new Date().getMonth();
     let currentYear = new Date().getFullYear();
@@ -523,11 +478,3 @@ function countWeekendsBetweenDates(startDate, endDate) {
     }
     return count;
 }
-
-function appendStylesToDocument(styles) {
-    const styleSheet = document.createElement("style");
-    styleSheet.type = "text/css";
-    styleSheet.innerText = styles;
-    document.head.appendChild(styleSheet);
-}
-appendStylesToDocument(styles);

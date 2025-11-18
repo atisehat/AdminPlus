@@ -70,9 +70,6 @@ function appendPopupToBody(html, clearPrevious = false) {
 	</div>
 	`;
     document.body.appendChild(newContainer);
-    document.getElementById('commonback-button').addEventListener('click', function() {
-        newContainer.remove();
-	openPopup();  
-    });
+    attachBackButton(newContainer);
     makePopupMovable(newContainer);
 } 

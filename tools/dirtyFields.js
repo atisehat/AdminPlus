@@ -29,10 +29,7 @@ function appendDirtyFieldsPopupToBody(html) {
         </div>
     `;
     document.body.appendChild(newContainer);
-    document.getElementById('commonback-button').addEventListener('click', function() {
-	    newContainer.remove();
-	    openPopup();  
-	});
+    attachBackButton(newContainer);
     makePopupMovable(newContainer);
 }
 
