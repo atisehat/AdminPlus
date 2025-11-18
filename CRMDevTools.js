@@ -145,6 +145,23 @@ function openPopup() {
   newContainer.id = 'MenuPopup';
   newContainer.innerHTML = popupHtml;
   document.body.appendChild(newContainer);
+  
+  // Debug log to verify sidebar version is loaded
+  console.log('%c✅ AdminPlus Sidebar Version Loaded', 'color: #102e55; font-weight: bold; font-size: 14px;');
+  console.log('Sidebar should be docked to the right side of the screen');
+  
+  // Force styles after DOM insertion to override any conflicts
+  setTimeout(function() {
+    var menuPopup = document.getElementById('MenuPopup');
+    if (menuPopup) {
+      menuPopup.style.cssText = 'position: fixed !important; right: 0 !important; top: 0 !important; left: auto !important; transform: none !important; z-index: 999999 !important;';
+    }
+    var popupDiv = document.querySelector('#MenuPopup .popup');
+    if (popupDiv) {
+      popupDiv.style.cssText = 'position: fixed !important; right: 0 !important; top: 0 !important; left: auto !important; height: 100vh !important; width: 420px !important; transform: none !important; border-radius: 0 !important;';
+      console.log('✅ Sidebar styles force-applied');
+    }
+  }, 100);
 }
 function clearCacheFunction() {
     location.reload(true); // Forces a hard reload to bypassing cache.
