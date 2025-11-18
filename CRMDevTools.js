@@ -63,15 +63,21 @@ function openPopup() {
 	    position: fixed !important;
 	    right: 0 !important;
 	    top: 0 !important;
+	    bottom: 0 !important;
 	    left: auto !important;
+	    width: 420px !important;
+	    height: 100vh !important;
 	    transform: none !important;
 	    z-index: 999999 !important;
+	    margin: 0 !important;
+	    padding: 0 !important;
 	}
 	#MenuPopup .popup,
 	.popup { 
 	    position: fixed !important; 
 	    right: 0 !important; 
-	    top: 0 !important; 
+	    top: 0 !important;
+	    bottom: 0 !important;
 	    left: auto !important;
 	    background-color: #f9f9f9; 
 	    border-left: 3px solid #102e55;
@@ -81,13 +87,12 @@ function openPopup() {
 	    max-height: 100vh !important;
 	    width: 420px !important; 
 	    overflow-y: auto; 
-	    z-index: 999999;
+	    overflow-x: hidden;
+	    z-index: 999999 !important;
 	    transform: none !important;
-	    animation: slideInRight 0.3s ease-out;
-	}
-	@keyframes slideInRight {
-	    from { transform: translateX(100%); }
-	    to { transform: translateX(0); }
+	    margin: 0 !important;
+	    padding: 0 !important;
+	    animation: none !important;
 	}
 	.button-container { padding: 20px; width: 380px; }
 	.popup button { display: block; width: 100%; margin-bottom: 10px; padding: 10px; background-color: #102e55; color: white; border: none; border-radius: 20px; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2); }
@@ -154,14 +159,14 @@ function openPopup() {
   setTimeout(function() {
     var menuPopup = document.getElementById('MenuPopup');
     if (menuPopup) {
-      menuPopup.style.cssText = 'position: fixed !important; right: 0 !important; top: 0 !important; left: auto !important; transform: none !important; z-index: 999999 !important;';
+      menuPopup.style.cssText = 'position: fixed !important; right: 0px !important; top: 0px !important; bottom: 0px !important; left: auto !important; width: 420px !important; height: 100vh !important; transform: none !important; z-index: 999999 !important; margin: 0 !important; padding: 0 !important;';
     }
     var popupDiv = document.querySelector('#MenuPopup .popup');
     if (popupDiv) {
-      popupDiv.style.cssText = 'position: fixed !important; right: 0 !important; top: 0 !important; left: auto !important; height: 100vh !important; width: 420px !important; transform: none !important; border-radius: 0 !important;';
-      console.log('✅ Sidebar styles force-applied');
+      popupDiv.style.cssText = 'position: fixed !important; right: 0px !important; top: 0px !important; bottom: 0px !important; left: auto !important; height: 100vh !important; width: 420px !important; transform: none !important; border-radius: 0px !important; margin: 0px !important; padding: 0px !important; overflow-y: auto !important; overflow-x: hidden !important;';
+      console.log('✅ Sidebar styles force-applied - Full height sidebar at right edge');
     }
-  }, 100);
+  }, 50);
 }
 function clearCacheFunction() {
     location.reload(true); // Forces a hard reload to bypassing cache.
