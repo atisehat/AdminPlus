@@ -1,8 +1,11 @@
 const baseUrl = 'https://atisehat.github.io/AdminPlus/';
 
+// Cache busting: Add timestamp to force reload of updated files
+const cacheBuster = '?v=' + new Date().getTime();
+
 function loadCSS(href) {
   const link = document.createElement('link');
-  link.href = baseUrl + href;
+  link.href = baseUrl + href + cacheBuster;
   link.rel = 'stylesheet';
   link.type = 'text/css';
   document.head.appendChild(link); 
@@ -13,7 +16,7 @@ loadCSS('styles/tools.css');
 
 function loadScript(src, callback) {
   const script = document.createElement('script');
-  script.src = baseUrl + src;
+  script.src = baseUrl + src + cacheBuster;
   script.onload = callback;
   document.head.appendChild(script);
 }
