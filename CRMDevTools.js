@@ -58,18 +58,31 @@ function openPopup() {
   var badgeText = typeof getBadgeText === 'function' ? getBadgeText() : 'v2.0.0';
   
   var popupHtml = `  
-    <style>       
+    <style>
+	#MenuPopup {
+	    position: fixed !important;
+	    right: 0 !important;
+	    top: 0 !important;
+	    left: auto !important;
+	    transform: none !important;
+	    z-index: 999999 !important;
+	}
+	#MenuPopup .popup,
 	.popup { 
-	    position: fixed; 
-	    right: 0; 
-	    top: 0; 
+	    position: fixed !important; 
+	    right: 0 !important; 
+	    top: 0 !important; 
+	    left: auto !important;
 	    background-color: #f9f9f9; 
-	    border-left: 3px solid #102e55; 
+	    border-left: 3px solid #102e55;
+	    border-radius: 0 !important; 
 	    box-shadow: -2px 0 10px rgba(0, 0, 0, 0.3); 
-	    height: 100vh; 
-	    width: 420px; 
+	    height: 100vh !important; 
+	    max-height: 100vh !important;
+	    width: 420px !important; 
 	    overflow-y: auto; 
 	    z-index: 999999;
+	    transform: none !important;
 	    animation: slideInRight 0.3s ease-out;
 	}
 	@keyframes slideInRight {
