@@ -190,43 +190,70 @@ function closePopup() {
     var targetElement = document.querySelector('[data-adminplus-target="true"]');
     
     if (targetElement) {
+        // Remove all AdminPlus-applied styles
         var originalRight = targetElement.getAttribute('data-adminplus-original-right');
         var originalLeft = targetElement.getAttribute('data-adminplus-original-left');
         var originalPosition = targetElement.getAttribute('data-adminplus-original-position');
         var originalBoxSizing = targetElement.getAttribute('data-adminplus-original-boxsizing');
         
+        // Restore or remove properties
         if (originalRight !== null) {
-            originalRight === '' ? targetElement.style.removeProperty('right') : targetElement.style.right = originalRight;
+            if (originalRight === '') {
+                targetElement.style.removeProperty('right');
+            } else {
+                targetElement.style.right = originalRight;
+            }
             targetElement.removeAttribute('data-adminplus-original-right');
         }
         
         if (originalLeft !== null) {
-            originalLeft === '' ? targetElement.style.removeProperty('left') : targetElement.style.left = originalLeft;
+            if (originalLeft === '') {
+                targetElement.style.removeProperty('left');
+            } else {
+                targetElement.style.left = originalLeft;
+            }
             targetElement.removeAttribute('data-adminplus-original-left');
         }
         
         if (originalPosition !== null) {
-            originalPosition === '' ? targetElement.style.removeProperty('position') : targetElement.style.position = originalPosition;
+            if (originalPosition === '') {
+                targetElement.style.removeProperty('position');
+            } else {
+                targetElement.style.position = originalPosition;
+            }
             targetElement.removeAttribute('data-adminplus-original-position');
         }
         
         if (originalBoxSizing !== null) {
-            originalBoxSizing === '' ? targetElement.style.removeProperty('box-sizing') : targetElement.style.boxSizing = originalBoxSizing;
+            if (originalBoxSizing === '') {
+                targetElement.style.removeProperty('box-sizing');
+            } else {
+                targetElement.style.boxSizing = originalBoxSizing;
+            }
             targetElement.removeAttribute('data-adminplus-original-boxsizing');
         }
         
         targetElement.removeAttribute('data-adminplus-target');
+        
+        // Force reflow to ensure styles are updated
+        targetElement.offsetHeight;
     }
     
+    // Clean up event listener
     if (window.adminPlusResizeHandler) {
         window.removeEventListener('resize', window.adminPlusResizeHandler);
         window.adminPlusResizeHandler = null;
     }
     
+    // Remove sidebar
     var menuPopup = document.getElementById('MenuPopup');
-    if (menuPopup) menuPopup.remove();
+    if (menuPopup) {
+        menuPopup.remove();
+    }
     
     closeSubPopups();
+    
+    console.log('%c✅ AdminPlus Closed', 'color: #4da6ff; font-weight: bold;');
 }
 
 function closeSubPopups() { 
