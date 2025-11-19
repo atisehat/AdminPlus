@@ -235,8 +235,9 @@ function generateFieldListHtml(fields, fieldValues, fieldMetadata) {
                 fullTooltip = `Lookup Name: ${displayName} (${logicalName})\nEntity Name: ${lookupData.entityType || 'N/A'}\nRecord ID: ${lookupData.id || 'N/A'}\nValue: ${lookupData.name || fieldValue}`;
             }
             
+             const tooltipText = `${escapeHtml(fullTooltip)}\n${'Click to copy ►'.padStart(120)}`;
              html += `
-                <div class="field-card" data-copy-text="${escapeHtml(fullTooltip)}" data-tooltip="${escapeHtml(fullTooltip)}\n\n                                                                                                                                         Click to copy ►" style="padding: 8px; background-color: #f5f5f5; border-radius: 5px; border-left: 3px solid #2b2b2b; cursor: pointer; transition: background-color 0.2s;">
+                <div class="field-card" data-copy-text="${escapeHtml(fullTooltip)}" data-tooltip="${tooltipText}" style="padding: 8px; background-color: #f5f5f5; border-radius: 5px; border-left: 3px solid #2b2b2b; cursor: pointer; transition: background-color 0.2s;">
                     <div style="display: flex; justify-content: space-between; align-items: center;">
                         <div style="font-weight: bold; color: #333; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
                             ${displayName} 
@@ -361,7 +362,8 @@ function appendPopupToBody(html, clearPrevious = false) {
                 
                 // Show tooltip feedback
                 const originalTooltip = this.getAttribute('data-tooltip');
-                this.setAttribute('data-tooltip', 'Copied to clipboard!\n\n                                                                                                                                         ✓');
+                const copiedText = `Copied to clipboard!\n${'✓'.padStart(120)}`;
+                this.setAttribute('data-tooltip', copiedText);
                 setTimeout(() => {
                     this.setAttribute('data-tooltip', originalTooltip);
                 }, 1500);
