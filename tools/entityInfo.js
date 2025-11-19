@@ -235,9 +235,8 @@ function generateFieldListHtml(fields, fieldValues, fieldMetadata) {
                 fullTooltip = `Lookup Name: ${displayName} (${logicalName})\nEntity Name: ${lookupData.entityType || 'N/A'}\nRecord ID: ${lookupData.id || 'N/A'}\nValue: ${lookupData.name || fieldValue}`;
             }
             
-             const tooltipText = `${escapeHtml(fullTooltip)}\n${'Click to copy ►'.padStart(120)}`;
              html += `
-                <div class="field-card" data-copy-text="${escapeHtml(fullTooltip)}" data-tooltip="${tooltipText}" style="padding: 8px; background-color: #f5f5f5; border-radius: 5px; border-left: 3px solid #2b2b2b; cursor: pointer; transition: background-color 0.2s;">
+                <div class="field-card" data-copy-text="${escapeHtml(fullTooltip)}" data-tooltip-main="${escapeHtml(fullTooltip)}" data-tooltip-action="Click to copy ►" data-tooltip="true" style="padding: 8px; background-color: #f5f5f5; border-radius: 5px; border-left: 3px solid #2b2b2b; cursor: pointer; transition: background-color 0.2s;">
                     <div style="display: flex; justify-content: space-between; align-items: center;">
                         <div style="font-weight: bold; color: #333; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
                             ${displayName} 
@@ -294,13 +293,13 @@ function appendPopupToBody(html, clearPrevious = false) {
            .field-card[data-tooltip] {
                position: relative;
            }
-           .field-card[data-tooltip]:hover::after {
-               content: attr(data-tooltip);
+           .field-card[data-tooltip]:hover::before {
+               content: attr(data-tooltip-main);
                position: absolute;
                left: 0;
                top: 100%;
                margin-top: 8px;
-               padding: 10px 14px;
+               padding: 10px 14px 5px 14px;
                background-color: rgba(43, 43, 43, 0.95);
                color: white;
                border-radius: 6px;
@@ -313,6 +312,28 @@ function appendPopupToBody(html, clearPrevious = false) {
                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
                pointer-events: none;
                word-wrap: break-word;
+           }
+           .field-card[data-tooltip]:hover::after {
+               content: attr(data-tooltip-action);
+               position: absolute;
+               left: 0;
+               top: 100%;
+               margin-top: 8px;
+               padding: 5px 14px 10px 14px;
+               padding-top: 0;
+               background-color: rgba(43, 43, 43, 0.95);
+               color: white;
+               border-radius: 6px;
+               font-size: 12px;
+               line-height: 1.5;
+               white-space: nowrap;
+               max-width: 400px;
+               width: max-content;
+               z-index: 100001;
+               box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+               pointer-events: none;
+               text-align: right;
+               display: block;
            }
        `;
        document.head.appendChild(tooltipStyle);
@@ -361,11 +382,13 @@ function appendPopupToBody(html, clearPrevious = false) {
                 }, 300);
                 
                 // Show tooltip feedback
-                const originalTooltip = this.getAttribute('data-tooltip');
-                const copiedText = `Copied to clipboard!\n${'✓'.padStart(120)}`;
-                this.setAttribute('data-tooltip', copiedText);
+                const originalMain = this.getAttribute('data-tooltip-main');
+                const originalAction = this.getAttribute('data-tooltip-action');
+                this.setAttribute('data-tooltip-main', 'Copied to clipboard!');
+                this.setAttribute('data-tooltip-action', '✓');
                 setTimeout(() => {
-                    this.setAttribute('data-tooltip', originalTooltip);
+                    this.setAttribute('data-tooltip-main', originalMain);
+                    this.setAttribute('data-tooltip-action', originalAction);
                 }, 1500);
             }).catch(err => {
                 console.error('Failed to copy:', err);
