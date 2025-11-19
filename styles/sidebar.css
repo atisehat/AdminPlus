@@ -18,10 +18,10 @@
     position: relative !important;
     width: 100% !important;
     height: 100% !important;
-    background-color: #f9f9f9; 
-    border-left: 3px solid #102e55;
+    background-color: #2b2b2b; 
+    border-left: 3px solid #1a1a1a;
     border-radius: 0 !important;
-    box-shadow: -2px 0 15px rgba(0, 0, 0, 0.3); 
+    box-shadow: -2px 0 15px rgba(0, 0, 0, 0.5); 
     overflow-y: auto; 
     overflow-x: hidden;
     margin: 0 !important;
@@ -37,6 +37,8 @@
     text-align: center !important;
     box-sizing: border-box !important;
     word-wrap: break-word !important;
+    background-color: #1a1a1a !important;
+    color: #ffffff !important;
 }
 
 /* Superscript styling for + symbol */
@@ -67,32 +69,34 @@
     align-items: center;
     justify-content: center;
     padding: 10px 5px;
-    background-color: #102e55;
+    background-color: #3a3a3a;
     color: white;
-    border: none;
+    border: 1px solid #4a4a4a;
     border-radius: 8px;
     cursor: pointer;
     transition: all 0.2s ease;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
     width: 100%;
     height: 55px;
     box-sizing: border-box;
 }
 
 #MenuPopup .app-button:hover {
-    background-color: #3c6690;
+    background-color: #4a4a4a;
+    border-color: #5a5a5a;
     transform: scale(1.05);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
 }
 
 #MenuPopup .app-button:active {
     transform: scale(0.98);
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+    background-color: #353535;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 /* App icon - emoji/symbol centered */
 #MenuPopup .app-icon {
-    font-size: 22px;
+    font-size: 20px;
     display: block;
     line-height: 1;
 }
@@ -104,25 +108,27 @@
     padding: 12px 5px;
     background-color: #d9534f;
     color: white;
-    border: none;
+    border: 1px solid #c9302c;
     border-radius: 8px;
     cursor: pointer;
     font-size: 24px;
     font-weight: 600;
     transition: all 0.2s ease;
-    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
     box-sizing: border-box;
 }
 
 #MenuPopup .popup button.close-btn:hover {
     background-color: #c9302c;
+    border-color: #b52b27;
     transform: scale(1.05);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.25);
+    box-shadow: 0 5px 12px rgba(0, 0, 0, 0.4);
 }
 
 #MenuPopup .popup button.close-btn:active {
     transform: scale(0.98);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    background-color: #b52b27;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
 }
 
 /* Page content adjustment when sidebar is open */
