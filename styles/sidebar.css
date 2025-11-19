@@ -103,36 +103,6 @@
     line-height: 1;
 }
 
-/* Close button */
-#MenuPopup .popup button.close-btn { 
-    display: block;
-    width: 100%;
-    padding: 12px 5px;
-    background-color: #d9534f;
-    color: white;
-    border: 1px solid #c9302c;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 24px;
-    font-weight: 600;
-    transition: all 0.2s ease;
-    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
-    box-sizing: border-box;
-}
-
-#MenuPopup .popup button.close-btn:hover {
-    background-color: #c9302c;
-    border-color: #b52b27;
-    transform: scale(1.05);
-    box-shadow: 0 5px 12px rgba(0, 0, 0, 0.4);
-}
-
-#MenuPopup .popup button.close-btn:active {
-    transform: scale(0.98);
-    background-color: #b52b27;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
-}
-
 /* Page content adjustment when sidebar is open */
 /* Note: Positioning is set dynamically via JavaScript for accurate calculations */
 body.adminplus-sidebar-open {
