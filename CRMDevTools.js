@@ -37,6 +37,12 @@ loadScript('tools/securityOperations.js');
 loadScript('tools/dateCalculator.js');
 
 function openPopup() {
+  // Prevent opening multiple sidebars
+  if (document.getElementById('MenuPopup')) {
+    console.log('%c⚠️ AdminPlus is already open', 'color: #ff9800; font-weight: bold;');
+    return;
+  }
+  
   closeSubPopups();
   var isAdmin = false;
   var userName = Xrm.Utility.getGlobalContext().userSettings.userName;
