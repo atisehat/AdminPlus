@@ -235,8 +235,8 @@ function generateFieldListHtml(fields, fieldValues, fieldMetadata) {
                 fullTooltip = `Lookup Name: ${displayName} (${logicalName})\nEntity Name: ${lookupData.entityType || 'N/A'}\nRecord ID: ${lookupData.id || 'N/A'}\nValue: ${lookupData.name || fieldValue}`;
             }
             
-            html += `
-                <div class="field-card" data-copy-text="${escapeHtml(fullTooltip)}" style="padding: 8px; background-color: #f5f5f5; border-radius: 5px; border-left: 3px solid #2b2b2b; cursor: pointer; transition: background-color 0.2s;" title="${escapeHtml(fullTooltip)}\n\n                                                                                                                                         Click to copy ►">
+             html += `
+                <div class="field-card" data-copy-text="${escapeHtml(fullTooltip)}" data-tooltip="${escapeHtml(fullTooltip)}\n\n                                                                                                                                         Click to copy ►" style="padding: 8px; background-color: #f5f5f5; border-radius: 5px; border-left: 3px solid #2b2b2b; cursor: pointer; transition: background-color 0.2s;">
                     <div style="display: flex; justify-content: space-between; align-items: center;">
                         <div style="font-weight: bold; color: #333; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
                             ${displayName} 
@@ -290,11 +290,11 @@ function appendPopupToBody(html, clearPrevious = false) {
        // Add custom tooltip styling with restricted width
        const tooltipStyle = document.createElement('style');
        tooltipStyle.innerHTML = `
-           .field-card[title] {
+           .field-card[data-tooltip] {
                position: relative;
            }
-           .field-card[title]:hover::after {
-               content: attr(title);
+           .field-card[data-tooltip]:hover::after {
+               content: attr(data-tooltip);
                position: absolute;
                left: 0;
                top: 100%;
@@ -360,10 +360,10 @@ function appendPopupToBody(html, clearPrevious = false) {
                 }, 300);
                 
                 // Show tooltip feedback
-                const originalTitle = this.title;
-                this.title = 'Copied to clipboard!\n\n                                                                                                                                         ✓';
+                const originalTooltip = this.getAttribute('data-tooltip');
+                this.setAttribute('data-tooltip', 'Copied to clipboard!\n\n                                                                                                                                         ✓');
                 setTimeout(() => {
-                    this.title = originalTitle;
+                    this.setAttribute('data-tooltip', originalTooltip);
                 }, 1500);
             }).catch(err => {
                 console.error('Failed to copy:', err);
