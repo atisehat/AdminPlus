@@ -1,17 +1,5 @@
 /* AdminPlus Sidebar Styles */
 
-/* Sidebar overlay backdrop */
-#MenuPopupBackdrop {
-    position: fixed !important;
-    top: 0 !important;
-    left: 0 !important;
-    width: 100% !important;
-    height: 100vh !important;
-    background-color: rgba(0, 0, 0, 0.3);
-    z-index: 999998 !important;
-    transition: opacity 0.3s ease;
-}
-
 /* Main sidebar container */
 #MenuPopup {
     position: fixed !important;

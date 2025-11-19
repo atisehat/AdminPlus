@@ -99,12 +99,6 @@ function openPopup() {
   // Sidebar configuration
   var sidebarWidth = 420;
   
-  // Create backdrop
-  var backdrop = document.createElement('div');
-  backdrop.id = 'MenuPopupBackdrop';
-  backdrop.onclick = closePopup;
-  document.body.appendChild(backdrop);
-  
   // Create sidebar container
   var newContainer = document.createElement('div');
   newContainer.id = 'MenuPopup';
@@ -227,9 +221,6 @@ function closePopup() {
         window.removeEventListener('resize', window.adminPlusResizeHandler);
         window.adminPlusResizeHandler = null;
     }
-    
-    var backdrop = document.getElementById('MenuPopupBackdrop');
-    if (backdrop) backdrop.remove();
     
     var menuPopup = document.getElementById('MenuPopup');
     if (menuPopup) menuPopup.remove();
