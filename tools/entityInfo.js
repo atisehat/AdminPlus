@@ -235,8 +235,9 @@ function generateFieldListHtml(fields, fieldValues, fieldMetadata) {
                 fullTooltip = `Lookup Name: ${displayName} (${logicalName})\nEntity Name: ${lookupData.entityType || 'N/A'}\nRecord ID: ${lookupData.id || 'N/A'}\nValue: ${lookupData.name || fieldValue}`;
             }
             
+             const combinedTooltip = `${escapeHtml(fullTooltip)}\n${'Click to copy ►'.padStart(75)}`;
              html += `
-                <div class="field-card" data-copy-text="${escapeHtml(fullTooltip)}" data-tooltip-main="${escapeHtml(fullTooltip)}" data-tooltip-action="Click to copy ►" data-tooltip="true" style="padding: 8px; background-color: #f5f5f5; border-radius: 5px; border-left: 3px solid #2b2b2b; cursor: pointer; transition: background-color 0.2s;">
+                <div class="field-card" data-copy-text="${escapeHtml(fullTooltip)}" data-tooltip="${combinedTooltip}" style="padding: 8px; background-color: #f5f5f5; border-radius: 5px; border-left: 3px solid #2b2b2b; cursor: pointer; transition: background-color 0.2s;">
                     <div style="display: flex; justify-content: space-between; align-items: center;">
                         <div style="font-weight: bold; color: #333; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
                             ${displayName} 
@@ -294,43 +295,24 @@ function appendPopupToBody(html, clearPrevious = false) {
                position: relative;
            }
            .field-card[data-tooltip]:hover::before {
-               content: attr(data-tooltip-main);
+               content: attr(data-tooltip);
                position: absolute;
                left: 0;
                top: 100%;
                margin-top: 8px;
                padding: 10px 14px;
-               padding-bottom: 28px;
                background-color: rgba(43, 43, 43, 0.95);
                color: white;
                border-radius: 6px;
                font-size: 12px;
                line-height: 1.5;
-               white-space: pre-line;
+               white-space: pre;
                width: 450px;
                box-sizing: border-box;
                z-index: 100000;
                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
                pointer-events: none;
-               word-wrap: break-word;
                display: block;
-               position: absolute;
-           }
-           .field-card[data-tooltip]:hover::after {
-               content: attr(data-tooltip-action);
-               position: absolute;
-               left: auto;
-               right: 14px;
-               top: auto;
-               bottom: calc(100% * -1 - 8px);
-               transform: translateY(100%);
-               margin-bottom: 10px;
-               color: white;
-               font-size: 12px;
-               line-height: 1.5;
-               z-index: 100001;
-               pointer-events: none;
-               white-space: nowrap;
            }
        `;
        document.head.appendChild(tooltipStyle);
@@ -379,13 +361,11 @@ function appendPopupToBody(html, clearPrevious = false) {
                 }, 300);
                 
                 // Show tooltip feedback
-                const originalMain = this.getAttribute('data-tooltip-main');
-                const originalAction = this.getAttribute('data-tooltip-action');
-                this.setAttribute('data-tooltip-main', 'Copied to clipboard!');
-                this.setAttribute('data-tooltip-action', '✓');
+                const originalTooltip = this.getAttribute('data-tooltip');
+                const copiedTooltip = `Copied to clipboard!\n${'✓'.padStart(75)}`;
+                this.setAttribute('data-tooltip', copiedTooltip);
                 setTimeout(() => {
-                    this.setAttribute('data-tooltip-main', originalMain);
-                    this.setAttribute('data-tooltip-action', originalAction);
+                    this.setAttribute('data-tooltip', originalTooltip);
                 }, 1500);
             }).catch(err => {
                 console.error('Failed to copy:', err);
