@@ -294,46 +294,35 @@ function appendPopupToBody(html, clearPrevious = false) {
                position: relative;
            }
            .field-card[data-tooltip]:hover::before {
-               content: attr(data-tooltip-main);
+               content: attr(data-tooltip-main) "\\A\\A" attr(data-tooltip-action);
                position: absolute;
                left: 0;
                top: 100%;
                margin-top: 8px;
-               padding: 10px 14px 5px 14px;
+               padding: 10px 14px;
                background-color: rgba(43, 43, 43, 0.95);
                color: white;
                border-radius: 6px;
                font-size: 12px;
                line-height: 1.5;
-               white-space: pre-wrap;
-               max-width: 400px;
-               width: max-content;
+               white-space: pre-line;
+               width: 350px;
                z-index: 100000;
                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
                pointer-events: none;
                word-wrap: break-word;
+               display: block;
            }
            .field-card[data-tooltip]:hover::after {
                content: attr(data-tooltip-action);
                position: absolute;
-               left: 0;
-               top: 100%;
-               margin-top: 8px;
-               padding: 5px 14px 10px 14px;
-               padding-top: 0;
-               background-color: rgba(43, 43, 43, 0.95);
+               right: 14px;
+               bottom: 10px;
                color: white;
-               border-radius: 6px;
                font-size: 12px;
-               line-height: 1.5;
-               white-space: nowrap;
-               max-width: 400px;
-               width: max-content;
                z-index: 100001;
-               box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
                pointer-events: none;
-               text-align: right;
-               display: block;
+               white-space: nowrap;
            }
        `;
        document.head.appendChild(tooltipStyle);
