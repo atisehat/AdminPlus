@@ -3,62 +3,65 @@ async function fetchEntityFields() {
     const recordId = Xrm.Page.data.entity.getId();
     const cleanRecordId = recordId.replace(/[{}]/g, "").toLowerCase();
     const clientUrl = Xrm.Page.context.getClientUrl();
-    const url = `${clientUrl}/api/data/v9.2/EntityDefinitions(LogicalName='${entityName}')/Attributes?$select=LogicalName,AttributeType,DisplayName`;
-    const urlPlural = `${clientUrl}/api/data/v9.2/EntityDefinitions(LogicalName='${entityName}')?$select=LogicalCollectionName`; 
     
     try {
-        const response = await fetch(url);
-	const responsePlural = await fetch(urlPlural);
-        if (response.ok && responsePlural.ok) {
-            const results = await response.json();
-            const pluralResults = await responsePlural.json();
-            const pluralName = pluralResults.LogicalCollectionName;
-            
-            // Get field values from current form
-            const fieldValues = {};
-            const fieldMetadata = {};
-            const attributes = Xrm.Page.data.entity.attributes.get();
-            attributes.forEach(attr => {
-                const logicalName = attr.getName();
-                const value = attr.getValue();
-                fieldValues[logicalName] = formatFieldValue(attr);
-                fieldMetadata[logicalName] = {
-                    type: attr.getAttributeType(),
-                    rawValue: value
-                };
-            });
-            
-            // Fetch complete record data from Web API for fields not on form
-            const recordUrl = `${clientUrl}/api/data/v9.2/${pluralName}(${cleanRecordId})`;
-            const recordResponse = await fetch(recordUrl);
-            
-            if (recordResponse.ok) {
-                const recordData = await recordResponse.json();
-                
-                // Populate values for fields not on form
-                results.value.forEach(field => {
-                    const logicalName = field.LogicalName;
-                    if (!fieldValues[logicalName]) {
-                        const value = recordData[logicalName];
-                        fieldValues[logicalName] = formatFieldValueFromAPI(value, field.AttributeType, recordData, logicalName);
-                        fieldMetadata[logicalName] = {
-                            type: field.AttributeType,
-                            rawValue: value
-                        };
-                    }
-                });
-            }
-            
-            const fieldListHtml = generateFieldListHtml(results.value, fieldValues, fieldMetadata);
-            const popupHtml = generatePopupHtml(entityName, cleanRecordId, fieldListHtml, pluralName);
-            appendPopupToBody(popupHtml);
-        } else {
-            const errorText = response.statusText || responsePlural.statusText;
-            alert(`Error: ${errorText}`);
+        // Fetch entity metadata and plural name in parallel
+        const [metadataResponse, pluralResponse] = await Promise.all([
+            fetch(`${clientUrl}/api/data/v9.2/EntityDefinitions(LogicalName='${entityName}')/Attributes?$select=LogicalName,AttributeType,DisplayName`),
+            fetch(`${clientUrl}/api/data/v9.2/EntityDefinitions(LogicalName='${entityName}')?$select=LogicalCollectionName`)
+        ]);
+        
+        if (!metadataResponse.ok || !pluralResponse.ok) {
+            throw new Error(metadataResponse.statusText || pluralResponse.statusText);
         }
+        
+        const [metadata, pluralData] = await Promise.all([
+            metadataResponse.json(),
+            pluralResponse.json()
+        ]);
+        
+        const pluralName = pluralData.LogicalCollectionName;
+        
+        // Get field values from current form
+        const fieldValues = {};
+        const fieldMetadata = {};
+        const attributes = Xrm.Page.data.entity.attributes.get();
+        
+        attributes.forEach(attr => {
+            const logicalName = attr.getName();
+            fieldValues[logicalName] = formatFieldValue(attr);
+            fieldMetadata[logicalName] = {
+                type: attr.getAttributeType(),
+                rawValue: attr.getValue()
+            };
+        });
+        
+        // Fetch complete record data for fields not on form
+        const recordResponse = await fetch(`${clientUrl}/api/data/v9.2/${pluralName}(${cleanRecordId})`);
+        
+        if (recordResponse.ok) {
+            const recordData = await recordResponse.json();
+            
+            // Populate values for fields not on form
+            metadata.value.forEach(field => {
+                const logicalName = field.LogicalName;
+                if (!fieldValues[logicalName]) {
+                    fieldValues[logicalName] = formatFieldValueFromAPI(recordData[logicalName], field.AttributeType, recordData, logicalName);
+                    fieldMetadata[logicalName] = {
+                        type: field.AttributeType,
+                        rawValue: recordData[logicalName]
+                    };
+                }
+            });
+        }
+        
+        const fieldListHtml = generateFieldListHtml(metadata.value, fieldValues, fieldMetadata);
+        const popupHtml = generatePopupHtml(entityName, cleanRecordId, fieldListHtml, pluralName);
+        appendPopupToBody(popupHtml);
+        
     } catch (error) {
-        console.log(`Error: ${error}`);
-        alert(`Error: ${error}`);
+        console.error('Error fetching entity fields:', error);
+        alert(`Error: ${error.message}`);
     }
 }
 
@@ -256,17 +259,24 @@ function generateFieldListHtml(fields, fieldValues, fieldMetadata) {
         'Rollup': 'Rollup'
     };
     
+    const escapeHtml = (str) => {
+        return str.replace(/&/g, '&amp;')
+                  .replace(/</g, '&lt;')
+                  .replace(/>/g, '&gt;')
+                  .replace(/"/g, '&quot;')
+                  .replace(/'/g, '&#039;');
+    };
+    
     let html = '';
     
     Object.keys(categories).forEach(categoryKey => {
         const categoryFields = categories[categoryKey];
         if (categoryFields.length === 0) return;
         
-        categoryFields.sort((a, b) => {
-            const labelA = a.DisplayName.UserLocalizedLabel.Label;
-            const labelB = b.DisplayName.UserLocalizedLabel.Label;
-            return labelA.localeCompare(labelB);
-        });
+        // Sort fields alphabetically
+        categoryFields.sort((a, b) => 
+            a.DisplayName.UserLocalizedLabel.Label.localeCompare(b.DisplayName.UserLocalizedLabel.Label)
+        );
         
         html += `
             <div style="margin-bottom: 25px;">
@@ -278,24 +288,11 @@ function generateFieldListHtml(fields, fieldValues, fieldMetadata) {
             const typeLabel = typeLabels[field.AttributeType] || field.AttributeType;
             const displayName = field.DisplayName.UserLocalizedLabel.Label;
             const logicalName = field.LogicalName;
-            const fieldValue = fieldValues[logicalName] || '(not on form)';
+            const fieldValue = fieldValues[logicalName] || '(empty)';
             const metadata = fieldMetadata[logicalName];
             
             // Truncate value for display (max 100 characters)
-            const maxLength = 100;
-            let displayValue = fieldValue;
-            if (fieldValue.length > maxLength) {
-                displayValue = fieldValue.substring(0, maxLength) + '...';
-            }
-            
-            // Escape HTML entities for tooltip
-            const escapeHtml = (str) => {
-                return str.replace(/&/g, '&amp;')
-                          .replace(/</g, '&lt;')
-                          .replace(/>/g, '&gt;')
-                          .replace(/"/g, '&quot;')
-                          .replace(/'/g, '&#039;');
-            };
+            const displayValue = fieldValue.length > 100 ? fieldValue.substring(0, 100) + '...' : fieldValue;
             
             // Build tooltip based on field type
             let fullTooltip = `${displayName} (${logicalName})\nValue: ${fieldValue}`;
@@ -306,7 +303,7 @@ function generateFieldListHtml(fields, fieldValues, fieldMetadata) {
                 fullTooltip = `Lookup Name: ${displayName} (${logicalName})\nEntity Name: ${lookupData.entityType || 'N/A'}\nRecord ID: ${lookupData.id || 'N/A'}\nValue: ${lookupData.name || fieldValue}`;
             }
             
-             html += `
+            html += `
                 <div class="field-card" data-copy-text="${escapeHtml(fullTooltip)}" data-tooltip="${escapeHtml(fullTooltip)}" style="padding: 8px; background-color: #f5f5f5; border-radius: 5px; border-left: 3px solid #2b2b2b; cursor: pointer; transition: background-color 0.2s;">
                     <div style="display: flex; justify-content: space-between; align-items: center;">
                         <div style="font-weight: bold; color: #333; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
@@ -352,67 +349,59 @@ function generatePopupHtml(entityName, cleanRecordId, fieldListHtml, pluralName)
     `;
 }
 
-function appendPopupToBody(html, clearPrevious = false) {
-    if (clearPrevious) {
-       const existingPopups = document.querySelectorAll('.commonPopup');
-       existingPopups.forEach(popup => popup.remove());
-    }    
-    var newContainer = document.createElement('div');	  	
-       newContainer.className = 'commonPopup';
-       newContainer.style.border = '3px solid #1a1a1a';
-       newContainer.style.borderRadius = '12px';
-       newContainer.style.width = '75%';
-       
-       // Add custom tooltip styling with restricted width
-       const tooltipStyle = document.createElement('style');
-       tooltipStyle.innerHTML = `
-           .field-card[data-tooltip] {
-               position: relative;
-           }
-           .field-card[data-tooltip]:hover::before {
-               content: attr(data-tooltip);
-               position: absolute;
-               left: 0;
-               top: 100%;
-               margin-top: 8px;
-               padding: 10px 14px;
-               background-color: rgba(43, 43, 43, 0.95);
-               color: white;
-               border-radius: 6px;
-               font-size: 12px;
-               line-height: 1.5;
-               white-space: pre-wrap;
-               width: 500px;
-               box-sizing: border-box;
-               z-index: 100000;
-               box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-               pointer-events: none;
-               display: block;
-               word-wrap: break-word;
-           }
-       `;
-       document.head.appendChild(tooltipStyle);
-       
-       newContainer.innerHTML = `
-	<div class="commonPopup-header" style="background-color: #2b2b2b; position: relative; cursor: move; border-radius: 9px 9px 0 0; margin: 0; border-bottom: 2px solid #1a1a1a;">
-	   <span style="color: white;">Entity & Fields Info</span>
-	   <span class="close-button" style="position: absolute; right: 0; top: 0; bottom: 0; width: 45px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 20px; color: white; font-weight: bold; transition: background-color 0.2s ease; border-radius: 0 9px 0 0;">&times;</span>
-	</div>   
-	<div class="entityInfoPopup-row">
-	   <div class="commonSection content-section" id="section1" style="padding: 0; border-right: 0;">
-	    ${html}
-	   </div>
-	</div>
-	`;
+function appendPopupToBody(html) {
+    const newContainer = document.createElement('div');
+    newContainer.className = 'commonPopup';
+    newContainer.style.border = '3px solid #1a1a1a';
+    newContainer.style.borderRadius = '12px';
+    newContainer.style.width = '75%';
+    
+    // Add custom tooltip styling
+    const tooltipStyle = document.createElement('style');
+    tooltipStyle.innerHTML = `
+        .field-card[data-tooltip] {
+            position: relative;
+        }
+        .field-card[data-tooltip]:hover::before {
+            content: attr(data-tooltip);
+            position: absolute;
+            left: 0;
+            top: 100%;
+            margin-top: 8px;
+            padding: 10px 14px;
+            background-color: rgba(43, 43, 43, 0.95);
+            color: white;
+            border-radius: 6px;
+            font-size: 12px;
+            line-height: 1.5;
+            white-space: pre-wrap;
+            width: 500px;
+            box-sizing: border-box;
+            z-index: 100000;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+            pointer-events: none;
+            word-wrap: break-word;
+        }
+    `;
+    document.head.appendChild(tooltipStyle);
+    
+    newContainer.innerHTML = `
+        <div class="commonPopup-header" style="background-color: #2b2b2b; position: relative; cursor: move; border-radius: 9px 9px 0 0; margin: 0; border-bottom: 2px solid #1a1a1a;">
+            <span style="color: white;">Entity & Fields Info</span>
+            <span class="close-button" style="position: absolute; right: 0; top: 0; bottom: 0; width: 45px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 20px; color: white; font-weight: bold; transition: background-color 0.2s ease; border-radius: 0 9px 0 0;">&times;</span>
+        </div>
+        <div class="entityInfoPopup-row">
+            <div class="commonSection content-section" style="padding: 0; border-right: 0;">
+                ${html}
+            </div>
+        </div>
+    `;
+    
     document.body.appendChild(newContainer);
     
-    // Add close button functionality
+    // Close button functionality
     const closeButton = newContainer.querySelector('.close-button');
-    closeButton.addEventListener('click', function() {
-        newContainer.remove();
-    });
-    
-    // Add hover effect for close button
+    closeButton.addEventListener('click', () => newContainer.remove());
     closeButton.addEventListener('mouseenter', function() {
         this.style.backgroundColor = '#e81123';
     });
@@ -420,35 +409,28 @@ function appendPopupToBody(html, clearPrevious = false) {
         this.style.backgroundColor = 'transparent';
     });
     
-    // Add click-to-copy functionality for field cards
-    const fieldCards = newContainer.querySelectorAll('.field-card');
-    fieldCards.forEach(card => {
-        card.addEventListener('click', function(e) {
-            const copyText = this.getAttribute('data-copy-text');
-            const decodedText = decodeHtmlEntities(copyText);
+    // Click-to-copy functionality for field cards
+    newContainer.querySelectorAll('.field-card').forEach(card => {
+        card.addEventListener('click', function() {
+            const copyText = decodeHtmlEntities(this.getAttribute('data-copy-text'));
             
-            // Copy to clipboard
-            navigator.clipboard.writeText(decodedText).then(() => {
-                // Visual feedback - flash green
+            navigator.clipboard.writeText(copyText).then(() => {
+                // Visual feedback
                 const originalBg = this.style.backgroundColor;
                 this.style.backgroundColor = '#d4edda';
-                setTimeout(() => {
-                    this.style.backgroundColor = originalBg;
-                }, 300);
+                setTimeout(() => this.style.backgroundColor = originalBg, 300);
                 
-                // Show tooltip feedback - briefly change tooltip
+                // Tooltip feedback
                 const originalTooltip = this.getAttribute('data-tooltip');
                 this.setAttribute('data-tooltip', 'Copied to clipboard! ✓');
-                setTimeout(() => {
-                    this.setAttribute('data-tooltip', originalTooltip);
-                }, 1500);
+                setTimeout(() => this.setAttribute('data-tooltip', originalTooltip), 1500);
             }).catch(err => {
                 console.error('Failed to copy:', err);
                 alert('Failed to copy to clipboard');
             });
         });
         
-        // Add hover effect
+        // Hover effect
         card.addEventListener('mouseenter', function() {
             this.style.backgroundColor = '#e8e8e8';
         });
