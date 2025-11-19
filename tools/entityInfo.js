@@ -330,87 +330,34 @@ function generateFieldListHtml(fields, fieldValues, fieldMetadata) {
 }
 
 function generatePopupHtml(entityName, cleanRecordId, fieldListHtml, pluralName) {
-     return `
-        <div style="background-color: #f9f9f9; padding: 15px 20px; border-radius: 5px; margin-bottom: 15px;">
-            <div style="display: flex; gap: 50px; align-items: center; flex-wrap: wrap; font-size: 15px;">
-                <div style="white-space: nowrap;"><strong>Entity Name:</strong> ${entityName}</div>
-                <div style="white-space: nowrap;"><strong>Plural Name:</strong> ${pluralName}</div>
-                <div style="white-space: nowrap; flex: 1;"><strong>Record ID:</strong> ${cleanRecordId}</div>
-            </div>
-        </div>
-        <div style="display: flex; justify-content: flex-end; margin-bottom: 10px; padding-right: 20px;">
-            <div style="font-size: 13px; color: #666; font-style: italic; background-color: #f9f9f9; padding: 8px 12px; border-radius: 5px; border: 1px solid #ddd;">
-                <strong>Note:</strong> Click on any field to copy its information
-            </div>
-        </div>
-        <div class="scroll-section" style="padding: 0 2px 20px 20px; overflow-y: auto; max-height: calc(90vh - 235px);">
-            ${fieldListHtml}
-        </div>
-    `;
+    // Use template utility functions for consistent styling
+    const infoHeader = createInfoHeader([
+        { label: 'Entity Name', value: entityName },
+        { label: 'Plural Name', value: pluralName },
+        { label: 'Record ID', value: cleanRecordId }
+    ]);
+    
+    const noteBanner = createNoteBanner('Click on any field to copy its information');
+    
+    const scrollSection = createScrollSection(fieldListHtml);
+    
+    return infoHeader + noteBanner + scrollSection;
 }
 
 function appendPopupToBody(html) {
-    const newContainer = document.createElement('div');
-    newContainer.className = 'commonPopup';
-    newContainer.style.border = '3px solid #1a1a1a';
-    newContainer.style.borderRadius = '12px';
-    newContainer.style.width = '75%';
+    // Add tooltip styling
+    addTooltipStyles();
     
-    // Add custom tooltip styling
-    const tooltipStyle = document.createElement('style');
-    tooltipStyle.innerHTML = `
-        .field-card[data-tooltip] {
-            position: relative;
-        }
-        .field-card[data-tooltip]:hover::before {
-            content: attr(data-tooltip);
-            position: absolute;
-            left: 0;
-            top: 100%;
-            margin-top: 8px;
-            padding: 10px 14px;
-            background-color: rgba(43, 43, 43, 0.95);
-            color: white;
-            border-radius: 6px;
-            font-size: 12px;
-            line-height: 1.5;
-            white-space: pre-wrap;
-            width: 500px;
-            box-sizing: border-box;
-            z-index: 100000;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-            pointer-events: none;
-            word-wrap: break-word;
-        }
-    `;
-    document.head.appendChild(tooltipStyle);
-    
-    newContainer.innerHTML = `
-        <div class="commonPopup-header" style="background-color: #2b2b2b; position: relative; cursor: move; border-radius: 9px 9px 0 0; margin: 0; border-bottom: 2px solid #1a1a1a;">
-            <span style="color: white;">Entity & Fields Info</span>
-            <span class="close-button" style="position: absolute; right: 0; top: 0; bottom: 0; width: 45px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 20px; color: white; font-weight: bold; transition: background-color 0.2s ease; border-radius: 0 9px 0 0;">&times;</span>
-        </div>
-        <div class="entityInfoPopup-row">
-            <div class="commonSection content-section" style="padding: 0; border-right: 0;">
-                ${html}
-            </div>
-        </div>
-    `;
-    
-    document.body.appendChild(newContainer);
-    
-    // Close button functionality
-    const closeButton = newContainer.querySelector('.close-button');
-    closeButton.addEventListener('click', () => newContainer.remove());
-    closeButton.addEventListener('mouseenter', function() {
-        this.style.backgroundColor = '#e81123';
-    });
-    closeButton.addEventListener('mouseleave', function() {
-        this.style.backgroundColor = 'transparent';
+    // Create popup using template utility
+    const popupContainer = createStandardPopup({
+        title: 'Entity & Fields Info',
+        content: html,
+        width: '75%',
+        movable: true
     });
     
-    // Click-to-copy functionality for field cards
-    newContainer.querySelectorAll('.field-card').forEach(card => {
+    // Add click-to-copy functionality for field cards
+    popupContainer.querySelectorAll('.field-card').forEach(card => {
         card.addEventListener('click', function() {
             const copyText = decodeHtmlEntities(this.getAttribute('data-copy-text'));
             
@@ -438,8 +385,6 @@ function appendPopupToBody(html) {
             this.style.backgroundColor = '#f5f5f5';
         });
     });
-    
-    makePopupMovable(newContainer);
 }
 
 function decodeHtmlEntities(text) {

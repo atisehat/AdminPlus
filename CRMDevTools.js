@@ -32,6 +32,7 @@ loadCSS('styles/sidebar.css');
 // Load utility scripts
 loadScript('utils/api.js');
 loadScript('utils/ui.js');
+loadScript('utils/popupTemplate.js');
 
 // Load tool scripts 
 loadScript('tools/advancedFind.js');
