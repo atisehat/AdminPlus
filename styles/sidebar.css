@@ -39,6 +39,12 @@
     word-wrap: break-word !important;
 }
 
+/* Superscript styling for + symbol */
+#MenuPopup .commonPopup-header sup {
+    font-size: 0.75em;
+    font-weight: bold;
+}
+
 /* Button container */
 #MenuPopup .button-container { 
     padding: 8px; 
