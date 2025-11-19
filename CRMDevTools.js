@@ -66,58 +66,47 @@ function openPopup() {
 	</div>
 	<div class="button-container">
 	  <div class="app-grid">
-	    <button onclick="closePopup(); openUrl('advanceFind');" class="app-button">
+	    <button onclick="closePopup(); openUrl('advanceFind');" class="app-button" title="Advanced Find">
 	      <span class="app-icon">🔍</span>
-	      <span class="app-label">Advanced Find</span>
 	    </button>
-	    <button onclick="closePopup(); setTimeout(fetchEntityFields, 0);" class="app-button">
+	    <button onclick="closePopup(); setTimeout(fetchEntityFields, 0);" class="app-button" title="Entity Info">
 	      <span class="app-icon">📋</span>
-	      <span class="app-label">Entity Info</span>
 	    </button>
-	    <button onclick="showAllTabsAndSections();" class="app-button">
+	    <button onclick="showAllTabsAndSections();" class="app-button" title="Show Hidden">
 	      <span class="app-icon">👁️</span>
-	      <span class="app-label">Show Hidden</span>
 	    </button>
-	    <button onclick="renameTabsSectionsFields();" class="app-button">
+	    <button onclick="renameTabsSectionsFields();" class="app-button" title="Logical Names">
 	      <span class="app-icon">🏷️</span>
-	      <span class="app-label">Logical Names</span>
 	    </button>
-	    <button onclick="unlockAllFields();" class="app-button">
+	    <button onclick="unlockAllFields();" class="app-button" title="Unlock Fields">
 	      <span class="app-icon">🔓</span>
-	      <span class="app-label">Unlock Fields</span>
 	    </button>
-	    <button onclick="closePopup(); showDirtyFields();" class="app-button">
+	    <button onclick="closePopup(); showDirtyFields();" class="app-button" title="Dirty Fields">
 	      <span class="app-icon">✏️</span>
-	      <span class="app-label">Dirty Fields</span>
 	    </button>
-	    <button onclick="closePopup(); editSecurity();" class="app-button">
+	    <button onclick="closePopup(); editSecurity();" class="app-button" title="Assign Security">
 	      <span class="app-icon">🔐</span>
-	      <span class="app-label">Assign Security</span>
 	    </button>
-	    <button onclick="closePopup(); copySecurity();" class="app-button">
+	    <button onclick="closePopup(); copySecurity();" class="app-button" title="Copy Security">
 	      <span class="app-icon">📄</span>
-	      <span class="app-label">Copy Security</span>
 	    </button>
-	    <button onclick="closePopup(); dateCalc();" class="app-button">
+	    <button onclick="closePopup(); dateCalc();" class="app-button" title="Date Calculator">
 	      <span class="app-icon">📅</span>
-	      <span class="app-label">Date Calculator</span>
 	    </button>
-	    <button onclick="openRestBuilder(getOrgUrl());" class="app-button">
+	    <button onclick="openRestBuilder(getOrgUrl());" class="app-button" title="REST Builder">
 	      <span class="app-icon">🔨</span>
-	      <span class="app-label">REST Builder</span>
 	    </button>
-	    <button onclick="closePopup(); openUrl('userProvision');" class="app-button">
+	    <button onclick="closePopup(); openUrl('userProvision');" class="app-button" title="User Provision">
 	      <span class="app-icon">👥</span>
-	      <span class="app-label">User Provision</span>
 	    </button>
 	  </div>
-	  <button onclick="closePopup();" class="close-btn">✖️ Close</button>
+	  <button onclick="closePopup();" class="close-btn" title="Close">✖️</button>
 	</div>
    </div>
   `;	  
   
   // Sidebar configuration
-  var sidebarWidth = 420;
+  var sidebarWidth = 80;
   
   // Create sidebar container
   var newContainer = document.createElement('div');
