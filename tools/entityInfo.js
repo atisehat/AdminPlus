@@ -335,10 +335,10 @@ function generateFieldListHtml(fields, fieldValues, fieldMetadata) {
 function generatePopupHtml(entityName, cleanRecordId, fieldListHtml, pluralName) {
      return `
         <div style="background-color: #f9f9f9; padding: 15px 20px; border-radius: 5px; margin-bottom: 15px;">
-            <div style="display: flex; gap: 50px; align-items: center; flex-wrap: wrap; font-size: 15px; font-weight: bold;">
-                <div style="white-space: nowrap;">Entity Name: ${entityName}</div>
-                <div style="white-space: nowrap;">Plural Name: ${pluralName}</div>
-                <div style="white-space: nowrap; flex: 1;">Record ID: ${cleanRecordId}</div>
+            <div style="display: flex; gap: 50px; align-items: center; flex-wrap: wrap; font-size: 15px;">
+                <div style="white-space: nowrap;"><strong>Entity Name:</strong> ${entityName}</div>
+                <div style="white-space: nowrap;"><strong>Plural Name:</strong> ${pluralName}</div>
+                <div style="white-space: nowrap; flex: 1;"><strong>Record ID:</strong> ${cleanRecordId}</div>
             </div>
         </div>
         <div style="display: flex; justify-content: flex-end; margin-bottom: 10px; padding-right: 20px;">
