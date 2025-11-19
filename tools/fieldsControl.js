@@ -98,7 +98,6 @@ function processAndRenameFieldsInFormComponents() {
 
 // Unlock all fields on the form
 function unlockAllFields() {
-    closeIframe();
     var allControls = Xrm.Page.ui.controls.get();
     for (var i in allControls) {
         var control = allControls[i];
@@ -111,7 +110,6 @@ function unlockAllFields() {
 
 // Show all hidden tabs, sections, and controls
 function showAllTabsAndSections() {
-    closeIframe();
     Xrm.Page.ui.tabs.forEach(function(tab) {
         if (!tab.getVisible()) {
             tab.setVisible(true);
