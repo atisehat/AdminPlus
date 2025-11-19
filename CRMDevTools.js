@@ -154,37 +154,39 @@ function openPopup() {
   // Debug log to verify sidebar version is loaded
   console.log('%c✅ AdminPlus Sidebar Loaded', 'color: #102e55; font-weight: bold; font-size: 14px;');
   
-  // Adjust page content to flow right up to the sidebar edge
+  // Make D365 content width dynamic to fit perfectly next to sidebar
   var sidebarWidth = 420;
   
-  // Target D365 main content containers and adjust their right edge
+  // Target D365 main content containers - use aggressive selectors
   var contentSelectors = [
+    'body',
+    'html',
     '#crmContentPanel',
     '#mainContent', 
     '[role="main"]',
     '.ms-crm-Form',
     '#ContentWrapper',
     'body > div[role="presentation"]',
-    '.mainContainer'
+    '.mainContainer',
+    '#content',
+    '.content',
+    'form[id*="FormContainer"]'
   ];
   
   contentSelectors.forEach(function(selector) {
     var elements = document.querySelectorAll(selector);
     elements.forEach(function(elem) {
       if (elem && elem !== document.getElementById('MenuPopup')) {
-        // Store original styles
+        // Store original styles for restoration
         elem.setAttribute('data-original-width', elem.style.width || '');
         elem.setAttribute('data-original-max-width', elem.style.maxWidth || '');
-        elem.setAttribute('data-original-padding-right', elem.style.paddingRight || '');
+        elem.setAttribute('data-original-box-sizing', elem.style.boxSizing || '');
         
-        // Adjust width to account for sidebar
-        var computedStyle = window.getComputedStyle(elem);
-        if (computedStyle.position === 'fixed' || computedStyle.position === 'absolute') {
-          elem.style.right = sidebarWidth + 'px';
-        } else {
-          elem.style.paddingRight = sidebarWidth + 'px';
-        }
-        elem.style.transition = 'padding-right 0.3s ease, right 0.3s ease';
+        // Force dynamic width calculation
+        elem.style.boxSizing = 'border-box';
+        elem.style.width = 'calc(100vw - ' + sidebarWidth + 'px)';
+        elem.style.maxWidth = 'calc(100vw - ' + sidebarWidth + 'px)';
+        elem.style.transition = 'width 0.3s ease, max-width 0.3s ease';
       }
     });
   });
@@ -225,13 +227,18 @@ function closePopup() {
     
     // Restore original styles for all adjusted content containers
     var contentSelectors = [
+      'body',
+      'html',
       '#crmContentPanel',
       '#mainContent', 
       '[role="main"]',
       '.ms-crm-Form',
       '#ContentWrapper',
       'body > div[role="presentation"]',
-      '.mainContainer'
+      '.mainContainer',
+      '#content',
+      '.content',
+      'form[id*="FormContainer"]'
     ];
     
     contentSelectors.forEach(function(selector) {
@@ -241,7 +248,7 @@ function closePopup() {
           // Restore original styles
           var originalWidth = elem.getAttribute('data-original-width');
           var originalMaxWidth = elem.getAttribute('data-original-max-width');
-          var originalPaddingRight = elem.getAttribute('data-original-padding-right');
+          var originalBoxSizing = elem.getAttribute('data-original-box-sizing');
           
           if (originalWidth !== null) {
             elem.style.width = originalWidth;
@@ -251,11 +258,10 @@ function closePopup() {
             elem.style.maxWidth = originalMaxWidth;
             elem.removeAttribute('data-original-max-width');
           }
-          if (originalPaddingRight !== null) {
-            elem.style.paddingRight = originalPaddingRight;
-            elem.removeAttribute('data-original-padding-right');
+          if (originalBoxSizing !== null) {
+            elem.style.boxSizing = originalBoxSizing;
+            elem.removeAttribute('data-original-box-sizing');
           }
-          elem.style.right = '';
         }
       });
     });
