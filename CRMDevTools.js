@@ -155,9 +155,32 @@ function openPopup() {
   console.log('%c✅ AdminPlus Sidebar Version Loaded', 'color: #102e55; font-weight: bold; font-size: 14px;');
   console.log('Sidebar pushes page content to the left');
   
-  // Push page content to the left by adding margin to body
+  // Push page content to the left - target multiple Dynamics 365 containers
   document.body.style.marginRight = '420px';
   document.body.style.transition = 'margin-right 0.3s ease';
+  
+  // Target common Dynamics 365 container elements
+  var contentSelectors = [
+    'html', 
+    'body',
+    '#crmContentPanel',
+    '#mainContent', 
+    '[role="main"]',
+    '.ms-crm-Form',
+    '#ContentWrapper'
+  ];
+  
+  contentSelectors.forEach(function(selector) {
+    var elements = document.querySelectorAll(selector);
+    elements.forEach(function(elem) {
+      if (elem && elem !== document.getElementById('MenuPopup')) {
+        elem.style.marginRight = '420px';
+        elem.style.transition = 'margin-right 0.3s ease';
+        // Store original margin for restoration
+        elem.setAttribute('data-original-margin-right', elem.style.marginRight || '0px');
+      }
+    });
+  });
   
   // Force styles after DOM insertion to override any conflicts
   setTimeout(function() {
@@ -168,7 +191,8 @@ function openPopup() {
     var popupDiv = document.querySelector('#MenuPopup .popup');
     if (popupDiv) {
       popupDiv.style.cssText = 'position: fixed !important; right: 0px !important; top: 0px !important; bottom: 0px !important; left: auto !important; height: 100vh !important; width: 420px !important; transform: none !important; border-radius: 0px !important; margin: 0px !important; padding: 0px !important; overflow-y: auto !important; overflow-x: hidden !important;';
-      console.log('✅ Sidebar styles applied - Page content pushed left by 420px');
+      console.log('✅ Sidebar styles applied - Attempting to push page content left by 420px');
+      console.log('If content is still behind sidebar, Dynamics 365 may be using fixed positioning');
     }
   }, 50);
 }
@@ -199,6 +223,29 @@ function closePopup() {
     }
     // Restore page content to full width
     document.body.style.marginRight = '0px';
+    
+    // Restore margins for all targeted elements
+    var contentSelectors = [
+      'html', 
+      'body',
+      '#crmContentPanel',
+      '#mainContent', 
+      '[role="main"]',
+      '.ms-crm-Form',
+      '#ContentWrapper'
+    ];
+    
+    contentSelectors.forEach(function(selector) {
+      var elements = document.querySelectorAll(selector);
+      elements.forEach(function(elem) {
+        if (elem) {
+          var originalMargin = elem.getAttribute('data-original-margin-right') || '0px';
+          elem.style.marginRight = originalMargin;
+          elem.removeAttribute('data-original-margin-right');
+        }
+      });
+    });
+    
     console.log('✅ Sidebar closed - Page content restored to full width');
     closeSubPopups();
 }
