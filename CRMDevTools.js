@@ -181,12 +181,22 @@ function openPopup() {
         elem.setAttribute('data-original-width', elem.style.width || '');
         elem.setAttribute('data-original-max-width', elem.style.maxWidth || '');
         elem.setAttribute('data-original-box-sizing', elem.style.boxSizing || '');
+        elem.setAttribute('data-original-overflow-x', elem.style.overflowX || '');
+        elem.setAttribute('data-original-position', elem.style.position || '');
+        elem.setAttribute('data-original-left', elem.style.left || '');
+        elem.setAttribute('data-original-right', elem.style.right || '');
         
-        // Force dynamic width calculation
+        // Force dynamic width and positioning
         elem.style.boxSizing = 'border-box';
-        elem.style.width = 'calc(100vw - ' + sidebarWidth + 'px)';
-        elem.style.maxWidth = 'calc(100vw - ' + sidebarWidth + 'px)';
+        elem.style.width = 'calc(100vw - ' + sidebarWidth + 'px) !important';
+        elem.style.maxWidth = 'calc(100vw - ' + sidebarWidth + 'px) !important';
+        elem.style.overflowX = 'hidden';
+        elem.style.position = 'relative';
+        elem.style.left = '0';
+        elem.style.right = 'auto';
         elem.style.transition = 'width 0.3s ease, max-width 0.3s ease';
+        
+        console.log('Adjusted: ' + selector, 'Width:', elem.style.width);
       }
     });
   });
@@ -245,10 +255,14 @@ function closePopup() {
       var elements = document.querySelectorAll(selector);
       elements.forEach(function(elem) {
         if (elem) {
-          // Restore original styles
+          // Restore all original styles
           var originalWidth = elem.getAttribute('data-original-width');
           var originalMaxWidth = elem.getAttribute('data-original-max-width');
           var originalBoxSizing = elem.getAttribute('data-original-box-sizing');
+          var originalOverflowX = elem.getAttribute('data-original-overflow-x');
+          var originalPosition = elem.getAttribute('data-original-position');
+          var originalLeft = elem.getAttribute('data-original-left');
+          var originalRight = elem.getAttribute('data-original-right');
           
           if (originalWidth !== null) {
             elem.style.width = originalWidth;
@@ -261,6 +275,22 @@ function closePopup() {
           if (originalBoxSizing !== null) {
             elem.style.boxSizing = originalBoxSizing;
             elem.removeAttribute('data-original-box-sizing');
+          }
+          if (originalOverflowX !== null) {
+            elem.style.overflowX = originalOverflowX;
+            elem.removeAttribute('data-original-overflow-x');
+          }
+          if (originalPosition !== null) {
+            elem.style.position = originalPosition;
+            elem.removeAttribute('data-original-position');
+          }
+          if (originalLeft !== null) {
+            elem.style.left = originalLeft;
+            elem.removeAttribute('data-original-left');
+          }
+          if (originalRight !== null) {
+            elem.style.right = originalRight;
+            elem.removeAttribute('data-original-right');
           }
         }
       });
