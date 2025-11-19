@@ -29,20 +29,28 @@ loadCSS('styles/common.css');
 loadCSS('styles/tools.css');
 loadCSS('styles/sidebar.css');
 
-// Load utility scripts
-loadScript('utils/api.js');
-loadScript('utils/ui.js');
-loadScript('utils/popupTemplate.js');
+// Load utility scripts first (with proper sequencing)
+let utilScriptsLoaded = 0;
+const totalUtilScripts = 3;
 
-// Load tool scripts 
-loadScript('tools/advancedFind.js');
-loadScript('tools/entityInfo.js');
-loadScript('tools/fieldsControl.js');
-loadScript('tools/dirtyFields.js');
-loadScript('tools/copySecurity.js');
-loadScript('tools/assignSecurity.js');
-loadScript('tools/securityOperations.js');
-loadScript('tools/dateCalculator.js');
+function onUtilScriptLoaded() {
+  utilScriptsLoaded++;
+  if (utilScriptsLoaded === totalUtilScripts) {
+    // All utilities loaded, now load tool scripts
+    loadScript('tools/advancedFind.js');
+    loadScript('tools/entityInfo.js');
+    loadScript('tools/fieldsControl.js');
+    loadScript('tools/dirtyFields.js');
+    loadScript('tools/copySecurity.js');
+    loadScript('tools/assignSecurity.js');
+    loadScript('tools/securityOperations.js');
+    loadScript('tools/dateCalculator.js');
+  }
+}
+
+loadScript('utils/api.js', onUtilScriptLoaded);
+loadScript('utils/ui.js', onUtilScriptLoaded);
+loadScript('utils/popupTemplate.js', onUtilScriptLoaded);
 
 // ============================================================================
 // Sidebar Management
