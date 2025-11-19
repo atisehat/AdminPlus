@@ -41,8 +41,9 @@
 
 /* Superscript styling for + symbol */
 #MenuPopup .commonPopup-header sup {
-    font-size: 0.75em;
+    font-size: 0.9em;
     font-weight: bold;
+    vertical-align: super;
 }
 
 /* Button container */
