@@ -96,6 +96,9 @@ function openPopup() {
    </div>
   `;	  
   
+  // Sidebar configuration
+  var sidebarWidth = 420;
+  
   // Create backdrop
   var backdrop = document.createElement('div');
   backdrop.id = 'MenuPopupBackdrop';
@@ -108,8 +111,37 @@ function openPopup() {
   newContainer.innerHTML = popupHtml;
   document.body.appendChild(newContainer);
   
-  // Add class to body to shift content
+  // Calculate and apply accurate widths
+  function adjustContentWidth() {
+    var viewportWidth = window.innerWidth;
+    var contentWidth = viewportWidth - sidebarWidth;
+    
+    // Store original values for restoration
+    if (!document.body.getAttribute('data-original-width')) {
+      document.body.setAttribute('data-original-width', document.body.style.width || '');
+      document.body.setAttribute('data-original-max-width', document.body.style.maxWidth || '');
+    }
+    
+    // Apply calculated width using setProperty to ensure !important works
+    document.body.style.setProperty('width', contentWidth + 'px', 'important');
+    document.body.style.setProperty('max-width', contentWidth + 'px', 'important');
+    
+    console.log('📐 Viewport Width:', viewportWidth + 'px');
+    console.log('📏 Sidebar Width:', sidebarWidth + 'px');
+    console.log('✅ Content Width:', contentWidth + 'px');
+  }
+  
+  // Apply initial width calculation
   document.body.classList.add('adminplus-sidebar-open');
+  adjustContentWidth();
+  
+  // Handle window resize to maintain accurate calculations
+  window.adminPlusResizeHandler = function() {
+    if (document.getElementById('MenuPopup')) {
+      adjustContentWidth();
+    }
+  };
+  window.addEventListener('resize', window.adminPlusResizeHandler);
   
   // Debug log
   console.log('%c✅ AdminPlus Sidebar Loaded', 'color: #102e55; font-weight: bold; font-size: 14px;');
@@ -130,6 +162,34 @@ function toggleDropdownMenu(dropdownId) {
 function closePopup() {
     // Remove body class
     document.body.classList.remove('adminplus-sidebar-open');
+    
+    // Restore original body width
+    var originalWidth = document.body.getAttribute('data-original-width');
+    var originalMaxWidth = document.body.getAttribute('data-original-max-width');
+    
+    if (originalWidth !== null) {
+        if (originalWidth === '') {
+            document.body.style.removeProperty('width');
+        } else {
+            document.body.style.setProperty('width', originalWidth, 'important');
+        }
+        document.body.removeAttribute('data-original-width');
+    }
+    
+    if (originalMaxWidth !== null) {
+        if (originalMaxWidth === '') {
+            document.body.style.removeProperty('max-width');
+        } else {
+            document.body.style.setProperty('max-width', originalMaxWidth, 'important');
+        }
+        document.body.removeAttribute('data-original-max-width');
+    }
+    
+    // Remove resize handler
+    if (window.adminPlusResizeHandler) {
+        window.removeEventListener('resize', window.adminPlusResizeHandler);
+        window.adminPlusResizeHandler = null;
+    }
     
     // Remove backdrop
     var backdrop = document.getElementById('MenuPopupBackdrop');

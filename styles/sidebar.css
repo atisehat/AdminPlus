@@ -138,8 +138,10 @@
 }
 
 /* Page content adjustment when sidebar is open */
+/* Note: Width is set dynamically via JavaScript for accurate calculations */
 body.adminplus-sidebar-open {
-    margin-right: 420px !important;
-    transition: margin-right 0.3s ease;
+    box-sizing: border-box !important;
+    overflow-x: hidden !important;
+    transition: width 0.3s ease, max-width 0.3s ease;
 }
 
