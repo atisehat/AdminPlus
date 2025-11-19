@@ -282,10 +282,42 @@ function appendPopupToBody(html, clearPrevious = false) {
        existingPopups.forEach(popup => popup.remove());
     }    
     var newContainer = document.createElement('div');	  	
-       newContainer.className = 'commonPopup';
+       newContainer.className = 'commonPopup entityInfoPopup';
        newContainer.style.border = '3px solid #1a1a1a';
        newContainer.style.borderRadius = '12px';
        newContainer.style.width = '75%';
+       
+       // Add custom tooltip styling
+       const tooltipStyle = document.createElement('style');
+       tooltipStyle.innerHTML = `
+           .entityInfoPopup .field-card {
+               position: relative;
+           }
+           .entityInfoPopup .field-card[title]:hover::after {
+               content: attr(title);
+               position: absolute;
+               left: 0;
+               top: 100%;
+               margin-top: 5px;
+               background-color: #2b2b2b;
+               color: white;
+               padding: 8px 12px;
+               border-radius: 5px;
+               font-size: 12px;
+               white-space: pre-wrap;
+               max-width: 350px;
+               width: max-content;
+               z-index: 10000;
+               box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+               pointer-events: none;
+               line-height: 1.4;
+           }
+           .entityInfoPopup .field-card[title] {
+               pointer-events: auto;
+           }
+       `;
+       document.head.appendChild(tooltipStyle);
+       
        newContainer.innerHTML = `
 	<div class="commonPopup-header" style="background-color: #2b2b2b; position: relative; cursor: move; border-radius: 9px 9px 0 0; margin: 0; border-bottom: 2px solid #1a1a1a;">
 	   <span style="color: white;">Entity & Fields Info</span>
