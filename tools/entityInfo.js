@@ -235,9 +235,8 @@ function generateFieldListHtml(fields, fieldValues, fieldMetadata) {
                 fullTooltip = `Lookup Name: ${displayName} (${logicalName})\nEntity Name: ${lookupData.entityType || 'N/A'}\nRecord ID: ${lookupData.id || 'N/A'}\nValue: ${lookupData.name || fieldValue}`;
             }
             
-             const combinedTooltip = `${escapeHtml(fullTooltip)}\n${'Click to copy ►'.padStart(160)}`;
              html += `
-                <div class="field-card" data-copy-text="${escapeHtml(fullTooltip)}" data-tooltip="${combinedTooltip}" style="padding: 8px; background-color: #f5f5f5; border-radius: 5px; border-left: 3px solid #2b2b2b; cursor: pointer; transition: background-color 0.2s;">
+                <div class="field-card" data-copy-text="${escapeHtml(fullTooltip)}" data-tooltip="${escapeHtml(fullTooltip)}" style="padding: 8px; background-color: #f5f5f5; border-radius: 5px; border-left: 3px solid #2b2b2b; cursor: pointer; transition: background-color 0.2s;">
                     <div style="display: flex; justify-content: space-between; align-items: center;">
                         <div style="font-weight: bold; color: #333; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
                             ${displayName} 
@@ -271,8 +270,11 @@ function generatePopupHtml(entityName, cleanRecordId, fieldListHtml, pluralName)
                 <div style="white-space: nowrap; flex: 1;"><strong>Record ID:</strong> ${cleanRecordId}</div>
             </div>
         </div>
-        <div class="scroll-section" style="padding: 0 2px 0 20px; overflow-y: auto; max-height: calc(90vh - 180px);">
+        <div class="scroll-section" style="padding: 0 2px 0 20px; overflow-y: auto; max-height: calc(90vh - 230px);">
             ${fieldListHtml}
+        </div>
+        <div style="position: absolute; bottom: 15px; right: 20px; font-size: 11px; color: #666; font-style: italic; background-color: #f9f9f9; padding: 8px 12px; border-radius: 5px; border: 1px solid #ddd;">
+            <strong>Note:</strong> Click on any field to copy its information
         </div>
     `;
 }
@@ -361,10 +363,9 @@ function appendPopupToBody(html, clearPrevious = false) {
                     this.style.backgroundColor = originalBg;
                 }, 300);
                 
-                // Show tooltip feedback
+                // Show tooltip feedback - briefly change tooltip
                 const originalTooltip = this.getAttribute('data-tooltip');
-                const copiedTooltip = `Copied to clipboard!\n${'✓'.padStart(160)}`;
-                this.setAttribute('data-tooltip', copiedTooltip);
+                this.setAttribute('data-tooltip', 'Copied to clipboard! ✓');
                 setTimeout(() => {
                     this.setAttribute('data-tooltip', originalTooltip);
                 }, 1500);
