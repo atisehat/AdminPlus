@@ -14,14 +14,19 @@ async function fetchEntityFields() {
             
             // Get field values from current form
             const fieldValues = {};
+            const fieldMetadata = {};
             const attributes = Xrm.Page.data.entity.attributes.get();
             attributes.forEach(attr => {
                 const logicalName = attr.getName();
                 const value = attr.getValue();
                 fieldValues[logicalName] = formatFieldValue(attr);
+                fieldMetadata[logicalName] = {
+                    type: attr.getAttributeType(),
+                    rawValue: value
+                };
             });
             
-            const fieldListHtml = generateFieldListHtml(results.value, fieldValues);
+            const fieldListHtml = generateFieldListHtml(results.value, fieldValues, fieldMetadata);
             const popupHtml = generatePopupHtml(entityName, cleanRecordId, fieldListHtml, pluralName);
             appendPopupToBody(popupHtml);
         } else {
@@ -143,7 +148,7 @@ function categorizeFields(fields) {
     return categories;
 }
 
-function generateFieldListHtml(fields, fieldValues) {
+function generateFieldListHtml(fields, fieldValues, fieldMetadata) {
     const categories = categorizeFields(fields);
     const categoryLabels = {
         'TextFields': 'Text Fields',
@@ -203,6 +208,7 @@ function generateFieldListHtml(fields, fieldValues) {
             const displayName = field.DisplayName.UserLocalizedLabel.Label;
             const logicalName = field.LogicalName;
             const fieldValue = fieldValues[logicalName] || '(not on form)';
+            const metadata = fieldMetadata[logicalName];
             
             // Truncate value for display (max 100 characters)
             const maxLength = 100;
@@ -220,7 +226,14 @@ function generateFieldListHtml(fields, fieldValues) {
                           .replace(/'/g, '&#039;');
             };
             
-            const fullTooltip = `${displayName} (${logicalName})\nValue: ${fieldValue}`;
+            // Build tooltip based on field type
+            let fullTooltip = `${displayName} (${logicalName})\nValue: ${fieldValue}`;
+            
+            // Enhanced tooltip for lookup fields
+            if (metadata && metadata.type === 'lookup' && metadata.rawValue && Array.isArray(metadata.rawValue) && metadata.rawValue.length > 0) {
+                const lookupData = metadata.rawValue[0];
+                fullTooltip = `Lookup Name: ${displayName} (${logicalName})\nEntity Name: ${lookupData.entityType || 'N/A'}\nRecord ID: ${lookupData.id || 'N/A'}\nValue: ${lookupData.name || fieldValue}`;
+            }
             
             html += `
                 <div style="padding: 8px; background-color: #f5f5f5; border-radius: 5px; border-left: 3px solid #2b2b2b;" title="${escapeHtml(fullTooltip)}">
