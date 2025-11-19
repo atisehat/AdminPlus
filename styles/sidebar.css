@@ -32,8 +32,8 @@
 /* Remove rounded corners from sidebar header */
 #MenuPopup .commonPopup-header {
     border-radius: 0 !important;
-    padding: 15px 5px !important;
-    font-size: 18px !important;
+    padding: 13px 4px !important;
+    font-size: 15px !important;
     text-align: center !important;
     box-sizing: border-box !important;
     word-wrap: break-word !important;
@@ -47,11 +47,12 @@
     font-size: 0.9em;
     font-weight: bold;
     vertical-align: super;
+    color: #4da6ff;
 }
 
 /* Button container */
 #MenuPopup .button-container { 
-    padding: 8px; 
+    padding: 6px; 
     width: 100%; 
     box-sizing: border-box;
 }
@@ -60,8 +61,8 @@
 #MenuPopup .app-grid {
     display: flex;
     flex-direction: column;
-    gap: 8px;
-    margin-bottom: 8px;
+    gap: 6px;
+    margin-bottom: 6px;
 }
 
 /* App button - icon only */
@@ -69,7 +70,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 8px 5px;
+    padding: 6px 5px;
     background-color: #3a3a3a;
     color: white;
     border: 1px solid #4a4a4a;
@@ -78,7 +79,7 @@
     transition: all 0.2s ease;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
     width: 100%;
-    height: 50px;
+    height: 45px;
     box-sizing: border-box;
 }
 
