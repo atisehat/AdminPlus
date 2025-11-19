@@ -294,19 +294,19 @@ function appendPopupToBody(html, clearPrevious = false) {
                position: relative;
            }
            .field-card[data-tooltip]:hover::before {
-               content: attr(data-tooltip-main) "\\A\\A" attr(data-tooltip-action);
+               content: attr(data-tooltip-main);
                position: absolute;
                left: 0;
                top: 100%;
                margin-top: 8px;
-               padding: 10px 14px;
+               padding: 10px 14px 30px 14px;
                background-color: rgba(43, 43, 43, 0.95);
                color: white;
                border-radius: 6px;
                font-size: 12px;
                line-height: 1.5;
                white-space: pre-line;
-               width: 350px;
+               width: 450px;
                z-index: 100000;
                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
                pointer-events: none;
@@ -316,13 +316,22 @@ function appendPopupToBody(html, clearPrevious = false) {
            .field-card[data-tooltip]:hover::after {
                content: attr(data-tooltip-action);
                position: absolute;
-               right: 14px;
-               bottom: 10px;
+               left: 0;
+               top: 100%;
+               margin-top: 8px;
+               padding: 10px 14px;
+               width: 450px;
                color: white;
                font-size: 12px;
+               line-height: 1.5;
+               text-align: right;
                z-index: 100001;
                pointer-events: none;
                white-space: nowrap;
+               display: flex;
+               align-items: flex-end;
+               justify-content: flex-end;
+               box-sizing: border-box;
            }
        `;
        document.head.appendChild(tooltipStyle);
