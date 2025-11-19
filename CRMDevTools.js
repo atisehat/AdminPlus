@@ -153,18 +153,52 @@ function openPopup() {
   
   // Debug log to verify sidebar version is loaded
   console.log('%c✅ AdminPlus Sidebar Loaded', 'color: #102e55; font-weight: bold; font-size: 14px;');
-  console.log('Sidebar docked to right side as overlay (F12-style viewport resize not possible with JavaScript)');
+  
+  // Adjust page content to flow right up to the sidebar edge
+  var sidebarWidth = 420;
+  
+  // Target D365 main content containers and adjust their right edge
+  var contentSelectors = [
+    '#crmContentPanel',
+    '#mainContent', 
+    '[role="main"]',
+    '.ms-crm-Form',
+    '#ContentWrapper',
+    'body > div[role="presentation"]',
+    '.mainContainer'
+  ];
+  
+  contentSelectors.forEach(function(selector) {
+    var elements = document.querySelectorAll(selector);
+    elements.forEach(function(elem) {
+      if (elem && elem !== document.getElementById('MenuPopup')) {
+        // Store original styles
+        elem.setAttribute('data-original-width', elem.style.width || '');
+        elem.setAttribute('data-original-max-width', elem.style.maxWidth || '');
+        elem.setAttribute('data-original-padding-right', elem.style.paddingRight || '');
+        
+        // Adjust width to account for sidebar
+        var computedStyle = window.getComputedStyle(elem);
+        if (computedStyle.position === 'fixed' || computedStyle.position === 'absolute') {
+          elem.style.right = sidebarWidth + 'px';
+        } else {
+          elem.style.paddingRight = sidebarWidth + 'px';
+        }
+        elem.style.transition = 'padding-right 0.3s ease, right 0.3s ease';
+      }
+    });
+  });
   
   // Force styles after DOM insertion to override any conflicts
   setTimeout(function() {
     var menuPopup = document.getElementById('MenuPopup');
     if (menuPopup) {
-      menuPopup.style.cssText = 'position: fixed !important; right: 0px !important; top: 0px !important; bottom: 0px !important; left: auto !important; width: 420px !important; height: 100vh !important; transform: none !important; z-index: 999999 !important; margin: 0 !important; padding: 0 !important;';
+      menuPopup.style.cssText = 'position: fixed !important; right: 0px !important; top: 0px !important; bottom: 0px !important; left: auto !important; width: ' + sidebarWidth + 'px !important; height: 100vh !important; transform: none !important; z-index: 999999 !important; margin: 0 !important; padding: 0 !important;';
     }
     var popupDiv = document.querySelector('#MenuPopup .popup');
     if (popupDiv) {
-      popupDiv.style.cssText = 'position: fixed !important; right: 0px !important; top: 0px !important; bottom: 0px !important; left: auto !important; height: 100vh !important; width: 420px !important; transform: none !important; border-radius: 0px !important; margin: 0px !important; padding: 0px !important; overflow-y: auto !important; overflow-x: hidden !important;';
-      console.log('✅ Sidebar overlay applied - 420px width docked to right edge');
+      popupDiv.style.cssText = 'position: fixed !important; right: 0px !important; top: 0px !important; bottom: 0px !important; left: auto !important; height: 100vh !important; width: ' + sidebarWidth + 'px !important; transform: none !important; border-radius: 0px !important; margin: 0px !important; padding: 0px !important; overflow-y: auto !important; overflow-x: hidden !important;';
+      console.log('✅ Sidebar applied - Content adjusted to flow to sidebar edge');
     }
   }, 50);
 }
@@ -187,7 +221,45 @@ function toggleDropdownMenu(dropdownId) {
 }
 
 function closePopup() {
-    closeIframe();    
+    closeIframe();
+    
+    // Restore original styles for all adjusted content containers
+    var contentSelectors = [
+      '#crmContentPanel',
+      '#mainContent', 
+      '[role="main"]',
+      '.ms-crm-Form',
+      '#ContentWrapper',
+      'body > div[role="presentation"]',
+      '.mainContainer'
+    ];
+    
+    contentSelectors.forEach(function(selector) {
+      var elements = document.querySelectorAll(selector);
+      elements.forEach(function(elem) {
+        if (elem) {
+          // Restore original styles
+          var originalWidth = elem.getAttribute('data-original-width');
+          var originalMaxWidth = elem.getAttribute('data-original-max-width');
+          var originalPaddingRight = elem.getAttribute('data-original-padding-right');
+          
+          if (originalWidth !== null) {
+            elem.style.width = originalWidth;
+            elem.removeAttribute('data-original-width');
+          }
+          if (originalMaxWidth !== null) {
+            elem.style.maxWidth = originalMaxWidth;
+            elem.removeAttribute('data-original-max-width');
+          }
+          if (originalPaddingRight !== null) {
+            elem.style.paddingRight = originalPaddingRight;
+            elem.removeAttribute('data-original-padding-right');
+          }
+          elem.style.right = '';
+        }
+      });
+    });
+    
     // Remove MenuPopup if it exists
     var newContainer = document.getElementById('MenuPopup');
     if (newContainer) {
