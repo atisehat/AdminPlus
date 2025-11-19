@@ -202,11 +202,28 @@ function generateFieldListHtml(fields, fieldValues) {
             const typeLabel = typeLabels[field.AttributeType] || field.AttributeType;
             const displayName = field.DisplayName.UserLocalizedLabel.Label;
             const logicalName = field.LogicalName;
-            const fullText = `${displayName} (${logicalName}) - Type: ${typeLabel}`;
             const fieldValue = fieldValues[logicalName] || '(not on form)';
             
+            // Truncate value for display (max 100 characters)
+            const maxLength = 100;
+            let displayValue = fieldValue;
+            if (fieldValue.length > maxLength) {
+                displayValue = fieldValue.substring(0, maxLength) + '...';
+            }
+            
+            // Escape HTML entities for tooltip
+            const escapeHtml = (str) => {
+                return str.replace(/&/g, '&amp;')
+                          .replace(/</g, '&lt;')
+                          .replace(/>/g, '&gt;')
+                          .replace(/"/g, '&quot;')
+                          .replace(/'/g, '&#039;');
+            };
+            
+            const fullTooltip = `${displayName} (${logicalName}) - Type: ${typeLabel}\nValue: ${fieldValue}`;
+            
             html += `
-                <div style="padding: 8px; background-color: #f5f5f5; border-radius: 5px; border-left: 3px solid #2b2b2b;" title="${fullText}">
+                <div style="padding: 8px; background-color: #f5f5f5; border-radius: 5px; border-left: 3px solid #2b2b2b;" title="${escapeHtml(fullTooltip)}">
                     <div style="display: flex; justify-content: space-between; align-items: center;">
                         <div style="font-weight: bold; color: #333; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
                             ${displayName} 
@@ -214,8 +231,8 @@ function generateFieldListHtml(fields, fieldValues) {
                         </div>
                         <div style="font-size: 12px; color: #666; white-space: nowrap; margin-left: 10px;">Type: ${typeLabel}</div>
                     </div>
-                    <div style="margin-top: 5px; padding-top: 5px; border-top: 1px solid #ddd; font-size: 12px; color: #555;">
-                        <strong>Value:</strong> <span style="font-style: italic;">${fieldValue}</span>
+                    <div style="margin-top: 5px; padding-top: 5px; border-top: 1px solid #ddd; font-size: 12px; color: #555; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                        <strong>Value:</strong> <span style="font-style: italic;">${escapeHtml(displayValue)}</span>
                     </div>
                 </div>
             `;
