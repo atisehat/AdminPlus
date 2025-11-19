@@ -292,7 +292,7 @@ function appendPopupToBody(html, clearPrevious = false) {
 	   <span class="close-button" style="position: absolute; right: 0; top: 0; bottom: 0; width: 45px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 20px; color: white; font-weight: bold; transition: background-color 0.2s ease; border-radius: 0 9px 0 0;">&times;</span>
 	</div>   
 	<div class="entityInfoPopup-row">
-	   <div class="commonSection content-section" id="section1">
+	   <div class="commonSection content-section" id="section1" style="padding: 0; border-right: 0;">
 	    ${html}
 	   </div>
 	</div>
