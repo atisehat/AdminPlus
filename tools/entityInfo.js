@@ -235,7 +235,7 @@ function generateFieldListHtml(fields, fieldValues, fieldMetadata) {
                 fullTooltip = `Lookup Name: ${displayName} (${logicalName})\nEntity Name: ${lookupData.entityType || 'N/A'}\nRecord ID: ${lookupData.id || 'N/A'}\nValue: ${lookupData.name || fieldValue}`;
             }
             
-             const combinedTooltip = `${escapeHtml(fullTooltip)}\n${'Click to copy ►'.padStart(102)}`;
+             const combinedTooltip = `${escapeHtml(fullTooltip)}\n${'Click to copy ►'.padStart(160)}`;
              html += `
                 <div class="field-card" data-copy-text="${escapeHtml(fullTooltip)}" data-tooltip="${combinedTooltip}" style="padding: 8px; background-color: #f5f5f5; border-radius: 5px; border-left: 3px solid #2b2b2b; cursor: pointer; transition: background-color 0.2s;">
                     <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -363,7 +363,7 @@ function appendPopupToBody(html, clearPrevious = false) {
                 
                 // Show tooltip feedback
                 const originalTooltip = this.getAttribute('data-tooltip');
-                const copiedTooltip = `Copied to clipboard!\n${'✓'.padStart(102)}`;
+                const copiedTooltip = `Copied to clipboard!\n${'✓'.padStart(160)}`;
                 this.setAttribute('data-tooltip', copiedTooltip);
                 setTimeout(() => {
                     this.setAttribute('data-tooltip', originalTooltip);
