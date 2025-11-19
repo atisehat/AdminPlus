@@ -111,33 +111,73 @@ function openPopup() {
   newContainer.innerHTML = popupHtml;
   document.body.appendChild(newContainer);
   
+  // Find the main D365 container automatically (inspired by user's working solution)
+  function findMainContainer() {
+    var vw = window.innerWidth;
+    var vh = window.innerHeight;
+    var best = null;
+    var bestArea = 0;
+    
+    // Look for the largest positioned element (D365's main container)
+    document.querySelectorAll('body *').forEach(function(el) {
+      if (!(el instanceof HTMLElement)) return;
+      
+      var rect = el.getBoundingClientRect();
+      var area = rect.width * rect.height;
+      
+      // Must be large (covering most of the viewport)
+      if (rect.width < vw * 0.7 || rect.height < vh * 0.7) return;
+      
+      var style = getComputedStyle(el);
+      if (!['fixed', 'absolute', 'relative'].includes(style.position)) return;
+      
+      if (area > bestArea) {
+        bestArea = area;
+        best = el;
+      }
+    });
+    
+    return best;
+  }
+  
   // Calculate and apply content positioning
   function adjustContentPosition() {
     var viewportWidth = window.innerWidth;
     var contentWidth = viewportWidth - sidebarWidth;
     
-    // Store original values for restoration (only once)
-    if (!document.body.getAttribute('data-original-margin-right')) {
-      document.body.setAttribute('data-original-margin-right', document.body.style.marginRight || '');
-      document.body.setAttribute('data-original-width', document.body.style.width || '');
-      document.body.setAttribute('data-original-max-width', document.body.style.maxWidth || '');
-      document.body.setAttribute('data-original-overflow-x', document.body.style.overflowX || '');
+    // Find the actual main container
+    var mainContainer = findMainContainer();
+    
+    if (!mainContainer) {
+      console.warn('⚠️  Could not find main D365 container, falling back to body');
+      mainContainer = document.body;
     }
     
-    // Push content to the left by exact sidebar width using margin-right
-    document.body.style.setProperty('margin-right', sidebarWidth + 'px', 'important');
+    // Store original values for restoration (only once)
+    if (!mainContainer.getAttribute('data-adminplus-original-right')) {
+      mainContainer.setAttribute('data-adminplus-original-right', mainContainer.style.right || '');
+      mainContainer.setAttribute('data-adminplus-original-left', mainContainer.style.left || '');
+      mainContainer.setAttribute('data-adminplus-original-position', mainContainer.style.position || '');
+      mainContainer.setAttribute('data-adminplus-original-boxsizing', mainContainer.style.boxSizing || '');
+      mainContainer.setAttribute('data-adminplus-target', 'true');
+    }
     
-    // Also set width to prevent content from expanding
-    document.body.style.setProperty('width', contentWidth + 'px', 'important');
-    document.body.style.setProperty('max-width', contentWidth + 'px', 'important');
+    // Ensure element is positioned
+    var cs = getComputedStyle(mainContainer);
+    if (cs.position === 'static') {
+      mainContainer.style.position = 'relative';
+    }
     
-    // Prevent horizontal scrolling
-    document.body.style.setProperty('overflow-x', 'hidden', 'important');
+    // Apply positioning to create space for sidebar
+    mainContainer.style.boxSizing = 'border-box';
+    mainContainer.style.left = '0';
+    mainContainer.style.right = sidebarWidth + 'px';  // KEY: This creates the gap!
     
     console.log('📐 Viewport Width:', viewportWidth + 'px');
     console.log('📏 Sidebar Width:', sidebarWidth + 'px');
     console.log('✅ Content Width:', contentWidth + 'px');
-    console.log('↔️  Content pushed left by:', sidebarWidth + 'px');
+    console.log('🎯 Target Element:', mainContainer.tagName, mainContainer.id || mainContainer.className);
+    console.log('↔️  Content adjusted with right:', sidebarWidth + 'px');
   }
   
   // Apply initial positioning calculation
@@ -172,46 +212,54 @@ function closePopup() {
     // Remove body class
     document.body.classList.remove('adminplus-sidebar-open');
     
-    // Restore all original body styles
-    var originalMarginRight = document.body.getAttribute('data-original-margin-right');
-    var originalWidth = document.body.getAttribute('data-original-width');
-    var originalMaxWidth = document.body.getAttribute('data-original-max-width');
-    var originalOverflowX = document.body.getAttribute('data-original-overflow-x');
+    // Find the container we modified
+    var targetElement = document.querySelector('[data-adminplus-target="true"]');
     
-    if (originalMarginRight !== null) {
-        if (originalMarginRight === '') {
-            document.body.style.removeProperty('margin-right');
-        } else {
-            document.body.style.setProperty('margin-right', originalMarginRight, 'important');
+    if (targetElement) {
+        // Restore all original styles
+        var originalRight = targetElement.getAttribute('data-adminplus-original-right');
+        var originalLeft = targetElement.getAttribute('data-adminplus-original-left');
+        var originalPosition = targetElement.getAttribute('data-adminplus-original-position');
+        var originalBoxSizing = targetElement.getAttribute('data-adminplus-original-boxsizing');
+        
+        if (originalRight !== null) {
+            if (originalRight === '') {
+                targetElement.style.removeProperty('right');
+            } else {
+                targetElement.style.right = originalRight;
+            }
+            targetElement.removeAttribute('data-adminplus-original-right');
         }
-        document.body.removeAttribute('data-original-margin-right');
-    }
-    
-    if (originalWidth !== null) {
-        if (originalWidth === '') {
-            document.body.style.removeProperty('width');
-        } else {
-            document.body.style.setProperty('width', originalWidth, 'important');
+        
+        if (originalLeft !== null) {
+            if (originalLeft === '') {
+                targetElement.style.removeProperty('left');
+            } else {
+                targetElement.style.left = originalLeft;
+            }
+            targetElement.removeAttribute('data-adminplus-original-left');
         }
-        document.body.removeAttribute('data-original-width');
-    }
-    
-    if (originalMaxWidth !== null) {
-        if (originalMaxWidth === '') {
-            document.body.style.removeProperty('max-width');
-        } else {
-            document.body.style.setProperty('max-width', originalMaxWidth, 'important');
+        
+        if (originalPosition !== null) {
+            if (originalPosition === '') {
+                targetElement.style.removeProperty('position');
+            } else {
+                targetElement.style.position = originalPosition;
+            }
+            targetElement.removeAttribute('data-adminplus-original-position');
         }
-        document.body.removeAttribute('data-original-max-width');
-    }
-    
-    if (originalOverflowX !== null) {
-        if (originalOverflowX === '') {
-            document.body.style.removeProperty('overflow-x');
-        } else {
-            document.body.style.setProperty('overflow-x', originalOverflowX, 'important');
+        
+        if (originalBoxSizing !== null) {
+            if (originalBoxSizing === '') {
+                targetElement.style.removeProperty('box-sizing');
+            } else {
+                targetElement.style.boxSizing = originalBoxSizing;
+            }
+            targetElement.removeAttribute('data-adminplus-original-boxsizing');
         }
-        document.body.removeAttribute('data-original-overflow-x');
+        
+        // Remove target marker
+        targetElement.removeAttribute('data-adminplus-target');
     }
     
     // Remove resize handler
