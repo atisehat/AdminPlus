@@ -314,26 +314,23 @@ function appendPopupToBody(html, clearPrevious = false) {
                pointer-events: none;
                word-wrap: break-word;
                display: block;
+               position: absolute;
            }
            .field-card[data-tooltip]:hover::after {
                content: attr(data-tooltip-action);
                position: absolute;
-               left: 0;
-               top: 100%;
-               margin-top: 8px;
-               width: 450px;
-               box-sizing: border-box;
-               padding: 10px 14px;
+               left: auto;
+               right: 14px;
+               top: auto;
+               bottom: calc(100% * -1 - 8px);
+               transform: translateY(100%);
+               margin-bottom: 10px;
                color: white;
                font-size: 12px;
                line-height: 1.5;
-               text-align: right;
                z-index: 100001;
                pointer-events: none;
                white-space: nowrap;
-               display: flex;
-               align-items: flex-end;
-               justify-content: flex-end;
            }
        `;
        document.head.appendChild(tooltipStyle);
