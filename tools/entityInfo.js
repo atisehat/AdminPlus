@@ -270,10 +270,10 @@ function generatePopupHtml(entityName, cleanRecordId, fieldListHtml, pluralName)
                 <div style="white-space: nowrap; flex: 1;">Record ID: ${cleanRecordId}</div>
             </div>
         </div>
-        <div class="scroll-section" style="padding: 0 2px 0 20px; overflow-y: auto; max-height: calc(90vh - 230px);">
+        <div class="scroll-section" style="padding: 0 2px 0 20px; overflow-y: auto; max-height: calc(90vh - 200px);">
             ${fieldListHtml}
         </div>
-        <div style="position: absolute; bottom: 15px; right: 20px; font-size: 13px; color: #666; font-style: italic; background-color: #f9f9f9; padding: 8px 12px; border-radius: 5px; border: 1px solid #ddd;">
+        <div style="position: absolute; bottom: 10px; right: 20px; font-size: 13px; color: #666; font-style: italic; background-color: #f9f9f9; padding: 8px 12px; border-radius: 5px; border: 1px solid #ddd;">
             <strong>Note:</strong> Click on any field to copy its information
         </div>
     `;
