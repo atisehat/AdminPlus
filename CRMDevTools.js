@@ -154,8 +154,14 @@ function openPopup() {
   // Debug log to verify sidebar version is loaded
   console.log('%c✅ AdminPlus Sidebar Loaded', 'color: #102e55; font-weight: bold; font-size: 14px;');
   
-  // Make D365 content width dynamic to fit perfectly next to sidebar
+  // Detect actual browser content width and calculate available space
   var sidebarWidth = 420;
+  var browserWidth = window.innerWidth; // Actual viewport width (excludes scrollbars)
+  var availableWidth = browserWidth - sidebarWidth;
+  
+  console.log('🔍 Browser Width:', browserWidth + 'px');
+  console.log('📏 Sidebar Width:', sidebarWidth + 'px');
+  console.log('✅ Available Content Width:', availableWidth + 'px');
   
   // Target D365 main content containers - use aggressive selectors
   var contentSelectors = [
@@ -186,19 +192,40 @@ function openPopup() {
         elem.setAttribute('data-original-left', elem.style.left || '');
         elem.setAttribute('data-original-right', elem.style.right || '');
         
-        // Force dynamic width and positioning
+        // Force exact width based on detected browser width
         elem.style.boxSizing = 'border-box';
-        elem.style.width = 'calc(100vw - ' + sidebarWidth + 'px) !important';
-        elem.style.maxWidth = 'calc(100vw - ' + sidebarWidth + 'px) !important';
+        elem.style.width = availableWidth + 'px !important';
+        elem.style.maxWidth = availableWidth + 'px !important';
         elem.style.overflowX = 'hidden';
         elem.style.position = 'relative';
         elem.style.left = '0';
         elem.style.right = 'auto';
         elem.style.transition = 'width 0.3s ease, max-width 0.3s ease';
         
-        console.log('Adjusted: ' + selector, 'Width:', elem.style.width);
+        console.log('✏️ Adjusted:', selector, '→', availableWidth + 'px');
       }
     });
+  });
+  
+  // Handle window resize dynamically
+  window.addEventListener('resize', function() {
+    var menuPopup = document.getElementById('MenuPopup');
+    if (menuPopup) {
+      var newBrowserWidth = window.innerWidth;
+      var newAvailableWidth = newBrowserWidth - sidebarWidth;
+      
+      console.log('↔️ Window Resized - New Available Width:', newAvailableWidth + 'px');
+      
+      contentSelectors.forEach(function(selector) {
+        var elements = document.querySelectorAll(selector);
+        elements.forEach(function(elem) {
+          if (elem && elem !== document.getElementById('MenuPopup')) {
+            elem.style.width = newAvailableWidth + 'px !important';
+            elem.style.maxWidth = newAvailableWidth + 'px !important';
+          }
+        });
+      });
+    }
   });
   
   // Force styles after DOM insertion to override any conflicts
