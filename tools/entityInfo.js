@@ -35,50 +35,64 @@ async function fetchEntityFields() {
 }
 
 function formatFieldValue(attribute) {
-    const value = attribute.getValue();
-    
-    if (value === null || value === undefined) {
-        return '(empty)';
-    }
-    
-    const attrType = attribute.getAttributeType();
-    
-    // Handle lookups
-    if (attrType === 'lookup') {
-        if (Array.isArray(value) && value.length > 0) {
-            return value.map(v => v.name).join(', ');
+    try {
+        const value = attribute.getValue();
+        
+        if (value === null || value === undefined) {
+            return '(empty)';
         }
-        return '(empty)';
+        
+        const attrType = attribute.getAttributeType();
+        
+        // Handle lookups
+        if (attrType === 'lookup') {
+            if (Array.isArray(value) && value.length > 0) {
+                return value.map(v => v.name).join(', ');
+            }
+            return '(empty)';
+        }
+        
+        // Handle boolean
+        if (attrType === 'boolean') {
+            return value ? 'Yes' : 'No';
+        }
+        
+        // Handle optionset (picklist)
+        if (attrType === 'optionset' || attrType === 'multiselectoptionset') {
+            try {
+                if (typeof attribute.getFormattedValue === 'function') {
+                    const formattedValue = attribute.getFormattedValue();
+                    if (formattedValue) {
+                        return formattedValue;
+                    }
+                }
+            } catch (e) {
+                // Fallback to raw value
+            }
+            return value.toString();
+        }
+        
+        // Handle datetime
+        if (attrType === 'datetime' && value instanceof Date) {
+            return value.toLocaleString();
+        }
+        
+        // Handle money
+        if (attrType === 'money') {
+            return '$' + value.toFixed(2);
+        }
+        
+        // Handle arrays (multiselect)
+        if (Array.isArray(value)) {
+            return value.join(', ');
+        }
+        
+        // Default: convert to string
+        return value.toString();
+    } catch (error) {
+        console.error('Error formatting field value:', error);
+        return '(error)';
     }
-    
-    // Handle boolean
-    if (attrType === 'boolean') {
-        return value ? 'Yes' : 'No';
-    }
-    
-    // Handle optionset (picklist)
-    if (attrType === 'optionset' || attrType === 'multiselectoptionset') {
-        const formattedValue = attribute.getFormattedValue();
-        return formattedValue || value.toString();
-    }
-    
-    // Handle datetime
-    if (attrType === 'datetime' && value instanceof Date) {
-        return value.toLocaleString();
-    }
-    
-    // Handle money
-    if (attrType === 'money') {
-        return '$' + value.toFixed(2);
-    }
-    
-    // Handle arrays (multiselect)
-    if (Array.isArray(value)) {
-        return value.join(', ');
-    }
-    
-    // Default: convert to string
-    return value.toString();
 }
 
 function categorizeFields(fields) {
