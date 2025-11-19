@@ -161,6 +161,13 @@ function openPopup() {
   document.body.classList.add('adminplus-sidebar-open');
   adjustContentPosition();
   
+  // Show sidebar after content is positioned (smooth appearance)
+  requestAnimationFrame(function() {
+    requestAnimationFrame(function() {
+      newContainer.classList.add('show');
+    });
+  });
+  
   window.adminPlusResizeHandler = function() {
     if (document.getElementById('MenuPopup')) {
       adjustContentPosition();
@@ -184,6 +191,13 @@ function toggleDropdownMenu(dropdownId) {
 }
 
 function closePopup() {
+    var menuPopup = document.getElementById('MenuPopup');
+    
+    // Fade out sidebar first
+    if (menuPopup) {
+        menuPopup.classList.remove('show');
+    }
+    
     document.body.classList.remove('adminplus-sidebar-open');
     
     var targetElement = document.querySelector('[data-adminplus-target="true"]');
@@ -222,8 +236,10 @@ function closePopup() {
         window.adminPlusResizeHandler = null;
     }
     
-    var menuPopup = document.getElementById('MenuPopup');
-    if (menuPopup) menuPopup.remove();
+    // Remove sidebar after animation completes
+    setTimeout(function() {
+        if (menuPopup) menuPopup.remove();
+    }, 200);
     
     closeSubPopups();
 }

@@ -11,12 +11,14 @@
     z-index: 999999 !important;
     margin: 0 !important;
     padding: 0 !important;
-    animation: slideIn 0.3s ease-out;
+    opacity: 0;
+    transform: translateX(100%);
+    transition: opacity 0.2s ease, transform 0.2s ease;
 }
 
-@keyframes slideIn {
-    from { transform: translateX(100%); }
-    to { transform: translateX(0); }
+#MenuPopup.show {
+    opacity: 1;
+    transform: translateX(0);
 }
 
 /* Sidebar content panel */
@@ -126,9 +128,13 @@
 }
 
 /* Page content adjustment when sidebar is open */
-/* Note: Margin and width are set dynamically via JavaScript for accurate calculations */
+/* Note: Positioning is set dynamically via JavaScript for accurate calculations */
 body.adminplus-sidebar-open {
     box-sizing: border-box !important;
-    transition: margin-right 0.3s ease, width 0.3s ease, max-width 0.3s ease;
+}
+
+/* Smooth transitions for positioned elements */
+[data-adminplus-target="true"] {
+    transition: left 0.2s ease, right 0.2s ease !important;
 }
 
