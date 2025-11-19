@@ -24,28 +24,140 @@ async function fetchEntityFields() {
     }
 }
 
+function categorizeFields(fields) {
+    const categories = {
+        'TextFields': [],
+        'ChoiceFields': [],
+        'NumberFields': [],
+        'DateTimeFields': [],
+        'LookupFields': [],
+        'FileMediaFields': [],
+        'ComputedFields': [],
+        'OtherFields': []
+    };
+    
+    const typeMapping = {
+        'String': 'TextFields',
+        'Memo': 'TextFields',
+        'Boolean': 'ChoiceFields',
+        'Picklist': 'ChoiceFields',
+        'MultiSelectPicklist': 'ChoiceFields',
+        'State': 'ChoiceFields',
+        'Status': 'ChoiceFields',
+        'Integer': 'NumberFields',
+        'Decimal': 'NumberFields',
+        'Double': 'NumberFields',
+        'Money': 'NumberFields',
+        'BigInt': 'NumberFields',
+        'DateTime': 'DateTimeFields',
+        'Lookup': 'LookupFields',
+        'Customer': 'LookupFields',
+        'Owner': 'LookupFields',
+        'PartyList': 'LookupFields',
+        'File': 'FileMediaFields',
+        'Image': 'FileMediaFields',
+        'Calculated': 'ComputedFields',
+        'Rollup': 'ComputedFields'
+    };
+    
+    fields.forEach(field => {
+        if (field.AttributeType === 'Virtual' || !field.DisplayName || !field.DisplayName.UserLocalizedLabel || !field.DisplayName.UserLocalizedLabel.Label) {
+            return;
+        }
+        
+        const category = typeMapping[field.AttributeType] || 'OtherFields';
+        categories[category].push(field);
+    });
+    
+    return categories;
+}
+
 function generateFieldListHtml(fields) {
-    return fields
-        .filter(field => field.AttributeType !== 'Virtual' && field.DisplayName && field.DisplayName.UserLocalizedLabel && field.DisplayName.UserLocalizedLabel.Label)
-        .map((field, index) => `
-            <div>${index + 1}. <strong>${field.DisplayName.UserLocalizedLabel.Label}</strong>
-                <div style="margin-left: 25px; margin-bottom: 10px;">
-                    <div>Name: ${field.LogicalName}</div>
-                    <div>Type: ${field.AttributeType}</div>
+    const categories = categorizeFields(fields);
+    const categoryLabels = {
+        'TextFields': 'Text Fields',
+        'ChoiceFields': 'Choice Fields',
+        'NumberFields': 'Number Fields',
+        'DateTimeFields': 'Date & Time Fields',
+        'LookupFields': 'Lookup Fields',
+        'FileMediaFields': 'File & Media Fields',
+        'ComputedFields': 'Computed Fields',
+        'OtherFields': 'Other Fields'
+    };
+    
+    const typeLabels = {
+        'String': 'Single line of text',
+        'Memo': 'Multiple lines of text',
+        'Boolean': 'Yes/No',
+        'Picklist': 'Choice',
+        'MultiSelectPicklist': 'Choices',
+        'State': 'Status',
+        'Status': 'Status Reason',
+        'Integer': 'Whole Number',
+        'Decimal': 'Decimal Number',
+        'Double': 'Floating Point Number',
+        'Money': 'Currency',
+        'BigInt': 'Big Integer',
+        'DateTime': 'Date and Time',
+        'Lookup': 'Lookup',
+        'Customer': 'Customer',
+        'Owner': 'Owner',
+        'PartyList': 'Activity Party',
+        'File': 'File',
+        'Image': 'Image',
+        'Calculated': 'Calculated',
+        'Rollup': 'Rollup'
+    };
+    
+    let html = '';
+    
+    Object.keys(categories).forEach(categoryKey => {
+        const categoryFields = categories[categoryKey];
+        if (categoryFields.length === 0) return;
+        
+        categoryFields.sort((a, b) => {
+            const labelA = a.DisplayName.UserLocalizedLabel.Label;
+            const labelB = b.DisplayName.UserLocalizedLabel.Label;
+            return labelA.localeCompare(labelB);
+        });
+        
+        html += `
+            <div style="margin-bottom: 25px;">
+                <h3 style="color: #2b2b2b; margin-bottom: 15px; font-size: 18px; font-weight: bold;">${categoryLabels[categoryKey]}:</h3>
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-left: 15px;">
+        `;
+        
+        categoryFields.forEach(field => {
+            const typeLabel = typeLabels[field.AttributeType] || field.AttributeType;
+            html += `
+                <div style="padding: 8px; background-color: #f5f5f5; border-radius: 5px; border-left: 3px solid #2b2b2b;">
+                    <div style="font-weight: bold; color: #333; margin-bottom: 3px;">${field.DisplayName.UserLocalizedLabel.Label}</div>
+                    <div style="font-size: 12px; color: #666; margin-bottom: 2px;">Logical Name: ${field.LogicalName}</div>
+                    <div style="font-size: 12px; color: #666;">Type: ${typeLabel}</div>
                 </div>
+            `;
+        });
+        
+        html += `
+                </div>
+                <hr style="border: none; border-top: 2px solid #ddd; margin-top: 20px;">
             </div>
-        `)
-        .join('');
+        `;
+    });
+    
+    return html;
 }
 
 function generatePopupHtml(entityName, cleanRecordId, fieldListHtml, pluralName) {
      return `
-        <h2 style="text-align: left;">Entity Name: ${entityName}</h2>
-	<h2 style="text-align: left;">Plural Name: ${pluralName}</h2>
-        <h2 style="text-align: left;">Record ID: ${cleanRecordId}</h2>
-        <h2 style="text-align: left;">Fields:</h2>
-        <br>
-        <div class="scroll-section" style="padding-left: 20px; columns: 2; -webkit-columns: 2; -moz-columns: 2;">
+        <div style="background-color: #f9f9f9; padding: 20px; border-radius: 5px; margin-bottom: 15px;">
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
+                <div><strong>Entity Name:</strong> ${entityName}</div>
+                <div><strong>Plural Name:</strong> ${pluralName}</div>
+                <div style="grid-column: 1 / -1;"><strong>Record ID:</strong> ${cleanRecordId}</div>
+            </div>
+        </div>
+        <div class="scroll-section" style="padding: 0 20px; overflow-y: auto; max-height: calc(90vh - 200px);">
             ${fieldListHtml}
         </div>
     `;
@@ -60,6 +172,7 @@ function appendPopupToBody(html, clearPrevious = false) {
        newContainer.className = 'commonPopup';
        newContainer.style.border = '3px solid #1a1a1a';
        newContainer.style.borderRadius = '12px';
+       newContainer.style.width = '75%';
        newContainer.innerHTML = `
 	<div class="commonPopup-header" style="background-color: #2b2b2b; position: relative; cursor: move; border-radius: 9px 9px 0 0; margin: 0; border-bottom: 2px solid #1a1a1a;">
 	   <span style="color: white;">Entity & Fields Info</span>
