@@ -20,11 +20,17 @@
     height: 100% !important;
     background-color: #f9f9f9; 
     border-left: 3px solid #102e55;
+    border-radius: 0 !important;
     box-shadow: -2px 0 15px rgba(0, 0, 0, 0.3); 
     overflow-y: auto; 
     overflow-x: hidden;
     margin: 0 !important;
     padding: 0 !important;
+}
+
+/* Remove rounded corners from sidebar header */
+#MenuPopup .commonPopup-header {
+    border-radius: 0 !important;
 }
 
 /* Button container */
