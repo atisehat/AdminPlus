@@ -236,7 +236,7 @@ function generateFieldListHtml(fields, fieldValues, fieldMetadata) {
             }
             
             html += `
-                <div style="padding: 8px; background-color: #f5f5f5; border-radius: 5px; border-left: 3px solid #2b2b2b;" title="${escapeHtml(fullTooltip)}">
+                <div class="field-card" data-copy-text="${escapeHtml(fullTooltip)}" style="padding: 8px; background-color: #f5f5f5; border-radius: 5px; border-left: 3px solid #2b2b2b; cursor: pointer; transition: background-color 0.2s;" title="${escapeHtml(fullTooltip)}\n\nClick to copy">
                     <div style="display: flex; justify-content: space-between; align-items: center;">
                         <div style="font-weight: bold; color: #333; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
                             ${displayName} 
@@ -313,5 +313,48 @@ function appendPopupToBody(html, clearPrevious = false) {
         this.style.backgroundColor = 'transparent';
     });
     
+    // Add click-to-copy functionality for field cards
+    const fieldCards = newContainer.querySelectorAll('.field-card');
+    fieldCards.forEach(card => {
+        card.addEventListener('click', function(e) {
+            const copyText = this.getAttribute('data-copy-text');
+            const decodedText = decodeHtmlEntities(copyText);
+            
+            // Copy to clipboard
+            navigator.clipboard.writeText(decodedText).then(() => {
+                // Visual feedback - flash green
+                const originalBg = this.style.backgroundColor;
+                this.style.backgroundColor = '#d4edda';
+                setTimeout(() => {
+                    this.style.backgroundColor = originalBg;
+                }, 300);
+                
+                // Show tooltip feedback
+                const originalTitle = this.title;
+                this.title = 'Copied to clipboard!';
+                setTimeout(() => {
+                    this.title = originalTitle;
+                }, 1500);
+            }).catch(err => {
+                console.error('Failed to copy:', err);
+                alert('Failed to copy to clipboard');
+            });
+        });
+        
+        // Add hover effect
+        card.addEventListener('mouseenter', function() {
+            this.style.backgroundColor = '#e8e8e8';
+        });
+        card.addEventListener('mouseleave', function() {
+            this.style.backgroundColor = '#f5f5f5';
+        });
+    });
+    
     makePopupMovable(newContainer);
+}
+
+function decodeHtmlEntities(text) {
+    const textarea = document.createElement('textarea');
+    textarea.innerHTML = text;
+    return textarea.value;
 } 
