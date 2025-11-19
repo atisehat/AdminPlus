@@ -282,38 +282,36 @@ function appendPopupToBody(html, clearPrevious = false) {
        existingPopups.forEach(popup => popup.remove());
     }    
     var newContainer = document.createElement('div');	  	
-       newContainer.className = 'commonPopup entityInfoPopup';
+       newContainer.className = 'commonPopup';
        newContainer.style.border = '3px solid #1a1a1a';
        newContainer.style.borderRadius = '12px';
        newContainer.style.width = '75%';
        
-       // Add custom tooltip styling
+       // Add custom tooltip styling with restricted width
        const tooltipStyle = document.createElement('style');
        tooltipStyle.innerHTML = `
-           .entityInfoPopup .field-card {
+           .field-card[title] {
                position: relative;
            }
-           .entityInfoPopup .field-card[title]:hover::after {
+           .field-card[title]:hover::after {
                content: attr(title);
                position: absolute;
                left: 0;
                top: 100%;
-               margin-top: 5px;
-               background-color: #2b2b2b;
+               margin-top: 8px;
+               padding: 10px 14px;
+               background-color: rgba(43, 43, 43, 0.95);
                color: white;
-               padding: 8px 12px;
-               border-radius: 5px;
+               border-radius: 6px;
                font-size: 12px;
+               line-height: 1.5;
                white-space: pre-wrap;
-               max-width: 350px;
+               max-width: 400px;
                width: max-content;
-               z-index: 10000;
-               box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+               z-index: 100000;
+               box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
                pointer-events: none;
-               line-height: 1.4;
-           }
-           .entityInfoPopup .field-card[title] {
-               pointer-events: auto;
+               word-wrap: break-word;
            }
        `;
        document.head.appendChild(tooltipStyle);
