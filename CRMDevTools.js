@@ -144,10 +144,19 @@ function openPopup() {
   
   // Adjust content positioning for sidebar
   function adjustContentPosition() {
-    var mainContainer = findMainContainer();
+    // Try to get existing target first
+    var mainContainer = window.adminPlusTargetElement;
     
-    if (!mainContainer) {
-      mainContainer = document.body;
+    // If not stored yet, find it
+    if (!mainContainer || !document.body.contains(mainContainer)) {
+      mainContainer = findMainContainer();
+      
+      if (!mainContainer) {
+        mainContainer = document.body;
+      }
+      
+      // Store globally for reliable access during close
+      window.adminPlusTargetElement = mainContainer;
     }
     
     if (!mainContainer.getAttribute('data-adminplus-original-right')) {
@@ -187,14 +196,28 @@ function clearCacheFunction() {
 function closePopup() {
     document.body.classList.remove('adminplus-sidebar-open');
     
-    var targetElement = document.querySelector('[data-adminplus-target="true"]');
+    // Try to get target element from stored reference first
+    var targetElement = window.adminPlusTargetElement;
     
-    if (targetElement) {
+    // Fallback to query if reference doesn't exist or element was removed from DOM
+    if (!targetElement || !document.body.contains(targetElement)) {
+        targetElement = document.querySelector('[data-adminplus-target="true"]');
+        console.log('%c⚠️ Had to fallback to query selector for target element', 'color: #ff9800; font-weight: bold;');
+    }
+    
+    if (targetElement && document.body.contains(targetElement)) {
         // Remove all AdminPlus-applied styles
         var originalRight = targetElement.getAttribute('data-adminplus-original-right');
         var originalLeft = targetElement.getAttribute('data-adminplus-original-left');
         var originalPosition = targetElement.getAttribute('data-adminplus-original-position');
         var originalBoxSizing = targetElement.getAttribute('data-adminplus-original-boxsizing');
+        
+        console.log('%c📋 Restoring element styles', 'color: #4da6ff;', {
+            right: originalRight,
+            left: originalLeft,
+            position: originalPosition,
+            boxSizing: originalBoxSizing
+        });
         
         // Restore or remove properties
         if (originalRight !== null) {
@@ -236,8 +259,13 @@ function closePopup() {
         targetElement.removeAttribute('data-adminplus-target');
         
         // Force reflow to ensure styles are updated
-        targetElement.offsetHeight;
+        void targetElement.offsetHeight;
+    } else {
+        console.log('%c⚠️ Target element not found or not in DOM', 'color: #ff9800; font-weight: bold;');
     }
+    
+    // Clean up global reference
+    window.adminPlusTargetElement = null;
     
     // Clean up event listener
     if (window.adminPlusResizeHandler) {
