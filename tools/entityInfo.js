@@ -264,16 +264,16 @@ function generateFieldListHtml(fields, fieldValues, fieldMetadata) {
 function generatePopupHtml(entityName, cleanRecordId, fieldListHtml, pluralName) {
      return `
         <div style="background-color: #f9f9f9; padding: 15px 20px; border-radius: 5px; margin-bottom: 15px;">
-            <div style="display: flex; gap: 50px; align-items: center; flex-wrap: wrap;">
-                <div style="white-space: nowrap;"><strong>Entity Name:</strong> ${entityName}</div>
-                <div style="white-space: nowrap;"><strong>Plural Name:</strong> ${pluralName}</div>
-                <div style="white-space: nowrap; flex: 1;"><strong>Record ID:</strong> ${cleanRecordId}</div>
+            <div style="display: flex; gap: 50px; align-items: center; flex-wrap: wrap; font-size: 15px; font-weight: bold;">
+                <div style="white-space: nowrap;">Entity Name: ${entityName}</div>
+                <div style="white-space: nowrap;">Plural Name: ${pluralName}</div>
+                <div style="white-space: nowrap; flex: 1;">Record ID: ${cleanRecordId}</div>
             </div>
         </div>
         <div class="scroll-section" style="padding: 0 2px 0 20px; overflow-y: auto; max-height: calc(90vh - 230px);">
             ${fieldListHtml}
         </div>
-        <div style="position: absolute; bottom: 15px; right: 20px; font-size: 11px; color: #666; font-style: italic; background-color: #f9f9f9; padding: 8px 12px; border-radius: 5px; border: 1px solid #ddd;">
+        <div style="position: absolute; bottom: 15px; right: 20px; font-size: 13px; color: #666; font-style: italic; background-color: #f9f9f9; padding: 8px 12px; border-radius: 5px; border: 1px solid #ddd;">
             <strong>Note:</strong> Click on any field to copy its information
         </div>
     `;
