@@ -37,9 +37,10 @@ loadScript('tools/securityOperations.js');
 loadScript('tools/dateCalculator.js');
 
 function openPopup() {
-  // Prevent opening multiple sidebars
+  // Toggle: Close sidebar if already open
   if (document.getElementById('MenuPopup')) {
-    console.log('%c⚠️ AdminPlus is already open', 'color: #ff9800; font-weight: bold;');
+    console.log('%c✅ Closing AdminPlus', 'color: #4da6ff; font-weight: bold;');
+    closePopup();
     return;
   }
   
@@ -100,7 +101,6 @@ function openPopup() {
 	      <span class="app-icon">👥</span>
 	    </button>
 	  </div>
-	  <button onclick="closePopup();" class="close-btn" title="Close">✖️</button>
 	</div>
    </div>
   `;	  
