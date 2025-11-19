@@ -2,8 +2,10 @@ async function fetchEntityFields() {
     const entityName = Xrm.Page.data.entity.getEntityName();
     const recordId = Xrm.Page.data.entity.getId();
     const cleanRecordId = recordId.replace(/[{}]/g, "").toLowerCase();
-    const url = `${Xrm.Page.context.getClientUrl()}/api/data/v9.2/EntityDefinitions(LogicalName='${entityName}')/Attributes?$select=LogicalName,AttributeType,DisplayName`;
-    const urlPlural = `${Xrm.Page.context.getClientUrl()}/api/data/v9.2/EntityDefinitions(LogicalName='${entityName}')?$select=LogicalCollectionName`; 
+    const clientUrl = Xrm.Page.context.getClientUrl();
+    const url = `${clientUrl}/api/data/v9.2/EntityDefinitions(LogicalName='${entityName}')/Attributes?$select=LogicalName,AttributeType,DisplayName`;
+    const urlPlural = `${clientUrl}/api/data/v9.2/EntityDefinitions(LogicalName='${entityName}')?$select=LogicalCollectionName`; 
+    
     try {
         const response = await fetch(url);
 	const responsePlural = await fetch(urlPlural);
@@ -26,6 +28,27 @@ async function fetchEntityFields() {
                 };
             });
             
+            // Fetch complete record data from Web API for fields not on form
+            const recordUrl = `${clientUrl}/api/data/v9.2/${pluralName}(${cleanRecordId})`;
+            const recordResponse = await fetch(recordUrl);
+            
+            if (recordResponse.ok) {
+                const recordData = await recordResponse.json();
+                
+                // Populate values for fields not on form
+                results.value.forEach(field => {
+                    const logicalName = field.LogicalName;
+                    if (!fieldValues[logicalName]) {
+                        const value = recordData[logicalName];
+                        fieldValues[logicalName] = formatFieldValueFromAPI(value, field.AttributeType, recordData, logicalName);
+                        fieldMetadata[logicalName] = {
+                            type: field.AttributeType,
+                            rawValue: value
+                        };
+                    }
+                });
+            }
+            
             const fieldListHtml = generateFieldListHtml(results.value, fieldValues, fieldMetadata);
             const popupHtml = generatePopupHtml(entityName, cleanRecordId, fieldListHtml, pluralName);
             appendPopupToBody(popupHtml);
@@ -36,6 +59,54 @@ async function fetchEntityFields() {
     } catch (error) {
         console.log(`Error: ${error}`);
         alert(`Error: ${error}`);
+    }
+}
+
+function formatFieldValueFromAPI(value, attributeType, recordData, logicalName) {
+    try {
+        if (value === null || value === undefined) {
+            return '(empty)';
+        }
+        
+        // Handle lookups
+        if (attributeType === 'Lookup' || attributeType === 'Customer' || attributeType === 'Owner') {
+            const lookupValue = recordData[`_${logicalName}_value`];
+            const lookupFormatted = recordData[`_${logicalName}_value@OData.Community.Display.V1.FormattedValue`];
+            return lookupFormatted || lookupValue || '(empty)';
+        }
+        
+        // Handle boolean
+        if (attributeType === 'Boolean') {
+            return value ? 'Yes' : 'No';
+        }
+        
+        // Handle option sets (check for formatted value)
+        if (attributeType === 'Picklist' || attributeType === 'State' || attributeType === 'Status') {
+            const formattedValue = recordData[`${logicalName}@OData.Community.Display.V1.FormattedValue`];
+            return formattedValue || value.toString();
+        }
+        
+        // Handle multi-select option sets
+        if (attributeType === 'MultiSelectPicklist') {
+            const formattedValue = recordData[`${logicalName}@OData.Community.Display.V1.FormattedValue`];
+            return formattedValue || value;
+        }
+        
+        // Handle datetime
+        if (attributeType === 'DateTime') {
+            return new Date(value).toLocaleString();
+        }
+        
+        // Handle money
+        if (attributeType === 'Money') {
+            return '$' + parseFloat(value).toFixed(2);
+        }
+        
+        // Default: convert to string
+        return value.toString();
+    } catch (error) {
+        console.error('Error formatting field value from API:', error);
+        return '(empty)';
     }
 }
 
