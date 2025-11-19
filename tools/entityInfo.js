@@ -220,7 +220,7 @@ function generateFieldListHtml(fields, fieldValues) {
                           .replace(/'/g, '&#039;');
             };
             
-            const fullTooltip = `${displayName} (${logicalName})\n\nValue: ${fieldValue}`;
+            const fullTooltip = `${displayName} (${logicalName})\nValue: ${fieldValue}`;
             
             html += `
                 <div style="padding: 8px; background-color: #f5f5f5; border-radius: 5px; border-left: 3px solid #2b2b2b;" title="${escapeHtml(fullTooltip)}">
@@ -251,7 +251,7 @@ function generateFieldListHtml(fields, fieldValues) {
 function generatePopupHtml(entityName, cleanRecordId, fieldListHtml, pluralName) {
      return `
         <div style="background-color: #f9f9f9; padding: 15px 20px; border-radius: 5px; margin-bottom: 15px;">
-            <div style="display: flex; gap: 30px; align-items: center; flex-wrap: wrap;">
+            <div style="display: flex; gap: 50px; align-items: center; flex-wrap: wrap;">
                 <div style="white-space: nowrap;"><strong>Entity Name:</strong> ${entityName}</div>
                 <div style="white-space: nowrap;"><strong>Plural Name:</strong> ${pluralName}</div>
                 <div style="white-space: nowrap; flex: 1;"><strong>Record ID:</strong> ${cleanRecordId}</div>
