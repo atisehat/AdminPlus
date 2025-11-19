@@ -52,7 +52,6 @@
 /* Header text - visible by default */
 #MenuPopup .commonPopup-header .header-text {
     display: inline;
-    padding: 11px 4px;
 }
 
 /* Header close X - hidden by default */
@@ -60,7 +59,6 @@
     display: none;
     font-size: 20px;
     font-weight: bold;
-    padding: 11px 4px;
 }
 
 /* On hover: hide text, show X */
