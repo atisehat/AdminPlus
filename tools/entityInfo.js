@@ -61,7 +61,7 @@ function appendPopupToBody(html, clearPrevious = false) {
        newContainer.innerHTML = `
 	<div class="commonPopup-header" style="background-color: #2b2b2b; position: relative; cursor: move;">
 	   <span style="color: white;">Entity & Fields Info</span>
-	   <span class="close-button" style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); cursor: pointer; font-size: 20px; color: white; font-weight: bold;">&times;</span>
+	   <span class="close-button" style="position: absolute; right: 0; top: 0; bottom: 0; width: 45px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 20px; color: white; font-weight: bold; transition: background-color 0.2s ease;">&times;</span>
 	</div>   
 	<div class="entityInfoPopup-row">
 	   <div class="commonSection content-section" id="section1">
@@ -75,6 +75,14 @@ function appendPopupToBody(html, clearPrevious = false) {
     const closeButton = newContainer.querySelector('.close-button');
     closeButton.addEventListener('click', function() {
         newContainer.remove();
+    });
+    
+    // Add hover effect for close button
+    closeButton.addEventListener('mouseenter', function() {
+        this.style.backgroundColor = '#e81123';
+    });
+    closeButton.addEventListener('mouseleave', function() {
+        this.style.backgroundColor = 'transparent';
     });
     
     makePopupMovable(newContainer);

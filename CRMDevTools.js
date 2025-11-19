@@ -81,7 +81,7 @@ function openPopup() {
 	    <button onclick="closePopup(); openUrl('advanceFind');" class="app-button" title="Advanced Find">
 	      <span class="app-icon">🔍</span>
 	    </button>
-	    <button onclick="closePopup(); setTimeout(fetchEntityFields, 0);" class="app-button" title="Entity Info">
+	    <button onclick="setTimeout(fetchEntityFields, 0);" class="app-button" title="Entity Info">
 	      <span class="app-icon">📋</span>
 	    </button>
 	    <button onclick="showAllTabsAndSections();" class="app-button" title="Show Hidden">
