@@ -111,34 +111,43 @@ function openPopup() {
   newContainer.innerHTML = popupHtml;
   document.body.appendChild(newContainer);
   
-  // Calculate and apply accurate widths
-  function adjustContentWidth() {
+  // Calculate and apply content positioning
+  function adjustContentPosition() {
     var viewportWidth = window.innerWidth;
     var contentWidth = viewportWidth - sidebarWidth;
     
-    // Store original values for restoration
-    if (!document.body.getAttribute('data-original-width')) {
+    // Store original values for restoration (only once)
+    if (!document.body.getAttribute('data-original-margin-right')) {
+      document.body.setAttribute('data-original-margin-right', document.body.style.marginRight || '');
       document.body.setAttribute('data-original-width', document.body.style.width || '');
       document.body.setAttribute('data-original-max-width', document.body.style.maxWidth || '');
+      document.body.setAttribute('data-original-overflow-x', document.body.style.overflowX || '');
     }
     
-    // Apply calculated width using setProperty to ensure !important works
+    // Push content to the left by exact sidebar width using margin-right
+    document.body.style.setProperty('margin-right', sidebarWidth + 'px', 'important');
+    
+    // Also set width to prevent content from expanding
     document.body.style.setProperty('width', contentWidth + 'px', 'important');
     document.body.style.setProperty('max-width', contentWidth + 'px', 'important');
+    
+    // Prevent horizontal scrolling
+    document.body.style.setProperty('overflow-x', 'hidden', 'important');
     
     console.log('📐 Viewport Width:', viewportWidth + 'px');
     console.log('📏 Sidebar Width:', sidebarWidth + 'px');
     console.log('✅ Content Width:', contentWidth + 'px');
+    console.log('↔️  Content pushed left by:', sidebarWidth + 'px');
   }
   
-  // Apply initial width calculation
+  // Apply initial positioning calculation
   document.body.classList.add('adminplus-sidebar-open');
-  adjustContentWidth();
+  adjustContentPosition();
   
   // Handle window resize to maintain accurate calculations
   window.adminPlusResizeHandler = function() {
     if (document.getElementById('MenuPopup')) {
-      adjustContentWidth();
+      adjustContentPosition();
     }
   };
   window.addEventListener('resize', window.adminPlusResizeHandler);
@@ -163,9 +172,20 @@ function closePopup() {
     // Remove body class
     document.body.classList.remove('adminplus-sidebar-open');
     
-    // Restore original body width
+    // Restore all original body styles
+    var originalMarginRight = document.body.getAttribute('data-original-margin-right');
     var originalWidth = document.body.getAttribute('data-original-width');
     var originalMaxWidth = document.body.getAttribute('data-original-max-width');
+    var originalOverflowX = document.body.getAttribute('data-original-overflow-x');
+    
+    if (originalMarginRight !== null) {
+        if (originalMarginRight === '') {
+            document.body.style.removeProperty('margin-right');
+        } else {
+            document.body.style.setProperty('margin-right', originalMarginRight, 'important');
+        }
+        document.body.removeAttribute('data-original-margin-right');
+    }
     
     if (originalWidth !== null) {
         if (originalWidth === '') {
@@ -183,6 +203,15 @@ function closePopup() {
             document.body.style.setProperty('max-width', originalMaxWidth, 'important');
         }
         document.body.removeAttribute('data-original-max-width');
+    }
+    
+    if (originalOverflowX !== null) {
+        if (originalOverflowX === '') {
+            document.body.style.removeProperty('overflow-x');
+        } else {
+            document.body.style.setProperty('overflow-x', originalOverflowX, 'important');
+        }
+        document.body.removeAttribute('data-original-overflow-x');
     }
     
     // Remove resize handler
