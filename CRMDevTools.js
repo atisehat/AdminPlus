@@ -57,57 +57,157 @@ function openPopup() {
   // Get build info (will be loaded from version.js)
   var badgeText = typeof getBadgeText === 'function' ? getBadgeText() : 'v2.0.0';
   
+  var sidebarWidth = 420;
+  
   var popupHtml = `  
     <style>
+	/* Sidebar overlay backdrop */
+	#MenuPopupBackdrop {
+	    position: fixed !important;
+	    top: 0 !important;
+	    left: 0 !important;
+	    width: 100% !important;
+	    height: 100vh !important;
+	    background-color: rgba(0, 0, 0, 0.3);
+	    z-index: 999998 !important;
+	    transition: opacity 0.3s ease;
+	}
+	
+	/* Main sidebar container */
 	#MenuPopup {
 	    position: fixed !important;
 	    right: 0 !important;
 	    top: 0 !important;
 	    bottom: 0 !important;
-	    left: auto !important;
-	    width: 420px !important;
+	    width: ${sidebarWidth}px !important;
 	    height: 100vh !important;
-	    transform: none !important;
 	    z-index: 999999 !important;
 	    margin: 0 !important;
 	    padding: 0 !important;
+	    animation: slideIn 0.3s ease-out;
 	}
-	#MenuPopup .popup,
-	.popup { 
-	    position: fixed !important; 
-	    right: 0 !important; 
-	    top: 0 !important;
-	    bottom: 0 !important;
-	    left: auto !important;
+	
+	@keyframes slideIn {
+	    from { transform: translateX(100%); }
+	    to { transform: translateX(0); }
+	}
+	
+	/* Sidebar content panel */
+	#MenuPopup .popup { 
+	    position: relative !important;
+	    width: 100% !important;
+	    height: 100% !important;
 	    background-color: #f9f9f9; 
 	    border-left: 3px solid #102e55;
-	    border-radius: 0 !important; 
-	    box-shadow: -2px 0 10px rgba(0, 0, 0, 0.3); 
-	    height: 100vh !important; 
-	    max-height: 100vh !important;
-	    width: 420px !important; 
+	    box-shadow: -2px 0 15px rgba(0, 0, 0, 0.3); 
 	    overflow-y: auto; 
 	    overflow-x: hidden;
-	    z-index: 999999 !important;
-	    transform: none !important;
 	    margin: 0 !important;
 	    padding: 0 !important;
-	    animation: none !important;
 	}
-	.button-container { padding: 20px; width: 380px; }
-	.popup button { display: block; width: 100%; margin-bottom: 10px; padding: 10px; background-color: #102e55; color: white; border: none; border-radius: 20px; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2); }
-	.popup button:hover { background-color: #3c6690; transform: translateY(-2px); box-shadow: 0 7px 20px rgba(0, 0, 0, 0.25); }
-	.popup button:active { transform: translateY(0); box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2); }		
-	.button-row { display: flex; justify-content: space-between; flex-direction: row; width: 100%; }
-	.button-row button { width: calc(50% - 5px); }
-	.dropdown button { width: 100%; }
-	.button-row .full-width { width: 100%; }
-	.dropdown-row { display: flex; justify-content: space-between; flex-direction: row; width: 100%; }
-	.dropdown { position: relative; display: inline-block; width: calc(50% - 5px); }
-	.dropdown-content { display: none; position: absolute; min-width: 100%; z-index: 1; }
-	.dropdown-content button { display: block; background-color: white; color: black; padding: 5px; text-align: center; border: none; width: 100%; }
-	.popup button.close-btn { margin-top: 10px; font-size: 15px; }
-	.build-badge { position: absolute; top: 12px; right: 15px; background-color: rgba(255, 255, 255, 0.2); color: white; padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: normal; }
+	
+	/* Button container and styles */
+	.button-container { 
+	    padding: 20px; 
+	    width: 380px; 
+	}
+	
+	.popup button { 
+	    display: block; 
+	    width: 100%; 
+	    margin-bottom: 10px; 
+	    padding: 10px; 
+	    background-color: #102e55; 
+	    color: white; 
+	    border: none; 
+	    border-radius: 20px; 
+	    cursor: pointer; 
+	    transition: all 0.3s ease; 
+	    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2); 
+	}
+	
+	.popup button:hover { 
+	    background-color: #3c6690; 
+	    transform: translateY(-2px); 
+	    box-shadow: 0 7px 20px rgba(0, 0, 0, 0.25); 
+	}
+	
+	.popup button:active { 
+	    transform: translateY(0); 
+	    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2); 
+	}
+	
+	.button-row { 
+	    display: flex; 
+	    justify-content: space-between; 
+	    flex-direction: row; 
+	    width: 100%; 
+	}
+	
+	.button-row button { 
+	    width: calc(50% - 5px); 
+	}
+	
+	.dropdown button { 
+	    width: 100%; 
+	}
+	
+	.button-row .full-width { 
+	    width: 100%; 
+	}
+	
+	.dropdown-row { 
+	    display: flex; 
+	    justify-content: space-between; 
+	    flex-direction: row; 
+	    width: 100%; 
+	}
+	
+	.dropdown { 
+	    position: relative; 
+	    display: inline-block; 
+	    width: calc(50% - 5px); 
+	}
+	
+	.dropdown-content { 
+	    display: none; 
+	    position: absolute; 
+	    min-width: 100%; 
+	    z-index: 1; 
+	}
+	
+	.dropdown-content button { 
+	    display: block; 
+	    background-color: white; 
+	    color: black; 
+	    padding: 5px; 
+	    text-align: center; 
+	    border: none; 
+	    width: 100%; 
+	}
+	
+	.popup button.close-btn { 
+	    margin-top: 10px; 
+	    font-size: 15px; 
+	}
+	
+	.build-badge { 
+	    position: absolute; 
+	    top: 12px; 
+	    right: 15px; 
+	    background-color: rgba(255, 255, 255, 0.2); 
+	    color: white; 
+	    padding: 3px 10px; 
+	    border-radius: 12px; 
+	    font-size: 11px; 
+	    font-weight: normal; 
+	}
+	
+	/* Adjust page content to make room for sidebar */
+	body.adminplus-sidebar-open {
+	    margin-right: ${sidebarWidth}px !important;
+	    transition: margin-right 0.3s ease;
+	}
     </style>
     <div class="popup">
 	<div class="commonPopup-header">	            
@@ -146,100 +246,25 @@ function openPopup() {
 	<div id="popupContent" class="content"></div>	
    </div>
   `;	  
+  
+  // Create backdrop
+  var backdrop = document.createElement('div');
+  backdrop.id = 'MenuPopupBackdrop';
+  backdrop.onclick = closePopup;
+  document.body.appendChild(backdrop);
+  
+  // Create sidebar container
   var newContainer = document.createElement('div');
   newContainer.id = 'MenuPopup';
   newContainer.innerHTML = popupHtml;
   document.body.appendChild(newContainer);
   
-  // Debug log to verify sidebar version is loaded
+  // Add class to body to shift content
+  document.body.classList.add('adminplus-sidebar-open');
+  
+  // Debug log
   console.log('%c✅ AdminPlus Sidebar Loaded', 'color: #102e55; font-weight: bold; font-size: 14px;');
-  
-  // Detect actual browser content width and calculate available space
-  var sidebarWidth = 420;
-  var browserWidth = window.innerWidth; // Actual viewport width (excludes scrollbars)
-  var availableWidth = browserWidth - sidebarWidth;
-  
-  console.log('🔍 Browser Width:', browserWidth + 'px');
   console.log('📏 Sidebar Width:', sidebarWidth + 'px');
-  console.log('✅ Available Content Width:', availableWidth + 'px');
-  
-  // Target D365 main content containers - use aggressive selectors
-  var contentSelectors = [
-    'body',
-    'html',
-    '#crmContentPanel',
-    '#mainContent', 
-    '[role="main"]',
-    '.ms-crm-Form',
-    '#ContentWrapper',
-    'body > div[role="presentation"]',
-    '.mainContainer',
-    '#content',
-    '.content',
-    'form[id*="FormContainer"]'
-  ];
-  
-  contentSelectors.forEach(function(selector) {
-    var elements = document.querySelectorAll(selector);
-    elements.forEach(function(elem) {
-      if (elem && elem !== document.getElementById('MenuPopup')) {
-        // Store original styles for restoration
-        elem.setAttribute('data-original-width', elem.style.width || '');
-        elem.setAttribute('data-original-max-width', elem.style.maxWidth || '');
-        elem.setAttribute('data-original-box-sizing', elem.style.boxSizing || '');
-        elem.setAttribute('data-original-overflow-x', elem.style.overflowX || '');
-        elem.setAttribute('data-original-position', elem.style.position || '');
-        elem.setAttribute('data-original-left', elem.style.left || '');
-        elem.setAttribute('data-original-right', elem.style.right || '');
-        
-        // Force exact width based on detected browser width
-        elem.style.boxSizing = 'border-box';
-        elem.style.width = availableWidth + 'px !important';
-        elem.style.maxWidth = availableWidth + 'px !important';
-        elem.style.overflowX = 'hidden';
-        elem.style.position = 'relative';
-        elem.style.left = '0';
-        elem.style.right = 'auto';
-        elem.style.transition = 'width 0.3s ease, max-width 0.3s ease';
-        
-        console.log('✏️ Adjusted:', selector, '→', availableWidth + 'px');
-      }
-    });
-  });
-  
-  // Handle window resize dynamically
-  window.addEventListener('resize', function() {
-    var menuPopup = document.getElementById('MenuPopup');
-    if (menuPopup) {
-      var newBrowserWidth = window.innerWidth;
-      var newAvailableWidth = newBrowserWidth - sidebarWidth;
-      
-      console.log('↔️ Window Resized - New Available Width:', newAvailableWidth + 'px');
-      
-      contentSelectors.forEach(function(selector) {
-        var elements = document.querySelectorAll(selector);
-        elements.forEach(function(elem) {
-          if (elem && elem !== document.getElementById('MenuPopup')) {
-            elem.style.width = newAvailableWidth + 'px !important';
-            elem.style.maxWidth = newAvailableWidth + 'px !important';
-          }
-        });
-      });
-    }
-  });
-  
-  // Force styles after DOM insertion to override any conflicts
-  setTimeout(function() {
-    var menuPopup = document.getElementById('MenuPopup');
-    if (menuPopup) {
-      menuPopup.style.cssText = 'position: fixed !important; right: 0px !important; top: 0px !important; bottom: 0px !important; left: auto !important; width: ' + sidebarWidth + 'px !important; height: 100vh !important; transform: none !important; z-index: 999999 !important; margin: 0 !important; padding: 0 !important;';
-    }
-    var popupDiv = document.querySelector('#MenuPopup .popup');
-    if (popupDiv) {
-      popupDiv.style.cssText = 'position: fixed !important; right: 0px !important; top: 0px !important; bottom: 0px !important; left: auto !important; height: 100vh !important; width: ' + sidebarWidth + 'px !important; transform: none !important; border-radius: 0px !important; margin: 0px !important; padding: 0px !important; overflow-y: auto !important; overflow-x: hidden !important;';
-      console.log('✅ Sidebar applied - Content adjusted to flow to sidebar edge');
-    }
-  }, 50);
 }
 function clearCacheFunction() {
     location.reload(true); // Forces a hard reload to bypassing cache.
@@ -262,73 +287,24 @@ function toggleDropdownMenu(dropdownId) {
 function closePopup() {
     closeIframe();
     
-    // Restore original styles for all adjusted content containers
-    var contentSelectors = [
-      'body',
-      'html',
-      '#crmContentPanel',
-      '#mainContent', 
-      '[role="main"]',
-      '.ms-crm-Form',
-      '#ContentWrapper',
-      'body > div[role="presentation"]',
-      '.mainContainer',
-      '#content',
-      '.content',
-      'form[id*="FormContainer"]'
-    ];
+    // Remove body class
+    document.body.classList.remove('adminplus-sidebar-open');
     
-    contentSelectors.forEach(function(selector) {
-      var elements = document.querySelectorAll(selector);
-      elements.forEach(function(elem) {
-        if (elem) {
-          // Restore all original styles
-          var originalWidth = elem.getAttribute('data-original-width');
-          var originalMaxWidth = elem.getAttribute('data-original-max-width');
-          var originalBoxSizing = elem.getAttribute('data-original-box-sizing');
-          var originalOverflowX = elem.getAttribute('data-original-overflow-x');
-          var originalPosition = elem.getAttribute('data-original-position');
-          var originalLeft = elem.getAttribute('data-original-left');
-          var originalRight = elem.getAttribute('data-original-right');
-          
-          if (originalWidth !== null) {
-            elem.style.width = originalWidth;
-            elem.removeAttribute('data-original-width');
-          }
-          if (originalMaxWidth !== null) {
-            elem.style.maxWidth = originalMaxWidth;
-            elem.removeAttribute('data-original-max-width');
-          }
-          if (originalBoxSizing !== null) {
-            elem.style.boxSizing = originalBoxSizing;
-            elem.removeAttribute('data-original-box-sizing');
-          }
-          if (originalOverflowX !== null) {
-            elem.style.overflowX = originalOverflowX;
-            elem.removeAttribute('data-original-overflow-x');
-          }
-          if (originalPosition !== null) {
-            elem.style.position = originalPosition;
-            elem.removeAttribute('data-original-position');
-          }
-          if (originalLeft !== null) {
-            elem.style.left = originalLeft;
-            elem.removeAttribute('data-original-left');
-          }
-          if (originalRight !== null) {
-            elem.style.right = originalRight;
-            elem.removeAttribute('data-original-right');
-          }
-        }
-      });
-    });
-    
-    // Remove MenuPopup if it exists
-    var newContainer = document.getElementById('MenuPopup');
-    if (newContainer) {
-        newContainer.remove();
+    // Remove backdrop
+    var backdrop = document.getElementById('MenuPopupBackdrop');
+    if (backdrop) {
+        backdrop.remove();
     }
+    
+    // Remove MenuPopup
+    var menuPopup = document.getElementById('MenuPopup');
+    if (menuPopup) {
+        menuPopup.remove();
+    }
+    
     closeSubPopups();
+    
+    console.log('%c❌ AdminPlus Sidebar Closed', 'color: #666; font-weight: bold; font-size: 12px;');
 }
 
 function closeSubPopups() { 
