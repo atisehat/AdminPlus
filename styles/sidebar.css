@@ -29,81 +29,86 @@
 
 /* Button container */
 #MenuPopup .button-container { 
-    padding: 20px; 
-    width: 380px; 
+    padding: 15px; 
+    width: 390px; 
 }
 
-/* Button base styles */
-#MenuPopup .popup button { 
-    display: block; 
-    width: 100%; 
-    margin-bottom: 10px; 
-    padding: 10px; 
-    background-color: #102e55; 
-    color: white; 
-    border: none; 
-    border-radius: 20px; 
-    cursor: pointer; 
-    transition: all 0.3s ease; 
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2); 
+/* App grid layout - 3 columns like phone apps */
+#MenuPopup .app-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+    margin-bottom: 20px;
 }
 
-#MenuPopup .popup button:hover { 
-    background-color: #3c6690; 
-    transform: translateY(-2px); 
-    box-shadow: 0 7px 20px rgba(0, 0, 0, 0.25); 
+/* App button - icon style */
+#MenuPopup .app-button {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 15px 8px;
+    background-color: #102e55;
+    color: white;
+    border: none;
+    border-radius: 15px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+    min-height: 90px;
 }
 
-#MenuPopup .popup button:active { 
-    transform: translateY(0); 
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2); 
+#MenuPopup .app-button:hover {
+    background-color: #3c6690;
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.25);
 }
 
-/* Button row layout */
-#MenuPopup .button-row { 
-    display: flex; 
-    justify-content: space-between; 
-    width: 100%; 
+#MenuPopup .app-button:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
-#MenuPopup .button-row button { 
-    width: calc(50% - 5px); 
+/* App icon - emoji/symbol at top */
+#MenuPopup .app-icon {
+    font-size: 32px;
+    margin-bottom: 8px;
+    display: block;
 }
 
-/* Dropdown styles */
-#MenuPopup .dropdown { 
-    position: relative; 
-    display: inline-block; 
-    width: calc(50% - 5px); 
-}
-
-#MenuPopup .dropdown-content { 
-    display: none; 
-    position: absolute; 
-    min-width: 100%; 
-    z-index: 1; 
-}
-
-#MenuPopup .dropdown-content button { 
-    display: block; 
-    background-color: white; 
-    color: black; 
-    padding: 5px; 
-    text-align: center; 
-    border: none; 
-    width: 100%; 
-    border-radius: 5px;
-    margin-bottom: 5px;
-}
-
-#MenuPopup .dropdown-content button:hover {
-    background-color: #f0f0f0;
+/* App label - text below icon */
+#MenuPopup .app-label {
+    font-size: 11px;
+    text-align: center;
+    line-height: 1.2;
+    font-weight: 500;
 }
 
 /* Close button */
 #MenuPopup .popup button.close-btn { 
-    margin-top: 10px; 
-    font-size: 15px; 
+    display: block;
+    width: 100%;
+    padding: 12px;
+    background-color: #d9534f;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+}
+
+#MenuPopup .popup button.close-btn:hover {
+    background-color: #c9302c;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.25);
+}
+
+#MenuPopup .popup button.close-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
 /* Page content adjustment when sidebar is open */

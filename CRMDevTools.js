@@ -59,33 +59,53 @@ function openPopup() {
 	    Admin Plus
 	</div>
 	<div class="button-container">
-	  <div class="button-row">
-	    <button onclick="closePopup(); openUrl('advanceFind');">Advanced Find Classic</button>
-	    <button onclick="closePopup(); setTimeout(fetchEntityFields, 0);">Show Entity Info</button>
-	  </div>	  		  
-	  <div class="button-row">
-	    <button onclick="showAllTabsAndSections();">Show Hidden Items</button>
-	    <button onclick="renameTabsSectionsFields();">Show Logical Names</button>
+	  <div class="app-grid">
+	    <button onclick="closePopup(); openUrl('advanceFind');" class="app-button">
+	      <span class="app-icon">🔍</span>
+	      <span class="app-label">Advanced Find</span>
+	    </button>
+	    <button onclick="closePopup(); setTimeout(fetchEntityFields, 0);" class="app-button">
+	      <span class="app-icon">📋</span>
+	      <span class="app-label">Entity Info</span>
+	    </button>
+	    <button onclick="showAllTabsAndSections();" class="app-button">
+	      <span class="app-icon">👁️</span>
+	      <span class="app-label">Show Hidden</span>
+	    </button>
+	    <button onclick="renameTabsSectionsFields();" class="app-button">
+	      <span class="app-icon">🏷️</span>
+	      <span class="app-label">Logical Names</span>
+	    </button>
+	    <button onclick="unlockAllFields();" class="app-button">
+	      <span class="app-icon">🔓</span>
+	      <span class="app-label">Unlock Fields</span>
+	    </button>
+	    <button onclick="closePopup(); showDirtyFields();" class="app-button">
+	      <span class="app-icon">✏️</span>
+	      <span class="app-label">Dirty Fields</span>
+	    </button>
+	    <button onclick="closePopup(); editSecurity();" class="app-button">
+	      <span class="app-icon">🔐</span>
+	      <span class="app-label">Assign Security</span>
+	    </button>
+	    <button onclick="closePopup(); copySecurity();" class="app-button">
+	      <span class="app-icon">📄</span>
+	      <span class="app-label">Copy Security</span>
+	    </button>
+	    <button onclick="closePopup(); dateCalc();" class="app-button">
+	      <span class="app-icon">📅</span>
+	      <span class="app-label">Date Calculator</span>
+	    </button>
+	    <button onclick="openRestBuilder(getOrgUrl());" class="app-button">
+	      <span class="app-icon">🔨</span>
+	      <span class="app-label">REST Builder</span>
+	    </button>
+	    <button onclick="closePopup(); openUrl('userProvision');" class="app-button">
+	      <span class="app-icon">👥</span>
+	      <span class="app-label">User Provision</span>
+	    </button>
 	  </div>
-	  <div class="button-row">		    
-	    <button onclick="unlockAllFields();">Unlock All Fields</button>
-	    <button onclick="closePopup(); showDirtyFields();">Show Dirty Fields</button>
-	  </div>   	 
-	  <div class="button-row">
-	    <button onclick="closePopup(); editSecurity();">Assign User Security</button>
-	    <button onclick="closePopup(); copySecurity();">Copy User Security</button>
-	  </div>    		  
-	  <div class="button-row">		    
-	    <button onclick="closePopup(); dateCalc();">Date Calculator</button>
-	    <div class="dropdown">
-	      <button onclick="toggleDropdownMenu('dropdown-content');">Extra</button> 
-	      <div id="dropdown-content" class="dropdown-content">			 
-		 <button onclick="openRestBuilder(getOrgUrl());">Open REST Builder</button>
-		 <button onclick="closePopup(); openUrl('userProvision');">User Provision Tool</button>		
-	      </div>
-	    </div>
-	  </div>
-	    <button onclick="closePopup();" class="close-btn">Close</button>
+	  <button onclick="closePopup();" class="close-btn">✖️ Close</button>
 	</div>
    </div>
   `;	  
@@ -168,15 +188,6 @@ function clearCacheFunction() {
     location.reload(true); // Forces a hard reload to bypassing cache.
 }
 
-function toggleDropdownMenu(dropdownId) {
-  var dropdownContent = document.getElementById(dropdownId);
-  if (dropdownContent.style.display === 'block') {
-    dropdownContent.style.display = 'none';
-  } else {
-    dropdownContent.style.display = 'block';
-  }
-}
-
 function closePopup() {
     document.body.classList.remove('adminplus-sidebar-open');
     
@@ -243,7 +254,6 @@ window.fetchEntityFields = fetchEntityFields;
 window.unlockAllFields = unlockAllFields;
 window.showAllTabsAndSections = showAllTabsAndSections;
 window.renameTabsSectionsFields = renameTabsSectionsFields;
-window.toggleDropdownMenu = toggleDropdownMenu;
 window.closePopup = closePopup;
 window.openUrl = openUrl;
 window.showDirtyFields = showDirtyFields;
