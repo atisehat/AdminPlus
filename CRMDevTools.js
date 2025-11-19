@@ -62,7 +62,7 @@ function openPopup() {
   var popupHtml = `
     <div class="popup">
 	<div class="commonPopup-header">	            
-	    Admin Plus
+	    Admin+
 	</div>
 	<div class="button-container">
 	  <div class="app-grid">
