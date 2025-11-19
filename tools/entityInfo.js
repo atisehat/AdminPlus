@@ -11,7 +11,17 @@ async function fetchEntityFields() {
             const results = await response.json();
             const pluralResults = await responsePlural.json();
             const pluralName = pluralResults.LogicalCollectionName;
-            const fieldListHtml = generateFieldListHtml(results.value);
+            
+            // Get field values from current form
+            const fieldValues = {};
+            const attributes = Xrm.Page.data.entity.attributes.get();
+            attributes.forEach(attr => {
+                const logicalName = attr.getName();
+                const value = attr.getValue();
+                fieldValues[logicalName] = formatFieldValue(attr);
+            });
+            
+            const fieldListHtml = generateFieldListHtml(results.value, fieldValues);
             const popupHtml = generatePopupHtml(entityName, cleanRecordId, fieldListHtml, pluralName);
             appendPopupToBody(popupHtml);
         } else {
@@ -22,6 +32,53 @@ async function fetchEntityFields() {
         console.log(`Error: ${error}`);
         alert(`Error: ${error}`);
     }
+}
+
+function formatFieldValue(attribute) {
+    const value = attribute.getValue();
+    
+    if (value === null || value === undefined) {
+        return '(empty)';
+    }
+    
+    const attrType = attribute.getAttributeType();
+    
+    // Handle lookups
+    if (attrType === 'lookup') {
+        if (Array.isArray(value) && value.length > 0) {
+            return value.map(v => v.name).join(', ');
+        }
+        return '(empty)';
+    }
+    
+    // Handle boolean
+    if (attrType === 'boolean') {
+        return value ? 'Yes' : 'No';
+    }
+    
+    // Handle optionset (picklist)
+    if (attrType === 'optionset' || attrType === 'multiselectoptionset') {
+        const formattedValue = attribute.getFormattedValue();
+        return formattedValue || value.toString();
+    }
+    
+    // Handle datetime
+    if (attrType === 'datetime' && value instanceof Date) {
+        return value.toLocaleString();
+    }
+    
+    // Handle money
+    if (attrType === 'money') {
+        return '$' + value.toFixed(2);
+    }
+    
+    // Handle arrays (multiselect)
+    if (Array.isArray(value)) {
+        return value.join(', ');
+    }
+    
+    // Default: convert to string
+    return value.toString();
 }
 
 function categorizeFields(fields) {
@@ -72,7 +129,7 @@ function categorizeFields(fields) {
     return categories;
 }
 
-function generateFieldListHtml(fields) {
+function generateFieldListHtml(fields, fieldValues) {
     const categories = categorizeFields(fields);
     const categoryLabels = {
         'TextFields': 'Text Fields',
@@ -129,14 +186,22 @@ function generateFieldListHtml(fields) {
         
         categoryFields.forEach(field => {
             const typeLabel = typeLabels[field.AttributeType] || field.AttributeType;
+            const displayName = field.DisplayName.UserLocalizedLabel.Label;
+            const logicalName = field.LogicalName;
+            const fullText = `${displayName} (${logicalName}) - Type: ${typeLabel}`;
+            const fieldValue = fieldValues[logicalName] || '(not on form)';
+            
             html += `
-                <div style="padding: 8px; background-color: #f5f5f5; border-radius: 5px; border-left: 3px solid #2b2b2b;">
+                <div style="padding: 8px; background-color: #f5f5f5; border-radius: 5px; border-left: 3px solid #2b2b2b;" title="${fullText}">
                     <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <div style="font-weight: bold; color: #333;">
-                            ${field.DisplayName.UserLocalizedLabel.Label} 
-                            <span style="font-weight: normal; color: #666; font-size: 13px;">(${field.LogicalName})</span>
+                        <div style="font-weight: bold; color: #333; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                            ${displayName} 
+                            <span style="font-weight: normal; color: #666; font-size: 13px;">(${logicalName})</span>
                         </div>
                         <div style="font-size: 12px; color: #666; white-space: nowrap; margin-left: 10px;">Type: ${typeLabel}</div>
+                    </div>
+                    <div style="margin-top: 5px; padding-top: 5px; border-top: 1px solid #ddd; font-size: 12px; color: #555;">
+                        <strong>Value:</strong> <span style="font-style: italic;">${fieldValue}</span>
                     </div>
                 </div>
             `;
