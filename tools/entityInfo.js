@@ -236,7 +236,7 @@ function generateFieldListHtml(fields, fieldValues, fieldMetadata) {
             }
             
             html += `
-                <div class="field-card" data-copy-text="${escapeHtml(fullTooltip)}" style="padding: 8px; background-color: #f5f5f5; border-radius: 5px; border-left: 3px solid #2b2b2b; cursor: pointer; transition: background-color 0.2s;" title="${escapeHtml(fullTooltip)}\n\nClick to copy">
+                <div class="field-card" data-copy-text="${escapeHtml(fullTooltip)}" style="padding: 8px; background-color: #f5f5f5; border-radius: 5px; border-left: 3px solid #2b2b2b; cursor: pointer; transition: background-color 0.2s;" title="${escapeHtml(fullTooltip)}                                                    Click to copy ►">
                     <div style="display: flex; justify-content: space-between; align-items: center;">
                         <div style="font-weight: bold; color: #333; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
                             ${displayName} 
@@ -270,7 +270,7 @@ function generatePopupHtml(entityName, cleanRecordId, fieldListHtml, pluralName)
                 <div style="white-space: nowrap; flex: 1;"><strong>Record ID:</strong> ${cleanRecordId}</div>
             </div>
         </div>
-        <div class="scroll-section" style="padding: 0 20px; overflow-y: auto; max-height: calc(90vh - 180px);">
+        <div class="scroll-section" style="padding: 0 10px 0 20px; overflow-y: auto; max-height: calc(90vh - 180px);">
             ${fieldListHtml}
         </div>
     `;
@@ -331,7 +331,7 @@ function appendPopupToBody(html, clearPrevious = false) {
                 
                 // Show tooltip feedback
                 const originalTitle = this.title;
-                this.title = 'Copied to clipboard!';
+                this.title = 'Copied to clipboard!                                                                              ✓';
                 setTimeout(() => {
                     this.title = originalTitle;
                 }, 1500);
