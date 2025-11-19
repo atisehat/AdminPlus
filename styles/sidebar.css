@@ -106,19 +106,6 @@
     font-size: 15px; 
 }
 
-/* Build badge */
-#MenuPopup .build-badge { 
-    position: absolute; 
-    top: 12px; 
-    right: 15px; 
-    background-color: rgba(255, 255, 255, 0.2); 
-    color: white; 
-    padding: 3px 10px; 
-    border-radius: 12px; 
-    font-size: 11px; 
-    font-weight: normal; 
-}
-
 /* Page content adjustment when sidebar is open */
 /* Note: Positioning is set dynamically via JavaScript for accurate calculations */
 body.adminplus-sidebar-open {

@@ -22,9 +22,6 @@ function loadScript(src, callback) {
   document.head.appendChild(script);
 }
 
-// Load version info first
-loadScript('version.js');
-
 // Load utility scripts
 loadScript('utils/api.js');
 loadScript('utils/ui.js');
@@ -55,14 +52,11 @@ function openPopup() {
     Xrm.Navigation.openAlertDialog({ text: "You do not have permission to execute this action."});
     return;    
   }	 
-  // Get build info (will be loaded from version.js)
-  var badgeText = typeof getBadgeText === 'function' ? getBadgeText() : 'v2.0.0';
   
   var popupHtml = `
     <div class="popup">
 	<div class="commonPopup-header">	            
 	    Admin Plus
-	    <span class="build-badge">${badgeText}</span>
 	</div>
 	<div class="button-container">
 	  <div class="button-row">
