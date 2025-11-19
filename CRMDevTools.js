@@ -1,7 +1,13 @@
-const baseUrl = 'https://atisehat.github.io/AdminPlus/';
+// ============================================================================
+// AdminPlus - D365 CE Admin Tools
+// ============================================================================
 
-// Cache busting: Add timestamp to force reload of updated files
+const baseUrl = 'https://atisehat.github.io/AdminPlus/';
 const cacheBuster = '?v=' + new Date().getTime();
+
+// ============================================================================
+// Resource Loading
+// ============================================================================
 
 function loadCSS(href) {
   const link = document.createElement('link');
@@ -10,10 +16,6 @@ function loadCSS(href) {
   link.type = 'text/css';
   document.head.appendChild(link); 
 }
-// Load CSS
-loadCSS('styles/common.css');
-loadCSS('styles/tools.css');
-loadCSS('styles/sidebar.css');
 
 function loadScript(src, callback) {
   const script = document.createElement('script');
@@ -21,6 +23,11 @@ function loadScript(src, callback) {
   script.onload = callback;
   document.head.appendChild(script);
 }
+
+// Load stylesheets
+loadCSS('styles/common.css');
+loadCSS('styles/tools.css');
+loadCSS('styles/sidebar.css');
 
 // Load utility scripts
 loadScript('utils/api.js');
@@ -36,10 +43,13 @@ loadScript('tools/assignSecurity.js');
 loadScript('tools/securityOperations.js');
 loadScript('tools/dateCalculator.js');
 
+// ============================================================================
+// Sidebar Management
+// ============================================================================
+
 function openPopup() {
   // Toggle: Close sidebar if already open
   if (document.getElementById('MenuPopup')) {
-    console.log('%c✅ Closing AdminPlus', 'color: #4da6ff; font-weight: bold;');
     closePopup();
     return;
   }
@@ -186,11 +196,6 @@ function openPopup() {
     }
   };
   window.addEventListener('resize', window.adminPlusResizeHandler);
-  
-  console.log('%c✅ AdminPlus Loaded', 'color: #102e55; font-weight: bold;');
-}
-function clearCacheFunction() {
-    location.reload(true); // Forces a hard reload to bypassing cache.
 }
 
 function closePopup() {
@@ -202,22 +207,14 @@ function closePopup() {
     // Fallback to query if reference doesn't exist or element was removed from DOM
     if (!targetElement || !document.body.contains(targetElement)) {
         targetElement = document.querySelector('[data-adminplus-target="true"]');
-        console.log('%c⚠️ Had to fallback to query selector for target element', 'color: #ff9800; font-weight: bold;');
     }
     
     if (targetElement && document.body.contains(targetElement)) {
-        // Remove all AdminPlus-applied styles
+        // Get original styles
         var originalRight = targetElement.getAttribute('data-adminplus-original-right');
         var originalLeft = targetElement.getAttribute('data-adminplus-original-left');
         var originalPosition = targetElement.getAttribute('data-adminplus-original-position');
         var originalBoxSizing = targetElement.getAttribute('data-adminplus-original-boxsizing');
-        
-        console.log('%c📋 Restoring element styles', 'color: #4da6ff;', {
-            right: originalRight,
-            left: originalLeft,
-            position: originalPosition,
-            boxSizing: originalBoxSizing
-        });
         
         // Restore or remove properties
         if (originalRight !== null) {
@@ -260,8 +257,6 @@ function closePopup() {
         
         // Force reflow to ensure styles are updated
         void targetElement.offsetHeight;
-    } else {
-        console.log('%c⚠️ Target element not found or not in DOM', 'color: #ff9800; font-weight: bold;');
     }
     
     // Clean up global reference
@@ -280,27 +275,21 @@ function closePopup() {
     }
     
     closeSubPopups();
-    
-    console.log('%c✅ AdminPlus Closed', 'color: #4da6ff; font-weight: bold;');
 }
 
 function closeSubPopups() { 
-    const popupClasses = ['.entityInfoPopup', '.dirtyFieldsPopup', '.securityPopup'];    
+    const popupClasses = ['.commonPopup', '.assignPopup'];    
     popupClasses.forEach((popupClass) => {
-        const popup = document.querySelector(popupClass);
-        if (popup) {
+        const popups = document.querySelectorAll(popupClass);
+        popups.forEach((popup) => {
             popup.remove();
-        }
+        });
     });
 }
 
-function closeDirtyFieldsPopup() {
-  var popup = document.querySelector('.dirty-fields-popup');
-  if (popup) {
-    popup.remove();
-  }
-} 
-
+// ============================================================================
+// Global Exports
+// ============================================================================
 window.fetchEntityFields = fetchEntityFields;
 window.unlockAllFields = unlockAllFields;
 window.showAllTabsAndSections = showAllTabsAndSections;
@@ -308,4 +297,3 @@ window.renameTabsSectionsFields = renameTabsSectionsFields;
 window.closePopup = closePopup;
 window.openUrl = openUrl;
 window.showDirtyFields = showDirtyFields;
-window.closeDirtyFieldsPopup = closeDirtyFieldsPopup;
