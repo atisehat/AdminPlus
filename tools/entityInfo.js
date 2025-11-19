@@ -306,13 +306,14 @@ function appendPopupToBody(html, clearPrevious = false) {
                border-radius: 6px;
                font-size: 12px;
                line-height: 1.5;
-               white-space: pre;
+               white-space: pre-wrap;
                width: 450px;
                box-sizing: border-box;
                z-index: 100000;
                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
                pointer-events: none;
                display: block;
+               word-wrap: break-word;
            }
        `;
        document.head.appendChild(tooltipStyle);
