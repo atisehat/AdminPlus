@@ -57,7 +57,8 @@ function appendPopupToBody(html, clearPrevious = false) {
        existingPopups.forEach(popup => popup.remove());
     }    
     var newContainer = document.createElement('div');	  	
-       newContainer.className = 'commonPopup';		
+       newContainer.className = 'commonPopup';
+       newContainer.style.border = '3px solid #2b2b2b';
        newContainer.innerHTML = `
 	<div class="commonPopup-header" style="background-color: #2b2b2b; position: relative; cursor: move;">
 	   <span style="color: white;">Entity & Fields Info</span>
