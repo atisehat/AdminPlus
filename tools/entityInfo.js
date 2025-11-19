@@ -270,11 +270,13 @@ function generatePopupHtml(entityName, cleanRecordId, fieldListHtml, pluralName)
                 <div style="white-space: nowrap; flex: 1;">Record ID: ${cleanRecordId}</div>
             </div>
         </div>
-        <div class="scroll-section" style="padding: 0 2px 20px 20px; overflow-y: auto; max-height: calc(90vh - 185px);">
-            ${fieldListHtml}
+        <div style="display: flex; justify-content: flex-end; margin-bottom: 10px; padding-right: 20px;">
+            <div style="font-size: 13px; color: #666; font-style: italic; background-color: #f9f9f9; padding: 8px 12px; border-radius: 5px; border: 1px solid #ddd;">
+                <strong>Note:</strong> Click on any field to copy its information
+            </div>
         </div>
-        <div style="position: absolute; bottom: 5px; right: 20px; font-size: 13px; color: #666; font-style: italic; background-color: #f9f9f9; padding: 8px 12px; border-radius: 5px; border: 1px solid #ddd;">
-            <strong>Note:</strong> Click on any field to copy its information
+        <div class="scroll-section" style="padding: 0 2px 20px 20px; overflow-y: auto; max-height: calc(90vh - 235px);">
+            ${fieldListHtml}
         </div>
     `;
 }
@@ -290,7 +292,7 @@ function appendPopupToBody(html, clearPrevious = false) {
        newContainer.style.borderRadius = '12px';
        newContainer.style.width = '75%';
        
-       // Add custom tooltip styling with restricted width and smart positioning
+       // Add custom tooltip styling with restricted width
        const tooltipStyle = document.createElement('style');
        tooltipStyle.innerHTML = `
            .field-card[data-tooltip] {
@@ -300,8 +302,8 @@ function appendPopupToBody(html, clearPrevious = false) {
                content: attr(data-tooltip);
                position: absolute;
                left: 0;
-               bottom: 100%;
-               margin-bottom: 8px;
+               top: 100%;
+               margin-top: 8px;
                padding: 10px 14px;
                background-color: rgba(43, 43, 43, 0.95);
                color: white;
