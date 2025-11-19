@@ -131,9 +131,13 @@ function generateFieldListHtml(fields) {
             const typeLabel = typeLabels[field.AttributeType] || field.AttributeType;
             html += `
                 <div style="padding: 8px; background-color: #f5f5f5; border-radius: 5px; border-left: 3px solid #2b2b2b;">
-                    <div style="font-weight: bold; color: #333; margin-bottom: 3px;">${field.DisplayName.UserLocalizedLabel.Label}</div>
-                    <div style="font-size: 12px; color: #666; margin-bottom: 2px;">Logical Name: ${field.LogicalName}</div>
-                    <div style="font-size: 12px; color: #666;">Type: ${typeLabel}</div>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div style="font-weight: bold; color: #333;">
+                            ${field.DisplayName.UserLocalizedLabel.Label} 
+                            <span style="font-weight: normal; color: #666; font-size: 13px;">(${field.LogicalName})</span>
+                        </div>
+                        <div style="font-size: 12px; color: #666; white-space: nowrap; margin-left: 10px;">Type: ${typeLabel}</div>
+                    </div>
                 </div>
             `;
         });
