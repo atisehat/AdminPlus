@@ -40,6 +40,34 @@
     background-color: #2b2b2b !important;
     color: #ffffff !important;
     border-bottom: 1px solid #4a4a4a !important;
+    position: relative !important;
+    transition: background-color 0.2s ease !important;
+}
+
+/* Header hover state - turn reddish like browser close button */
+#MenuPopup .commonPopup-header:hover {
+    background-color: #d9534f !important;
+}
+
+/* Header text - visible by default */
+#MenuPopup .commonPopup-header .header-text {
+    display: inline;
+}
+
+/* Header close X - hidden by default */
+#MenuPopup .commonPopup-header .header-close {
+    display: none;
+    font-size: 20px;
+    font-weight: bold;
+}
+
+/* On hover: hide text, show X */
+#MenuPopup .commonPopup-header:hover .header-text {
+    display: none;
+}
+
+#MenuPopup .commonPopup-header:hover .header-close {
+    display: inline;
 }
 
 /* Superscript styling for + symbol */

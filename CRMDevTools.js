@@ -62,8 +62,9 @@ function openPopup() {
   
   var popupHtml = `
     <div class="popup">
-	<div class="commonPopup-header">	            
-	    Admin<sup>+</sup>
+	<div class="commonPopup-header" onclick="closePopup();" style="cursor: pointer;" title="Click to close">	            
+	    <span class="header-text">Admin<sup>+</sup></span>
+	    <span class="header-close">✖</span>
 	</div>
 	<div class="button-container">
 	  <div class="app-grid">
