@@ -57,6 +57,7 @@ function closeAllToolPopups() {
  * @param {string} config.title - Title text for the header
  * @param {string} config.content - HTML content for the popup body
  * @param {string} [config.popupId] - Unique identifier for this popup type (e.g., 'entityInfo', 'dirtyFields')
+ * @param {string} [config.inlineStyles] - Optional inline styles HTML (e.g., from generateTooltipStyles) placed at popup root
  * @param {string} [config.width='75%'] - Width of the popup (default: 75%)
  * @param {string} [config.maxHeight='90vh'] - Maximum height of the popup (default: 90vh)
  * @param {boolean} [config.movable=true] - Whether the popup should be draggable (default: true)
@@ -69,6 +70,7 @@ function createStandardPopup(config) {
         title,
         content,
         popupId,
+        inlineStyles,
         width = '75%',
         maxHeight = '90vh',
         movable = true,
@@ -103,8 +105,9 @@ function createStandardPopup(config) {
         Object.assign(popupContainer.style, customStyles.additionalStyles);
     }
 
-    // Build popup HTML structure
+    // Build popup HTML structure with optional inline styles at the root level
     popupContainer.innerHTML = `
+        ${inlineStyles || ''}
         <div class="commonPopup-header" style="background-color: #2b2b2b; position: relative; cursor: ${movable ? 'move' : 'default'}; border-radius: 9px 9px 0 0; margin: 0; border-bottom: 2px solid #1a1a1a;">
             <span style="color: white;">${title}</span>
             <span class="close-button" style="position: absolute; right: 0; top: 0; bottom: 0; width: 45px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 20px; color: white; font-weight: bold; transition: background-color 0.2s ease; border-radius: 0 9px 0 0;">&times;</span>
