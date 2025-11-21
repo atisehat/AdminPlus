@@ -178,12 +178,12 @@ function sortByProperty(array, property) {
  * Show a modern toast notification that auto-dismisses
  * @param {string} message - The message to display
  * @param {string} type - Type of notification: 'success', 'info', 'warning', 'error'
- * @param {number} duration - Duration in milliseconds (default: 2000)
+ * @param {number} duration - Duration in milliseconds (default: 1500)
  */
 function showToast(message, type, duration) {
     // Set defaults
     type = type || 'success';
-    duration = duration || 2000;
+    duration = duration || 1500;
     
     // Remove any existing toasts
     var existingToast = document.getElementById('adminplus-toast');
