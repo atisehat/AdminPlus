@@ -331,6 +331,10 @@ function generateFieldListHtml(fields, fieldValues, fieldMetadata) {
 }
 
 function appendEntityInfoPopupToBody(entityName, recordId, pluralName, fieldListHtml) {
+    // Close any existing popups first
+    const existingPopups = document.querySelectorAll('.commonPopup');
+    existingPopups.forEach(popup => popup.remove());
+    
     // Add tooltip styling for Entity Info
     addEntityInfoTooltipStyles();
     

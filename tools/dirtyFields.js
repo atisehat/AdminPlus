@@ -186,6 +186,10 @@ function getDirtyFieldTypeLabel(attrType) {
 }
 
 function appendDirtyFieldsPopupToBody(entityName, recordId, dirtyCount, fieldListHtml) {
+    // Close any existing popups first
+    const existingPopups = document.querySelectorAll('.commonPopup');
+    existingPopups.forEach(popup => popup.remove());
+    
     // Create popup container
     const popupContainer = document.createElement('div');
     popupContainer.className = 'commonPopup';
