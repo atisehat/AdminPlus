@@ -317,13 +317,29 @@ function addCopyListenersToLabels() {
                     label.title = 'Click to copy logical name';
                     
                     label.addEventListener('click', function(e) {
+                        // Prevent copying if clicking on buttons, icons, or dropdown arrows
+                        var target = e.target;
+                        if (target.tagName === 'BUTTON' || 
+                            target.tagName === 'I' || 
+                            target.classList.contains('ms-Button') ||
+                            target.classList.contains('ms-Icon') ||
+                            target.closest('button') ||
+                            target.closest('.ms-Button')) {
+                            return;
+                        }
+                        
                         if (window.adminPlusLogicalNamesActive) {
-                            var textToCopy = this.textContent || this.innerText;
-                            // Remove any [Type] suffixes
-                            textToCopy = textToCopy.replace(/\s*\[.*?\]\s*$/, '').trim();
+                            var fullText = this.textContent || this.innerText;
                             
-                            if (textToCopy) {
-                                copyToClipboard(textToCopy);
+                            // Extract only the logical name from parentheses
+                            var logicalName = '';
+                            var match = fullText.match(/\(([^)]+)\)/);
+                            if (match && match[1]) {
+                                logicalName = match[1].trim();
+                            }
+                            
+                            if (logicalName) {
+                                copyToClipboard(logicalName);
                                 e.stopPropagation();
                                 e.preventDefault();
                             }
@@ -343,7 +359,7 @@ function copyToClipboard(text) {
         if (navigator.clipboard && navigator.clipboard.writeText) {
             navigator.clipboard.writeText(text).then(function() {
                 if (typeof showToast === 'function') {
-                    showToast('Copied: ' + text, 'success', 1500);
+                    showToast('Copied ✓', 'success');
                 }
             }).catch(function() {
                 fallbackCopyToClipboard(text);
@@ -369,7 +385,7 @@ function fallbackCopyToClipboard(text) {
         document.body.removeChild(textArea);
         
         if (typeof showToast === 'function') {
-            showToast('Copied: ' + text, 'success', 1500);
+            showToast('Copied ✓', 'success');
         }
     } catch (e) {
         // Silently fail
