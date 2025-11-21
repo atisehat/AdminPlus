@@ -345,8 +345,8 @@ function generatePopupHtml(entityName, cleanRecordId, fieldListHtml, pluralName)
 }
 
 function appendPopupToBody(html) {
-    // Add tooltip styling
-    addTooltipStyles();
+    // Add tooltip styling scoped to this popup
+    addTooltipStyles('entityInfo');
     
     // Create popup using template utility
     const popupContainer = createStandardPopup({

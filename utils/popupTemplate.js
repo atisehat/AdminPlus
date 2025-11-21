@@ -34,6 +34,12 @@ function createStandardPopup(config) {
         if (existingPopup) {
             existingPopup.remove();
         }
+        
+        // Also clean up any leftover tooltip styles for this popup
+        const existingTooltipStyle = document.querySelector(`style[data-tooltip-for="${popupId}"]`);
+        if (existingTooltipStyle) {
+            existingTooltipStyle.remove();
+        }
     }
 
     // Create popup container
@@ -75,6 +81,14 @@ function createStandardPopup(config) {
     // Setup close button functionality
     const closeButton = popupContainer.querySelector('.close-button');
     closeButton.addEventListener('click', () => {
+        // Clean up tooltip styles for this popup if they exist
+        if (popupId) {
+            const tooltipStyle = document.querySelector(`style[data-tooltip-for="${popupId}"]`);
+            if (tooltipStyle) {
+                tooltipStyle.remove();
+            }
+        }
+        
         if (onClose && typeof onClose === 'function') {
             onClose();
         }
@@ -179,32 +193,50 @@ function createNoteBanner(text, options = {}) {
  */
 function removeExistingPopups(className = 'commonPopup') {
     const existingPopups = document.querySelectorAll(`.${className}`);
-    existingPopups.forEach(popup => popup.remove());
+    existingPopups.forEach(popup => {
+        // Clean up tooltip styles if popup has an ID
+        const popupId = popup.getAttribute('data-popup-id');
+        if (popupId) {
+            const tooltipStyle = document.querySelector(`style[data-tooltip-for="${popupId}"]`);
+            if (tooltipStyle) {
+                tooltipStyle.remove();
+            }
+        }
+        popup.remove();
+    });
 }
 
 /**
- * Adds custom tooltip styling to the page
+ * Adds custom tooltip styling scoped to a specific popup
+ * @param {string} popupId - Unique identifier for the popup
  * @param {Object} [options] - Tooltip styling options
  * @param {string} [options.width='500px'] - Tooltip width
  * @param {string} [options.backgroundColor='rgba(43, 43, 43, 0.95)'] - Background color
  * @param {string} [options.fontSize='12px'] - Font size
  * @returns {HTMLStyleElement} The created style element
  */
-function addTooltipStyles(options = {}) {
+function addTooltipStyles(popupId, options = {}) {
     const {
         width = '500px',
         backgroundColor = 'rgba(43, 43, 43, 0.95)',
         fontSize = '12px'
     } = options;
 
+    // Remove any existing tooltip styles for this popup
+    const existingStyle = document.querySelector(`style[data-tooltip-for="${popupId}"]`);
+    if (existingStyle) {
+        existingStyle.remove();
+    }
+
     const tooltipStyle = document.createElement('style');
+    tooltipStyle.setAttribute('data-tooltip-for', popupId);
     tooltipStyle.innerHTML = `
-        .field-card[data-tooltip],
-        .tooltip-enabled[data-tooltip] {
+        .commonPopup[data-popup-id="${popupId}"] .field-card[data-tooltip],
+        .commonPopup[data-popup-id="${popupId}"] .tooltip-enabled[data-tooltip] {
             position: relative;
         }
-        .field-card[data-tooltip]:hover::before,
-        .tooltip-enabled[data-tooltip]:hover::before {
+        .commonPopup[data-popup-id="${popupId}"] .field-card[data-tooltip]:hover::before,
+        .commonPopup[data-popup-id="${popupId}"] .tooltip-enabled[data-tooltip]:hover::before {
             content: attr(data-tooltip);
             position: absolute;
             left: 0;
