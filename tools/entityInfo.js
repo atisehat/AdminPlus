@@ -348,7 +348,7 @@ function appendPopupToBody(html) {
     // Add tooltip styling
     addTooltipStyles();
     
-    // Create popup using template utility with popupId for isolation
+    // Create popup using template utility
     const popupContainer = createStandardPopup({
         title: 'Entity & Fields Info',
         content: html,
