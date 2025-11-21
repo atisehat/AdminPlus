@@ -65,18 +65,51 @@ function openPopup() {
   
   closeSubPopups();
   var isAdmin = false;
-  var userName = Xrm.Utility.getGlobalContext().userSettings.userName;
-  var roles = Xrm.Utility.getGlobalContext().userSettings.roles;  
-  for (var i = 0; i< roles.getLength(); i++) {
-    var role = roles.get(i);
-    if (role.name == "System Administrator") {
-        isAdmin = true;
-        break;
+  
+  try {
+    // Safely get user context with defensive checks
+    if (typeof Xrm === 'undefined' || !Xrm.Utility || !Xrm.Utility.getGlobalContext) {
+      console.error("AdminPlus: Xrm context not available");
+      return;
     }
-  }  
-  if (!isAdmin && userName !== "Adrian Solis") {
-    Xrm.Navigation.openAlertDialog({ text: "You do not have permission to execute this action."});
-    return;    
+    
+    var globalContext = Xrm.Utility.getGlobalContext();
+    if (!globalContext || !globalContext.userSettings) {
+      console.error("AdminPlus: User settings not available");
+      return;
+    }
+    
+    var userName = globalContext.userSettings.userName || "";
+    var roles = globalContext.userSettings.roles;
+    
+    // Check if roles collection is valid
+    if (roles && typeof roles.getLength === 'function') {
+      var rolesLength = roles.getLength();
+      for (var i = 0; i < rolesLength; i++) {
+        try {
+          var role = roles.get(i);
+          if (role && role.name === "System Administrator") {
+            isAdmin = true;
+            break;
+          }
+        } catch (e) {
+          console.warn("AdminPlus: Could not access role at index " + i);
+        }
+      }
+    }
+    
+    // Check permissions
+    if (!isAdmin && userName !== "Adrian Solis") {
+      if (Xrm.Navigation && typeof Xrm.Navigation.openAlertDialog === 'function') {
+        Xrm.Navigation.openAlertDialog({ text: "You do not have permission to execute this action."});
+      } else {
+        alert("You do not have permission to execute this action.");
+      }
+      return;    
+    }
+  } catch (e) {
+    console.error("AdminPlus: Error checking permissions:", e);
+    // Continue anyway - let user try to use the tool
   }	 
   
   var popupHtml = `
