@@ -221,15 +221,18 @@ function restoreDisplayNames() {
             }
         }
         
+        // Restore form components
+        restoreFormComponents();
+        
         // Mark as inactive
         window.adminPlusLogicalNamesActive = false;
         
-        // Clear option set storage
+        // Clear option set storage AFTER all restores are complete
         window.adminPlusOriginalOptionSets = {};
         
         // Show toast
         if (typeof showToast === 'function') {
-            showToast('Display names restored', 'success');
+            showToast('Logical names cleared', 'success');
         }
     } catch (e) {
         console.error("AdminPlus: Error restoring display names", e);
@@ -321,6 +324,7 @@ function addCopyListenersToLabels() {
                         var target = e.target;
                         if (target.tagName === 'BUTTON' || 
                             target.tagName === 'I' || 
+                            target.tagName === 'SPAN' && target.classList.contains('ms-Icon') ||
                             target.classList.contains('ms-Button') ||
                             target.classList.contains('ms-Icon') ||
                             target.closest('button') ||
@@ -329,16 +333,39 @@ function addCopyListenersToLabels() {
                         }
                         
                         if (window.adminPlusLogicalNamesActive) {
-                            var fullText = this.textContent || this.innerText;
+                            // Try to get the text from the actual clicked element first
+                            var clickedText = target.textContent || target.innerText;
                             
-                            // Extract only the logical name from parentheses
-                            var logicalName = '';
-                            var match = fullText.match(/\(([^)]+)\)/);
-                            if (match && match[1]) {
-                                logicalName = match[1].trim();
+                            // If the clicked element doesn't have text, use the label
+                            if (!clickedText || clickedText.trim() === '') {
+                                clickedText = this.textContent || this.innerText;
                             }
                             
-                            if (logicalName) {
+                            // Extract only the logical name from parentheses
+                            // Look for the LAST occurrence to handle nested elements
+                            var logicalName = '';
+                            var matches = clickedText.match(/\(([^)]+)\)/g);
+                            if (matches && matches.length > 0) {
+                                // Get the last match (most specific)
+                                var lastMatch = matches[matches.length - 1];
+                                logicalName = lastMatch.replace(/[()]/g, '').trim();
+                                
+                                // If there are multiple parentheses on same line, get the one closest to where user clicked
+                                // For header area, just get the first valid logical name pattern
+                                if (matches.length > 1) {
+                                    // Try to find which part of the text was actually clicked
+                                    for (var i = 0; i < matches.length; i++) {
+                                        var testMatch = matches[i].replace(/[()]/g, '').trim();
+                                        // Check if this looks like a logical name (no spaces in middle, may have underscores)
+                                        if (testMatch && testMatch.indexOf(' ') === -1) {
+                                            logicalName = testMatch;
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                            
+                            if (logicalName && logicalName.indexOf(' ') === -1) {
                                 copyToClipboard(logicalName);
                                 e.stopPropagation();
                                 e.preventDefault();
@@ -678,6 +705,117 @@ function processAndRenameFieldsInFormComponents() {
                                                             // Append logical name if not already appended
                                                             if (currentSectionLabel && currentSectionLabel.indexOf(' (' + sectionLogicalName + ')') === -1) {
                                                                 section.setLabel(currentSectionLabel + ' (' + sectionLogicalName + ')');
+                                                            }
+                                                        }
+                                                    } catch (e) {
+                                                        // Silently continue
+                                                    }
+                                                });
+                                            }
+                                        } catch (e) {
+                                            // Silently continue
+                                        }
+                                    });
+                                }
+                            }
+                        }
+                    }
+                } catch (e) {
+                    // Silently continue
+                }
+            });
+        }
+    } catch (e) {
+        // Silently fail
+    }
+}
+
+// Restore form components by removing appended logical names
+function restoreFormComponents() {
+    try {
+        if (!isXrmPageAvailable() || !Xrm.Page.ui || !Xrm.Page.ui.controls) {
+            return;
+        }
+
+        if (typeof Xrm.Page.ui.controls.forEach === 'function') {
+            Xrm.Page.ui.controls.forEach(function(control) {
+                try {
+                    if (!control || typeof control.getControlType !== 'function') {
+                        return;
+                    }
+
+                    if (control.getControlType() === "formcomponent") {
+                        var formComponentControlName = control.getName();
+                        if (typeof Xrm.Page.ui.controls.get === 'function') {
+                            var formComponentControl = Xrm.Page.ui.controls.get(formComponentControlName);
+                            
+                            if (formComponentControl && formComponentControl.data && formComponentControl.data.entity && formComponentControl.data.entity.attributes) {
+                                var formComponentData = formComponentControl.data.entity.attributes;
+                                
+                                if (typeof formComponentData.forEach === 'function') {
+                                    formComponentData.forEach(function(attribute) {
+                                        try {
+                                            var logicalName = attribute._attributeName;
+                                            if (typeof formComponentControl.getControl === 'function') {
+                                                var formComponentFieldControl = formComponentControl.getControl(logicalName);
+                                                if (formComponentFieldControl) {
+                                                    // Remove appended logical name from label
+                                                    if (typeof formComponentFieldControl.getLabel === 'function' && typeof formComponentFieldControl.setLabel === 'function') {
+                                                        var currentLabel = formComponentFieldControl.getLabel();
+                                                        if (currentLabel) {
+                                                            var pattern = ' (' + logicalName + ')';
+                                                            if (currentLabel.indexOf(pattern) !== -1) {
+                                                                var originalLabel = currentLabel.replace(pattern, '');
+                                                                formComponentFieldControl.setLabel(originalLabel);
+                                                            }
+                                                        }
+                                                    }
+                                                    
+                                                    // Restore option set values if applicable
+                                                    if (typeof formComponentFieldControl.getControlType === 'function' &&
+                                                        formComponentFieldControl.getControlType() === "optionset") {
+                                                        restoreOptionSetValues(formComponentFieldControl, logicalName);
+                                                    }
+                                                }
+                                            }
+                                        } catch (e) {
+                                            // Silently continue
+                                        }
+                                    });
+                                }
+                                
+                                // Restore tabs and sections in form component
+                                if (formComponentControl.ui && formComponentControl.ui.tabs && typeof formComponentControl.ui.tabs.forEach === 'function') {
+                                    formComponentControl.ui.tabs.forEach(function(tab) {
+                                        try {
+                                            if (tab && typeof tab.getName === 'function' && typeof tab.getLabel === 'function' && typeof tab.setLabel === 'function') {
+                                                var tabLogicalName = tab.getName();
+                                                var currentTabLabel = tab.getLabel();
+                                                
+                                                // Remove appended logical name
+                                                if (currentTabLabel) {
+                                                    var tabPattern = ' (' + tabLogicalName + ')';
+                                                    if (currentTabLabel.indexOf(tabPattern) !== -1) {
+                                                        var originalTabLabel = currentTabLabel.replace(tabPattern, '');
+                                                        tab.setLabel(originalTabLabel);
+                                                    }
+                                                }
+                                            }
+                                            
+                                            if (tab.sections && typeof tab.sections.forEach === 'function') {
+                                                tab.sections.forEach(function(section) {
+                                                    try {
+                                                        if (section && typeof section.getName === 'function' && typeof section.getLabel === 'function' && typeof section.setLabel === 'function') {
+                                                            var sectionLogicalName = section.getName();
+                                                            var currentSectionLabel = section.getLabel();
+                                                            
+                                                            // Remove appended logical name
+                                                            if (currentSectionLabel) {
+                                                                var sectionPattern = ' (' + sectionLogicalName + ')';
+                                                                if (currentSectionLabel.indexOf(sectionPattern) !== -1) {
+                                                                    var originalSectionLabel = currentSectionLabel.replace(sectionPattern, '');
+                                                                    section.setLabel(originalSectionLabel);
+                                                                }
                                                             }
                                                         }
                                                     } catch (e) {
