@@ -345,17 +345,14 @@ function generatePopupHtml(entityName, cleanRecordId, fieldListHtml, pluralName)
 }
 
 function appendPopupToBody(html) {
-    // Generate inline tooltip styles that will be embedded at popup root level
-    // This ensures styles are automatically cleaned up when popup is removed
-    const tooltipStyles = generateTooltipStyles('entityInfo');
+    // Add tooltip styling
+    addTooltipStyles();
     
-    // Create popup using template utility
-    // Styles are passed separately and placed at root level for proper scoping
+    // Create popup using template utility with popupId for isolation
     const popupContainer = createStandardPopup({
         title: 'Entity & Fields Info',
         content: html,
         popupId: 'entityInfo',
-        inlineStyles: tooltipStyles,
         width: '75%',
         movable: true
     });
