@@ -13,8 +13,8 @@ function isXrmPageAvailable() {
 // Global state to track if logical names are currently shown
 window.adminPlusLogicalNamesActive = window.adminPlusLogicalNamesActive || false;
 
-// Storage for original labels (only stored when showing logical names)
-window.adminPlusOriginalLabels = window.adminPlusOriginalLabels || {};
+// Storage for option sets (still needed for option set restore)
+window.adminPlusOriginalOptionSets = window.adminPlusOriginalOptionSets || {};
 
 // Toggle between logical names and display names
 function renameTabsSectionsFields() {      
@@ -29,42 +29,34 @@ function renameTabsSectionsFields() {
             return;
         }
 
-        // Clear previous storage before showing logical names
-        window.adminPlusOriginalLabels = {};
+        // Clear previous option set storage
+        window.adminPlusOriginalOptionSets = {};
 
-        // Show logical names and store originals
+        // Show logical names by appending them
         var tabs = Xrm.Page.ui.tabs;
         if (tabs && typeof tabs.forEach === 'function') {
             tabs.forEach(function(tab) {
                 try {
                     if (tab && typeof tab.getName === 'function' && typeof tab.getLabel === 'function' && typeof tab.setLabel === 'function') {
                         var tabName = tab.getName();
-                        var originalLabel = tab.getLabel();
+                        var currentLabel = tab.getLabel();
                         
-                        // Store original
-                        if (!window.adminPlusOriginalLabels.tabs) {
-                            window.adminPlusOriginalLabels.tabs = {};
+                        // Append logical name if not already appended
+                        if (currentLabel && currentLabel.indexOf(' (' + tabName + ')') === -1) {
+                            tab.setLabel(currentLabel + ' (' + tabName + ')');
                         }
-                        window.adminPlusOriginalLabels.tabs[tabName] = originalLabel;
-                        
-                        // Set logical name
-                        tab.setLabel(tabName);
                         
                         if (tab.sections && typeof tab.sections.forEach === 'function') {
                             tab.sections.forEach(function(section) {
                                 try {
                                     if (section && typeof section.getName === 'function' && typeof section.getLabel === 'function' && typeof section.setLabel === 'function') {
                                         var sectionName = section.getName();
-                                        var originalSectionLabel = section.getLabel();
+                                        var currentSectionLabel = section.getLabel();
                                         
-                                        // Store original
-                                        if (!window.adminPlusOriginalLabels.sections) {
-                                            window.adminPlusOriginalLabels.sections = {};
+                                        // Append logical name if not already appended
+                                        if (currentSectionLabel && currentSectionLabel.indexOf(' (' + sectionName + ')') === -1) {
+                                            section.setLabel(currentSectionLabel + ' (' + sectionName + ')');
                                         }
-                                        window.adminPlusOriginalLabels.sections[sectionName] = originalSectionLabel;
-                                        
-                                        // Set logical name
-                                        section.setLabel(sectionName);
                                         
                                         if (section.controls && typeof section.controls.forEach === 'function') {
                                             section.controls.forEach(function(control) {
@@ -117,23 +109,37 @@ function renameTabsSectionsFields() {
 // Restore original display names from storage
 function restoreDisplayNames() {
     try {
-        // Restore tabs and sections
+        // Restore tabs and sections by removing appended logical names
         if (Xrm.Page.ui.tabs && typeof Xrm.Page.ui.tabs.forEach === 'function') {
             Xrm.Page.ui.tabs.forEach(function(tab) {
                 try {
-                    if (tab && typeof tab.getName === 'function' && typeof tab.setLabel === 'function') {
+                    if (tab && typeof tab.getName === 'function' && typeof tab.getLabel === 'function' && typeof tab.setLabel === 'function') {
                         var tabName = tab.getName();
-                        if (window.adminPlusOriginalLabels.tabs && window.adminPlusOriginalLabels.tabs[tabName]) {
-                            tab.setLabel(window.adminPlusOriginalLabels.tabs[tabName]);
+                        var currentLabel = tab.getLabel();
+                        
+                        // Remove appended logical name
+                        if (currentLabel) {
+                            var pattern = ' (' + tabName + ')';
+                            if (currentLabel.indexOf(pattern) !== -1) {
+                                var originalLabel = currentLabel.replace(pattern, '');
+                                tab.setLabel(originalLabel);
+                            }
                         }
                         
                         if (tab.sections && typeof tab.sections.forEach === 'function') {
                             tab.sections.forEach(function(section) {
                                 try {
-                                    if (section && typeof section.getName === 'function' && typeof section.setLabel === 'function') {
+                                    if (section && typeof section.getName === 'function' && typeof section.getLabel === 'function' && typeof section.setLabel === 'function') {
                                         var sectionName = section.getName();
-                                        if (window.adminPlusOriginalLabels.sections && window.adminPlusOriginalLabels.sections[sectionName]) {
-                                            section.setLabel(window.adminPlusOriginalLabels.sections[sectionName]);
+                                        var currentSectionLabel = section.getLabel();
+                                        
+                                        // Remove appended logical name
+                                        if (currentSectionLabel) {
+                                            var sectionPattern = ' (' + sectionName + ')';
+                                            if (currentSectionLabel.indexOf(sectionPattern) !== -1) {
+                                                var originalSectionLabel = currentSectionLabel.replace(sectionPattern, '');
+                                                section.setLabel(originalSectionLabel);
+                                            }
                                         }
                                         
                                         if (section.controls && typeof section.controls.forEach === 'function') {
@@ -159,21 +165,53 @@ function restoreDisplayNames() {
             var allControls = Xrm.Page.ui.controls.get();
             if (allControls && typeof allControls.forEach === 'function') {
                 allControls.forEach(function(control) {
-                    restoreControl(control);
+                    try {
+                        if (!control || typeof control.getName !== 'function') {
+                            return;
+                        }
+                        
+                        var controlName = control.getName();
+                        
+                        // Remove appended logical name for all control types
+                        if (typeof control.getLabel === 'function' && typeof control.setLabel === 'function') {
+                            var currentLabel = control.getLabel();
+                            if (currentLabel) {
+                                var pattern = ' (' + controlName + ')';
+                                if (currentLabel.indexOf(pattern) !== -1) {
+                                    var originalLabel = currentLabel.replace(pattern, '');
+                                    control.setLabel(originalLabel);
+                                }
+                            }
+                        }
+                        
+                        // Handle attribute-based controls
+                        if (typeof control.getAttribute === 'function') {
+                            restoreControl(control);
+                        }
+                    } catch (e) {
+                        // Silently continue
+                    }
                 });
             }
         }
         
-        // Restore navigation items
+        // Restore navigation items by removing appended logical names
         if (Xrm.Page.ui.navigation && Xrm.Page.ui.navigation.items && typeof Xrm.Page.ui.navigation.items.get === 'function') {
             var navItems = Xrm.Page.ui.navigation.items.get();
             if (navItems && typeof navItems.forEach === 'function') {
                 navItems.forEach(function(navItem) {
                     try {
-                        if (navItem && typeof navItem.getId === 'function' && typeof navItem.setLabel === 'function') {
+                        if (navItem && typeof navItem.getId === 'function' && typeof navItem.getLabel === 'function' && typeof navItem.setLabel === 'function') {
                             var navId = navItem.getId();
-                            if (window.adminPlusOriginalLabels.navigation && window.adminPlusOriginalLabels.navigation[navId]) {
-                                navItem.setLabel(window.adminPlusOriginalLabels.navigation[navId]);
+                            var currentLabel = navItem.getLabel();
+                            
+                            // Remove appended logical name
+                            if (currentLabel) {
+                                var pattern = ' (' + navId + ')';
+                                if (currentLabel.indexOf(pattern) !== -1) {
+                                    var originalLabel = currentLabel.replace(pattern, '');
+                                    navItem.setLabel(originalLabel);
+                                }
                             }
                         }
                     } catch (e) {
@@ -186,8 +224,8 @@ function restoreDisplayNames() {
         // Mark as inactive
         window.adminPlusLogicalNamesActive = false;
         
-        // Clear storage
-        window.adminPlusOriginalLabels = {};
+        // Clear option set storage
+        window.adminPlusOriginalOptionSets = {};
         
         // Show toast
         if (typeof showToast === 'function') {
@@ -201,7 +239,7 @@ function restoreDisplayNames() {
     }
 }
 
-// Rename control and store original label
+// Rename control by appending logical name to display name
 function renameControlAndStore(control) {
     try {
         if (!control || typeof control.getAttribute !== 'function') {
@@ -212,16 +250,13 @@ function renameControlAndStore(control) {
         if (attribute && typeof attribute.getName === 'function') {
             var logicalName = attribute.getName();
             
-            // Store original label
+            // Append logical name to display name
             if (typeof control.getLabel === 'function' && typeof control.setLabel === 'function') {
-                var originalLabel = control.getLabel();
-                if (!window.adminPlusOriginalLabels.controls) {
-                    window.adminPlusOriginalLabels.controls = {};
+                var currentLabel = control.getLabel();
+                // Only append if not already appended (to handle multiple calls)
+                if (currentLabel && currentLabel.indexOf(' (' + logicalName + ')') === -1) {
+                    control.setLabel(currentLabel + ' (' + logicalName + ')');
                 }
-                window.adminPlusOriginalLabels.controls[logicalName] = originalLabel;
-                
-                // Set logical name
-                control.setLabel(logicalName);
             }
             
             // Handle option sets - store and update
@@ -234,7 +269,7 @@ function renameControlAndStore(control) {
     }
 }
 
-// Restore control to original label
+// Restore control by removing the appended logical name
 function restoreControl(control) {
     try {
         if (!control || typeof control.getAttribute !== 'function') {
@@ -245,10 +280,16 @@ function restoreControl(control) {
         if (attribute && typeof attribute.getName === 'function') {
             var logicalName = attribute.getName();
             
-            // Restore original label
-            if (window.adminPlusOriginalLabels.controls && window.adminPlusOriginalLabels.controls[logicalName]) {
-                if (typeof control.setLabel === 'function') {
-                    control.setLabel(window.adminPlusOriginalLabels.controls[logicalName]);
+            // Remove appended logical name from label
+            if (typeof control.getLabel === 'function' && typeof control.setLabel === 'function') {
+                var currentLabel = control.getLabel();
+                if (currentLabel) {
+                    // Remove the appended logical name pattern: " (logicalName)"
+                    var pattern = ' (' + logicalName + ')';
+                    if (currentLabel.indexOf(pattern) !== -1) {
+                        var originalLabel = currentLabel.replace(pattern, '');
+                        control.setLabel(originalLabel);
+                    }
                 }
             }
             
@@ -382,42 +423,47 @@ function renameAllControls() {
                         var controlType = control.getControlType();
                         var controlName = control.getName();
                         
-                        if (typeof control.setLabel !== 'function') {
+                        if (typeof control.setLabel !== 'function' || typeof control.getLabel !== 'function') {
                             return;
                         }
                         
-                        // Store original label for all control types
-                        if (typeof control.getLabel === 'function') {
-                            var originalLabel = control.getLabel();
-                            if (!window.adminPlusOriginalLabels.controls) {
-                                window.adminPlusOriginalLabels.controls = {};
-                            }
-                            window.adminPlusOriginalLabels.controls[controlName] = originalLabel;
-                        }
+                        var currentLabel = control.getLabel();
                         
                         // Handle subgrids
                         if (controlType === "subgrid") {
-                            control.setLabel(controlName + " [Subgrid]");
+                            if (currentLabel && currentLabel.indexOf(' (' + controlName + ')') === -1) {
+                                control.setLabel(currentLabel + ' (' + controlName + ')');
+                            }
                         }
                         // Handle iframes
                         else if (controlType === "iframe") {
-                            control.setLabel(controlName + " [iFrame]");
+                            if (currentLabel && currentLabel.indexOf(' (' + controlName + ')') === -1) {
+                                control.setLabel(currentLabel + ' (' + controlName + ')');
+                            }
                         }
                         // Handle web resources
                         else if (controlType === "webresource") {
-                            control.setLabel(controlName + " [Web Resource]");
+                            if (currentLabel && currentLabel.indexOf(' (' + controlName + ')') === -1) {
+                                control.setLabel(currentLabel + ' (' + controlName + ')');
+                            }
                         }
                         // Handle quick view forms
                         else if (controlType === "quickform") {
-                            control.setLabel(controlName + " [Quick View]");
+                            if (currentLabel && currentLabel.indexOf(' (' + controlName + ')') === -1) {
+                                control.setLabel(currentLabel + ' (' + controlName + ')');
+                            }
                         }
                         // Handle timers/timelines
                         else if (controlType === "timer") {
-                            control.setLabel(controlName + " [Timer]");
+                            if (currentLabel && currentLabel.indexOf(' (' + controlName + ')') === -1) {
+                                control.setLabel(currentLabel + ' (' + controlName + ')');
+                            }
                         }
                         // Handle other custom controls
                         else if (controlType === "customcontrol" || controlType === "customsubgrid") {
-                            control.setLabel(controlName + " [Custom Control]");
+                            if (currentLabel && currentLabel.indexOf(' (' + controlName + ')') === -1) {
+                                control.setLabel(currentLabel + ' (' + controlName + ')');
+                            }
                         }
                         // Standard controls
                         else if (controlType === "standard" || controlType === "optionset" || controlType === "lookup") {
@@ -434,7 +480,7 @@ function renameAllControls() {
     }
 }
 
-// Helper function to rename navigation items and store originals
+// Helper function to rename navigation items by appending logical names
 function renameNavigationItems() {
     try {
         if (!isXrmPageAvailable() || !Xrm.Page.ui || !Xrm.Page.ui.navigation) {
@@ -449,15 +495,12 @@ function renameNavigationItems() {
                         try {
                             if (navItem && typeof navItem.getId === 'function' && typeof navItem.getLabel === 'function' && typeof navItem.setLabel === 'function') {
                                 var navId = navItem.getId();
-                                var originalLabel = navItem.getLabel();
+                                var currentLabel = navItem.getLabel();
                                 
-                                // Store original
-                                if (!window.adminPlusOriginalLabels.navigation) {
-                                    window.adminPlusOriginalLabels.navigation = {};
+                                // Append logical name if not already appended
+                                if (currentLabel && currentLabel.indexOf(' (' + navId + ')') === -1) {
+                                    navItem.setLabel(currentLabel + ' (' + navId + ')');
                                 }
-                                window.adminPlusOriginalLabels.navigation[navId] = originalLabel;
-                                
-                                navItem.setLabel(navId + " [Nav]");
                             }
                         } catch (e) {
                             // Silently continue
@@ -483,14 +526,10 @@ function storeAndUpdateOptionSetValues(control, logicalName) {
         
         if (optionSetOptions && typeof optionSetOptions.forEach === 'function') {
             // Store original options
-            if (!window.adminPlusOriginalLabels.optionSets) {
-                window.adminPlusOriginalLabels.optionSets = {};
-            }
-            
-            window.adminPlusOriginalLabels.optionSets[logicalName] = [];
+            window.adminPlusOriginalOptionSets[logicalName] = [];
             optionSetOptions.forEach(function(option) {
                 if (option) {
-                    window.adminPlusOriginalLabels.optionSets[logicalName].push({
+                    window.adminPlusOriginalOptionSets[logicalName].push({
                         value: option.value,
                         text: option.text
                     });
@@ -527,8 +566,8 @@ function restoreOptionSetValues(control, logicalName) {
             return;
         }
 
-        if (window.adminPlusOriginalLabels.optionSets && window.adminPlusOriginalLabels.optionSets[logicalName]) {
-            var originalOptions = window.adminPlusOriginalLabels.optionSets[logicalName];
+        if (window.adminPlusOriginalOptionSets[logicalName]) {
+            var originalOptions = window.adminPlusOriginalOptionSets[logicalName];
             
             // Clear current options
             control.clearOptions();
@@ -578,14 +617,12 @@ function processAndRenameFieldsInFormComponents() {
                                             if (typeof formComponentControl.getControl === 'function') {
                                                 var formComponentFieldControl = formComponentControl.getControl(logicalName);
                                                 if (formComponentFieldControl) {
-                                                    // Store original label
+                                                    // Append logical name to label
                                                     if (typeof formComponentFieldControl.getLabel === 'function' && typeof formComponentFieldControl.setLabel === 'function') {
-                                                        var originalLabel = formComponentFieldControl.getLabel();
-                                                        if (!window.adminPlusOriginalLabels.controls) {
-                                                            window.adminPlusOriginalLabels.controls = {};
+                                                        var currentLabel = formComponentFieldControl.getLabel();
+                                                        if (currentLabel && currentLabel.indexOf(' (' + logicalName + ')') === -1) {
+                                                            formComponentFieldControl.setLabel(currentLabel + ' (' + logicalName + ')');
                                                         }
-                                                        window.adminPlusOriginalLabels.controls[logicalName] = originalLabel;
-                                                        formComponentFieldControl.setLabel(logicalName);
                                                     }
                                                     
                                                     // Store and update option set values if applicable
@@ -601,21 +638,18 @@ function processAndRenameFieldsInFormComponents() {
                                     });
                                 }
                                 
-                                // Rename tabs and sections in form component and store originals
+                                // Rename tabs and sections in form component by appending logical names
                                 if (formComponentControl.ui && formComponentControl.ui.tabs && typeof formComponentControl.ui.tabs.forEach === 'function') {
                                     formComponentControl.ui.tabs.forEach(function(tab) {
                                         try {
                                             if (tab && typeof tab.getName === 'function' && typeof tab.getLabel === 'function' && typeof tab.setLabel === 'function') {
                                                 var tabLogicalName = tab.getName();
-                                                var originalTabLabel = tab.getLabel();
+                                                var currentTabLabel = tab.getLabel();
                                                 
-                                                // Store original
-                                                if (!window.adminPlusOriginalLabels.tabs) {
-                                                    window.adminPlusOriginalLabels.tabs = {};
+                                                // Append logical name if not already appended
+                                                if (currentTabLabel && currentTabLabel.indexOf(' (' + tabLogicalName + ')') === -1) {
+                                                    tab.setLabel(currentTabLabel + ' (' + tabLogicalName + ')');
                                                 }
-                                                window.adminPlusOriginalLabels.tabs[tabLogicalName] = originalTabLabel;
-                                                
-                                                tab.setLabel(tabLogicalName);
                                             }
                                             
                                             if (tab.sections && typeof tab.sections.forEach === 'function') {
@@ -623,15 +657,12 @@ function processAndRenameFieldsInFormComponents() {
                                                     try {
                                                         if (section && typeof section.getName === 'function' && typeof section.getLabel === 'function' && typeof section.setLabel === 'function') {
                                                             var sectionLogicalName = section.getName();
-                                                            var originalSectionLabel = section.getLabel();
+                                                            var currentSectionLabel = section.getLabel();
                                                             
-                                                            // Store original
-                                                            if (!window.adminPlusOriginalLabels.sections) {
-                                                                window.adminPlusOriginalLabels.sections = {};
+                                                            // Append logical name if not already appended
+                                                            if (currentSectionLabel && currentSectionLabel.indexOf(' (' + sectionLogicalName + ')') === -1) {
+                                                                section.setLabel(currentSectionLabel + ' (' + sectionLogicalName + ')');
                                                             }
-                                                            window.adminPlusOriginalLabels.sections[sectionLogicalName] = originalSectionLabel;
-                                                            
-                                                            section.setLabel(sectionLogicalName);
                                                         }
                                                     } catch (e) {
                                                         // Silently continue
