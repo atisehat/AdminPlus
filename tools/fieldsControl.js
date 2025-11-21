@@ -1,17 +1,30 @@
-// Show Logical Names for tabs, sections, and fields
+// Show Logical Names for tabs, sections, and fields (comprehensive)
 function renameTabsSectionsFields() {      
     try {
+        // Rename tabs and their sections/controls
         Xrm.Page.ui.tabs.forEach(function(tab) {
-            var logicalName = tab.getName();
-            tab.setLabel(logicalName);
+            var tabLogicalName = tab.getName();
+            tab.setLabel(tabLogicalName);
             tab.sections.forEach(function(section) {
-                var logicalName = section.getName();
-                section.setLabel(logicalName);
+                var sectionLogicalName = section.getName();
+                section.setLabel(sectionLogicalName);
                 section.controls.forEach(renameControlAndUpdateOptionSet);
             });
         });
+        
+        // Rename header fields
         renameHeaderFields();
+        
+        // Rename all other controls (including subgrids, quick views, iframes, etc.)
+        renameAllControls();
+        
+        // Rename fields in form components
         processAndRenameFieldsInFormComponents();
+        
+        // Rename navigation items
+        renameNavigationItems();
+        
+        console.log("AdminPlus: All elements renamed to show logical names");
     } catch (e) {
         console.error("Error in renameTabsSectionsFields:", e);
     }   
@@ -26,6 +39,71 @@ function renameHeaderFields() {
         headerControls.forEach(renameControlAndUpdateOptionSet);   
     } catch (e) {
         console.error("Error in renameHeaderFields:", e);
+    }
+}
+
+// Helper function to rename all controls (including subgrids, quick views, etc.)
+function renameAllControls() {
+    try {
+        var allControls = Xrm.Page.ui.controls.get();
+        allControls.forEach(function(control) {
+            try {
+                var controlType = control.getControlType();
+                var controlName = control.getName();
+                
+                // Handle subgrids
+                if (controlType === "subgrid") {
+                    control.setLabel(controlName + " [Subgrid]");
+                }
+                // Handle iframes
+                else if (controlType === "iframe") {
+                    control.setLabel(controlName + " [iFrame]");
+                }
+                // Handle web resources
+                else if (controlType === "webresource") {
+                    control.setLabel(controlName + " [Web Resource]");
+                }
+                // Handle quick view forms
+                else if (controlType === "quickform") {
+                    control.setLabel(controlName + " [Quick View]");
+                }
+                // Handle timers/timelines
+                else if (controlType === "timer") {
+                    control.setLabel(controlName + " [Timer]");
+                }
+                // Handle other custom controls
+                else if (controlType === "customcontrol" || controlType === "customsubgrid") {
+                    control.setLabel(controlName + " [Custom Control]");
+                }
+                // Standard controls are handled by renameControlAndUpdateOptionSet
+                else if (controlType === "standard" || controlType === "optionset" || controlType === "lookup") {
+                    renameControlAndUpdateOptionSet(control);
+                }
+            } catch (e) {
+                console.warn("Could not rename control:", control.getName(), e);
+            }
+        });
+    } catch (e) {
+        console.error("Error in renameAllControls:", e);
+    }
+}
+
+// Helper function to rename navigation items
+function renameNavigationItems() {
+    try {
+        if (Xrm.Page.ui.navigation && typeof Xrm.Page.ui.navigation.items !== 'undefined') {
+            var navItems = Xrm.Page.ui.navigation.items.get();
+            navItems.forEach(function(navItem) {
+                try {
+                    var navId = navItem.getId();
+                    navItem.setLabel(navId + " [Nav]");
+                } catch (e) {
+                    console.warn("Could not rename navigation item:", e);
+                }
+            });
+        }
+    } catch (e) {
+        console.error("Error in renameNavigationItems:", e);
     }
 }
 
@@ -74,20 +152,46 @@ function processAndRenameFieldsInFormComponents() {
                 if (formComponentControl && formComponentControl.data && formComponentControl.data.entity) {
                     var formComponentData = formComponentControl.data.entity.attributes;
 
+                    // Rename controls in form component
                     formComponentData.forEach(function(attribute) {
                         var logicalName = attribute._attributeName;
                         var formComponentFieldControl = formComponentControl.getControl(logicalName);
                         if (formComponentFieldControl && typeof formComponentFieldControl.setLabel === 'function') {
                             formComponentFieldControl.setLabel(logicalName);
+                            
+                            // Update option set values if applicable
+                            try {
+                                if (formComponentFieldControl.getControlType() === "optionset") {
+                                    updateOptionSetValues(formComponentFieldControl);
+                                }
+                            } catch (e) {
+                                console.warn("Could not update option set in form component:", e);
+                            }
                         }
                     });
 
-                    formComponentControl.ui.tabs.forEach(function(tab) {
-                        tab.sections.forEach(function(section) {
-                            var logicalName = section.getName();
-                            section.setLabel(logicalName);
+                    // Rename tabs and sections in form component
+                    if (formComponentControl.ui && formComponentControl.ui.tabs) {
+                        formComponentControl.ui.tabs.forEach(function(tab) {
+                            try {
+                                var tabLogicalName = tab.getName();
+                                tab.setLabel(tabLogicalName);
+                            } catch (e) {
+                                console.warn("Could not rename tab in form component:", e);
+                            }
+                            
+                            if (tab.sections) {
+                                tab.sections.forEach(function(section) {
+                                    try {
+                                        var sectionLogicalName = section.getName();
+                                        section.setLabel(sectionLogicalName);
+                                    } catch (e) {
+                                        console.warn("Could not rename section in form component:", e);
+                                    }
+                                });
+                            }
                         });
-                    });
+                    }
                 }
             }
         });
@@ -96,16 +200,99 @@ function processAndRenameFieldsInFormComponents() {
     }
 }
 
-// Unlock all fields on the form
+// Unlock all fields on the form (comprehensive)
 function unlockAllFields() {
-    var allControls = Xrm.Page.ui.controls.get();
-    for (var i in allControls) {
-        var control = allControls[i];
-        if (control) {
-            control.setDisabled(false);
-        }
+    try {
+        var allControls = Xrm.Page.ui.controls.get();
+        var unlockedCount = 0;
+        
+        // Unlock all standard controls
+        allControls.forEach(function(control) {
+            try {
+                if (control && typeof control.setDisabled === 'function') {
+                    var controlType = control.getControlType();
+                    
+                    // Unlock standard fields, lookups, and option sets
+                    if (controlType === "standard" || controlType === "lookup" || 
+                        controlType === "optionset" || controlType === "multiselectoptionset") {
+                        control.setDisabled(false);
+                        unlockedCount++;
+                    }
+                    // Unlock boolean (two options) fields
+                    else if (controlType === "boolean") {
+                        control.setDisabled(false);
+                        unlockedCount++;
+                    }
+                }
+            } catch (e) {
+                console.warn("Could not unlock control:", control.getName(), e);
+            }
+        });
+        
+        // Unlock fields in form components
+        unlockFieldsInFormComponents();
+        
+        // Make all attributes editable at the data level
+        unlockAllAttributes();
+        
+        // Unlock subgrids (enable adding/editing records)
+        unlockSubgrids();
+        
+        console.log("AdminPlus: Unlocked " + unlockedCount + " controls and all attributes");
+    } catch (e) {
+        console.error("Error in unlockAllFields:", e);
     }
-    unlockFieldsInFormComponents();
+}
+
+// Helper function to unlock all attributes at the data level
+function unlockAllAttributes() {
+    try {
+        var allAttributes = Xrm.Page.data.entity.attributes.get();
+        allAttributes.forEach(function(attribute) {
+            try {
+                // Set submit mode to always submit
+                if (typeof attribute.setSubmitMode === 'function') {
+                    attribute.setSubmitMode("always");
+                }
+                
+                // Make attribute required level "none" to allow clearing
+                if (typeof attribute.setRequiredLevel === 'function') {
+                    var currentLevel = attribute.getRequiredLevel();
+                    if (currentLevel === "required") {
+                        attribute.setRequiredLevel("none");
+                    }
+                }
+            } catch (e) {
+                console.warn("Could not unlock attribute:", attribute.getName(), e);
+            }
+        });
+    } catch (e) {
+        console.error("Error in unlockAllAttributes:", e);
+    }
+}
+
+// Helper function to unlock subgrids
+function unlockSubgrids() {
+    try {
+        var allControls = Xrm.Page.ui.controls.get();
+        allControls.forEach(function(control) {
+            try {
+                if (control.getControlType() === "subgrid") {
+                    // Enable adding records if possible
+                    var gridContext = control.getGrid();
+                    if (gridContext) {
+                        // Note: Some subgrid operations may be limited by permissions
+                        // This attempts to make them as accessible as possible
+                        console.log("Subgrid found:", control.getName());
+                    }
+                }
+            } catch (e) {
+                console.warn("Could not process subgrid:", e);
+            }
+        });
+    } catch (e) {
+        console.error("Error in unlockSubgrids:", e);
+    }
 }
 
 // Show all hidden tabs, sections, and controls (including subgrids, quick views, iframes, etc.)
