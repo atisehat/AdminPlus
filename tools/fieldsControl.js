@@ -14,7 +14,6 @@ function isXrmPageAvailable() {
 function renameTabsSectionsFields() {      
     try {
         if (!isXrmPageAvailable() || !Xrm.Page.ui || !Xrm.Page.ui.tabs) {
-            console.warn("AdminPlus: Xrm.Page or tabs not available");
             return;
         }
 
@@ -61,10 +60,8 @@ function renameTabsSectionsFields() {
         
         // Rename navigation items
         renameNavigationItems();
-        
-        console.log("AdminPlus: All elements renamed to show logical names");
     } catch (e) {
-        console.error("Error in renameTabsSectionsFields:", e);
+        console.error("AdminPlus: Error showing logical names", e);
     }   
 }
 
@@ -92,7 +89,7 @@ function renameHeaderFields() {
             }
         }
     } catch (e) {
-        console.error("Error in renameHeaderFields:", e);
+        // Silently fail
     }
 }
 
@@ -154,7 +151,7 @@ function renameAllControls() {
             }
         }
     } catch (e) {
-        console.error("Error in renameAllControls:", e);
+        // Silently fail
     }
 }
 
@@ -183,7 +180,7 @@ function renameNavigationItems() {
             }
         }
     } catch (e) {
-        console.error("Error in renameNavigationItems:", e);
+        // Silently fail
     }
 }
 
@@ -237,7 +234,7 @@ function updateOptionSetValues(control) {
             });
         }
     } catch (e) {
-        console.error("Error in updateOptionSetValues:", e);
+        // Silently fail
     }   
 }
 
@@ -319,7 +316,7 @@ function processAndRenameFieldsInFormComponents() {
             });
         }
     } catch (e) {
-        console.error("Error in processAndRenameFieldsInFormComponents:", e);
+        // Silently fail
     }
 }
 
@@ -327,7 +324,6 @@ function processAndRenameFieldsInFormComponents() {
 function unlockAllFields() {
     try {
         if (!isXrmPageAvailable() || !Xrm.Page.ui || !Xrm.Page.ui.controls) {
-            console.warn("AdminPlus: Xrm.Page not available for unlocking");
             return;
         }
 
@@ -370,10 +366,8 @@ function unlockAllFields() {
         
         // Unlock subgrids (enable adding/editing records)
         unlockSubgrids();
-        
-        console.log("AdminPlus: Unlocked " + unlockedCount + " controls and all attributes");
     } catch (e) {
-        console.error("Error in unlockAllFields:", e);
+        console.error("AdminPlus: Error unlocking fields", e);
     }
 }
 
@@ -410,7 +404,7 @@ function unlockAllAttributes() {
             }
         }
     } catch (e) {
-        console.error("Error in unlockAllAttributes:", e);
+        // Silently fail
     }
 }
 
@@ -474,10 +468,6 @@ function unlockBusinessProcessFlowFields() {
                                 }
                             });
                         }
-                        
-                        if (bpfUnlockedCount > 0) {
-                            console.log("AdminPlus: Unlocked " + bpfUnlockedCount + " Business Process Flow fields");
-                        }
                     }
                 }
             } catch (e) {
@@ -489,7 +479,7 @@ function unlockBusinessProcessFlowFields() {
         unlockHeaderAreaFields();
         
     } catch (e) {
-        console.error("Error in unlockBusinessProcessFlowFields:", e);
+        // Silently fail
     }
 }
 
@@ -617,12 +607,8 @@ function unlockHeaderAreaFields() {
         } catch (e) {
             // Silently fail
         }
-        
-        if (headerUnlockedCount > 0) {
-            console.log("AdminPlus: Unlocked " + headerUnlockedCount + " header area fields");
-        }
     } catch (e) {
-        console.error("Error in unlockHeaderAreaFields:", e);
+        // Silently fail
     }
 }
 
@@ -641,9 +627,7 @@ function unlockSubgrids() {
                         if (control && typeof control.getControlType === 'function' && control.getControlType() === "subgrid") {
                             if (typeof control.getGrid === 'function') {
                                 var gridContext = control.getGrid();
-                                if (gridContext) {
-                                    console.log("Subgrid found:", control.getName());
-                                }
+                                // Subgrid found - no action needed
                             }
                         }
                     } catch (e) {
@@ -653,7 +637,7 @@ function unlockSubgrids() {
             }
         }
     } catch (e) {
-        console.error("Error in unlockSubgrids:", e);
+        // Silently fail
     }
 }
 
@@ -661,7 +645,6 @@ function unlockSubgrids() {
 function showAllTabsAndSections() {
     try {
         if (!isXrmPageAvailable() || !Xrm.Page.ui) {
-            console.warn("AdminPlus: Xrm.Page.ui not available");
             return;
         }
 
@@ -731,10 +714,8 @@ function showAllTabsAndSections() {
 
         // Show hidden navigation items
         showHiddenNavigationItems();
-
-        console.log("AdminPlus: All hidden elements have been made visible");
     } catch (e) {
-        console.error("Error in showAllTabsAndSections:", e);
+        console.error("AdminPlus: Error showing hidden elements", e);
     }
 }
 
@@ -801,7 +782,7 @@ function showHiddenControlsInFormComponents() {
             });
         }
     } catch (e) {
-        console.error("Error in showHiddenControlsInFormComponents:", e);
+        // Silently fail
     }
 }
 
@@ -831,7 +812,7 @@ function showHiddenNavigationItems() {
             }
         }
     } catch (e) {
-        console.error("Error in showHiddenNavigationItems:", e);
+        // Silently fail
     }
 }
 
@@ -877,6 +858,6 @@ function unlockFieldsInFormComponents() {
             });
         }
     } catch (e) {
-        console.error("Error in unlockFieldsInFormComponents:", e);
+        // Silently fail
     }
 }
