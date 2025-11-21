@@ -237,7 +237,7 @@ function showToast(message, type, duration) {
                 z-index: 999999;
                 font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
                 font-size: 15px;
-                min-width: 300px;
+                width: fit-content;
                 max-width: 500px;
                 animation: adminplus-toast-in 0.3s ease-out;
             }
