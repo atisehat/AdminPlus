@@ -28,13 +28,12 @@ function createStandardPopup(config) {
         customStyles = {}
     } = config;
 
-    // Remove existing popup of the SAME type only
-    if (popupId) {
-        const existingPopup = document.querySelector(`.commonPopup[data-popup-id="${popupId}"]`);
-        if (existingPopup) {
-            existingPopup.remove();
-        }
-    }
+    // Close ALL existing tool windows before opening a new one
+    removeExistingPopups('commonPopup');
+    
+    // Clean up any leftover tooltip styles from previous popups
+    const existingTooltipStyles = document.querySelectorAll('style[data-adminplus-tooltip]');
+    existingTooltipStyles.forEach(style => style.remove());
 
     // Create popup container
     const popupContainer = document.createElement('div');
@@ -75,6 +74,10 @@ function createStandardPopup(config) {
     // Setup close button functionality
     const closeButton = popupContainer.querySelector('.close-button');
     closeButton.addEventListener('click', () => {
+        // Clean up tooltip styles when closing
+        const tooltipStyles = document.querySelectorAll('style[data-adminplus-tooltip]');
+        tooltipStyles.forEach(style => style.remove());
+        
         if (onClose && typeof onClose === 'function') {
             onClose();
         }
@@ -180,6 +183,10 @@ function createNoteBanner(text, options = {}) {
 function removeExistingPopups(className = 'commonPopup') {
     const existingPopups = document.querySelectorAll(`.${className}`);
     existingPopups.forEach(popup => popup.remove());
+    
+    // Clean up any leftover tooltip styles
+    const tooltipStyles = document.querySelectorAll('style[data-adminplus-tooltip]');
+    tooltipStyles.forEach(style => style.remove());
 }
 
 /**
@@ -198,6 +205,8 @@ function addTooltipStyles(options = {}) {
     } = options;
 
     const tooltipStyle = document.createElement('style');
+    // Mark this style for cleanup
+    tooltipStyle.setAttribute('data-adminplus-tooltip', 'true');
     tooltipStyle.innerHTML = `
         .field-card[data-tooltip],
         .tooltip-enabled[data-tooltip] {

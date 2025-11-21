@@ -351,9 +351,12 @@ function attachModalEventHandlers(container) {
 }
 
 async function dateCalc() {
-    // Remove any existing Date Calculator popup to prevent layout corruption
-    const existingDateCalc = document.querySelector('.commonPopup[data-popup-id="dateCalculator"]');
-    if (existingDateCalc) existingDateCalc.remove();
+    // Close ALL existing tool windows before opening this one
+    removeExistingPopups('commonPopup');
+    
+    // Clean up any leftover tooltip styles
+    const tooltipStyles = document.querySelectorAll('style[data-adminplus-tooltip]');
+    tooltipStyles.forEach(style => style.remove());
     
     const modalContent = createModalContent();
     modalContent.setAttribute('data-popup-id', 'dateCalculator');
