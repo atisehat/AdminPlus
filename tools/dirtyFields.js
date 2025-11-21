@@ -7,8 +7,12 @@ async function showDirtyFields() {
         // Get entity information
         const entityName = entity.getEntityName();
         const recordId = entity.getId().replace(/[{}]/g, "").toLowerCase();
+        const clientUrl = Xrm.Page.context.getClientUrl();
         
-        const fieldListHtml = generateDirtyFieldsHtml(dirtyFields);
+        // Fetch metadata for display names (especially for hidden fields)
+        const metadata = await fetchFieldMetadata(entityName, clientUrl);
+        
+        const fieldListHtml = generateDirtyFieldsHtml(dirtyFields, metadata);
         const popupHtml = generatePopupHtml(entityName, recordId, dirtyFields.length, fieldListHtml);
         appendPopupToBody(popupHtml);
         
@@ -18,7 +22,31 @@ async function showDirtyFields() {
     }
 }
 
-function generateDirtyFieldsHtml(dirtyFields) {
+async function fetchFieldMetadata(entityName, clientUrl) {
+    try {
+        const response = await fetch(`${clientUrl}/api/data/v9.2/EntityDefinitions(LogicalName='${entityName}')/Attributes?$select=LogicalName,DisplayName`);
+        
+        if (!response.ok) {
+            throw new Error(response.statusText);
+        }
+        
+        const data = await response.json();
+        const metadataMap = {};
+        
+        data.value.forEach(field => {
+            if (field.DisplayName && field.DisplayName.UserLocalizedLabel && field.DisplayName.UserLocalizedLabel.Label) {
+                metadataMap[field.LogicalName] = field.DisplayName.UserLocalizedLabel.Label;
+            }
+        });
+        
+        return metadataMap;
+    } catch (error) {
+        console.error('Error fetching field metadata:', error);
+        return {};
+    }
+}
+
+function generateDirtyFieldsHtml(dirtyFields, metadata) {
     if (dirtyFields.length === 0) {
         return '<div style="padding: 20px; text-align: center; color: #666; font-size: 16px;">No dirty fields found.</div>';
     }
@@ -34,27 +62,34 @@ function generateDirtyFieldsHtml(dirtyFields) {
     
     let html = '<div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-left: 15px;">';
     
-    dirtyFields.forEach((attribute, index) => {
+    dirtyFields.forEach((attribute) => {
         const logicalName = attribute.getName();
         const control = attribute.controls.get(0);
-        const displayName = control ? control.getLabel() : logicalName;
+        
+        // Get display name from control, or fallback to metadata, or use logical name
+        let displayName;
+        if (control && control.getLabel()) {
+            displayName = control.getLabel();
+        } else if (metadata[logicalName]) {
+            displayName = metadata[logicalName];
+        } else {
+            displayName = logicalName;
+        }
+        
         const attrType = attribute.getAttributeType();
         const value = formatFieldValue(attribute);
         
         // Get attribute type label
         const typeLabel = getTypeLabel(attrType);
         
-        // Build tooltip text
-        const tooltipText = `${displayName} (${logicalName})\nType: ${typeLabel}\nCurrent Value: ${value}`;
-        
         html += `
-            <div class="field-card" data-copy-text="${escapeHtml(tooltipText)}" data-tooltip="${escapeHtml(tooltipText)}" style="padding: 8px; background-color: #f5f5f5; border-radius: 5px; border-left: 3px solid #e81123; cursor: pointer; transition: background-color 0.2s;">
+            <div class="field-card" style="padding: 8px; background-color: #f5f5f5; border-radius: 5px; border-left: 3px solid #e81123;">
                 <div style="display: flex; justify-content: space-between; align-items: center;">
                     <div style="font-weight: bold; color: #333; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-                        ${displayName} 
-                        <span style="font-weight: normal; color: #666; font-size: 13px;">(${logicalName})</span>
+                        ${escapeHtml(displayName)} 
+                        <span style="font-weight: normal; color: #666; font-size: 13px;">(${escapeHtml(logicalName)})</span>
                     </div>
-                    <div style="font-size: 12px; color: #666; white-space: nowrap; margin-left: 10px;">Type: ${typeLabel}</div>
+                    <div style="font-size: 12px; color: #666; white-space: nowrap; margin-left: 10px;">Type: ${escapeHtml(typeLabel)}</div>
                 </div>
                 <div style="margin-top: 5px; padding-top: 5px; border-top: 1px solid #ddd; font-size: 12px; color: #555; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
                     <strong>Current Value:</strong> <span style="font-style: italic;">${escapeHtml(value)}</span>
@@ -155,17 +190,12 @@ function generatePopupHtml(entityName, recordId, dirtyCount, fieldListHtml) {
         { label: 'Dirty Fields Count', value: dirtyCount }
     ]);
     
-    const noteBanner = createNoteBanner('Click on any field to copy its information');
-    
     const scrollSection = createScrollSection(fieldListHtml);
     
-    return infoHeader + noteBanner + scrollSection;
+    return infoHeader + scrollSection;
 }
 
 function appendPopupToBody(html) {
-    // Add tooltip styling
-    addTooltipStyles();
-    
     // Create popup using template utility
     const popupContainer = createStandardPopup({
         title: 'Dirty Fields Info',
@@ -173,40 +203,4 @@ function appendPopupToBody(html) {
         width: '75%',
         movable: true
     });
-    
-    // Add click-to-copy functionality for field cards
-    popupContainer.querySelectorAll('.field-card').forEach(card => {
-        card.addEventListener('click', function() {
-            const copyText = decodeHtmlEntities(this.getAttribute('data-copy-text'));
-            
-            navigator.clipboard.writeText(copyText).then(() => {
-                // Visual feedback
-                const originalBg = this.style.backgroundColor;
-                this.style.backgroundColor = '#d4edda';
-                setTimeout(() => this.style.backgroundColor = originalBg, 300);
-                
-                // Tooltip feedback
-                const originalTooltip = this.getAttribute('data-tooltip');
-                this.setAttribute('data-tooltip', 'Copied to clipboard! ✓');
-                setTimeout(() => this.setAttribute('data-tooltip', originalTooltip), 1500);
-            }).catch(err => {
-                console.error('Failed to copy:', err);
-                alert('Failed to copy to clipboard');
-            });
-        });
-        
-        // Hover effect
-        card.addEventListener('mouseenter', function() {
-            this.style.backgroundColor = '#e8e8e8';
-        });
-        card.addEventListener('mouseleave', function() {
-            this.style.backgroundColor = '#f5f5f5';
-        });
-    });
-}
-
-function decodeHtmlEntities(text) {
-    const textarea = document.createElement('textarea');
-    textarea.innerHTML = text;
-    return textarea.value;
 }

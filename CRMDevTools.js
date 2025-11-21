@@ -102,7 +102,7 @@ function openPopup() {
 	    <button onclick="unlockAllFields();" class="app-button" title="Unlock Fields">
 	      <span class="app-icon">🔓</span>
 	    </button>
-	    <button onclick="closePopup(); showDirtyFields();" class="app-button" title="Dirty Fields">
+	    <button onclick="showDirtyFields();" class="app-button" title="Dirty Fields">
 	      <span class="app-icon">✏️</span>
 	    </button>
 	    <button onclick="closePopup(); editSecurity();" class="app-button" title="Assign Security">
