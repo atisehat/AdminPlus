@@ -235,6 +235,9 @@ function unlockAllFields() {
         // Make all attributes editable at the data level
         unlockAllAttributes();
         
+        // Unlock Business Process Flow fields (header/status area)
+        unlockBusinessProcessFlowFields();
+        
         // Unlock subgrids (enable adding/editing records)
         unlockSubgrids();
         
@@ -268,6 +271,154 @@ function unlockAllAttributes() {
         });
     } catch (e) {
         console.error("Error in unlockAllAttributes:", e);
+    }
+}
+
+// Helper function to unlock Business Process Flow fields (header/status area)
+function unlockBusinessProcessFlowFields() {
+    try {
+        var bpfUnlockedCount = 0;
+        
+        // Try to access the active process (Business Process Flow)
+        if (typeof Xrm.Page.data.process !== 'undefined' && Xrm.Page.data.process) {
+            var activeProcess = Xrm.Page.data.process;
+            
+            // Get the active stage
+            var activeStage = activeProcess.getActiveStage();
+            if (activeStage) {
+                // Get all steps (fields) in the active stage
+                var steps = activeStage.getSteps();
+                steps.forEach(function(step) {
+                    try {
+                        var stepAttribute = step.getAttribute();
+                        if (stepAttribute) {
+                            var attributeName = step.getName();
+                            
+                            // Get the control for this attribute
+                            var controls = stepAttribute.controls.get();
+                            controls.forEach(function(control) {
+                                try {
+                                    if (typeof control.setDisabled === 'function') {
+                                        control.setDisabled(false);
+                                        bpfUnlockedCount++;
+                                    }
+                                } catch (e) {
+                                    console.warn("Could not unlock BPF control:", attributeName, e);
+                                }
+                            });
+                            
+                            // Also set the attribute to be editable at data level
+                            if (typeof stepAttribute.setRequiredLevel === 'function') {
+                                try {
+                                    stepAttribute.setRequiredLevel("none");
+                                } catch (e) {
+                                    console.warn("Could not remove required level from BPF field:", attributeName, e);
+                                }
+                            }
+                        }
+                    } catch (e) {
+                        console.warn("Could not process BPF step:", e);
+                    }
+                });
+                
+                console.log("AdminPlus: Unlocked " + bpfUnlockedCount + " Business Process Flow fields");
+            }
+            
+            // Also try to unlock fields in all stages (not just active)
+            var allStages = activeProcess.getStages();
+            allStages.forEach(function(stage) {
+                try {
+                    var stageSteps = stage.getSteps();
+                    stageSteps.forEach(function(step) {
+                        try {
+                            var stepAttribute = step.getAttribute();
+                            if (stepAttribute && stepAttribute.controls) {
+                                var controls = stepAttribute.controls.get();
+                                controls.forEach(function(control) {
+                                    try {
+                                        if (typeof control.setDisabled === 'function') {
+                                            control.setDisabled(false);
+                                        }
+                                    } catch (e) {
+                                        // Silently fail for non-active stages
+                                    }
+                                });
+                            }
+                        } catch (e) {
+                            // Silently fail for inaccessible steps
+                        }
+                    });
+                } catch (e) {
+                    // Silently fail for inaccessible stages
+                }
+            });
+        }
+        
+        // Also unlock header fields (top right corner fields outside BPF)
+        unlockHeaderAreaFields();
+        
+    } catch (e) {
+        console.error("Error in unlockBusinessProcessFlowFields:", e);
+    }
+}
+
+// Helper function to unlock header area fields (status bar fields)
+function unlockHeaderAreaFields() {
+    try {
+        // Get all controls and specifically target those that might be in the header
+        var allControls = Xrm.Page.ui.controls.get();
+        var headerUnlockedCount = 0;
+        
+        allControls.forEach(function(control) {
+            try {
+                var controlName = control.getName();
+                
+                // Common header/status area field patterns
+                var isHeaderField = (
+                    controlName.indexOf("header_") === 0 ||
+                    controlName.indexOf("statuscode") !== -1 ||
+                    controlName.indexOf("statecode") !== -1 ||
+                    controlName.indexOf("ownerid") !== -1 ||
+                    controlName.indexOf("modifiedon") !== -1 ||
+                    controlName.indexOf("createdon") !== -1
+                );
+                
+                // Force unlock if it's a header field
+                if (isHeaderField && typeof control.setDisabled === 'function') {
+                    control.setDisabled(false);
+                    
+                    // Also try to make the attribute editable
+                    var attribute = control.getAttribute();
+                    if (attribute) {
+                        if (typeof attribute.setRequiredLevel === 'function') {
+                            try {
+                                attribute.setRequiredLevel("none");
+                            } catch (e) {
+                                // Silently fail
+                            }
+                        }
+                        
+                        // Make it submittable
+                        if (typeof attribute.setSubmitMode === 'function') {
+                            try {
+                                attribute.setSubmitMode("always");
+                            } catch (e) {
+                                // Silently fail
+                            }
+                        }
+                    }
+                    headerUnlockedCount++;
+                }
+            } catch (e) {
+                console.warn("Could not process header control:", e);
+            }
+        });
+        
+        if (headerUnlockedCount > 0) {
+            console.log("AdminPlus: Unlocked " + headerUnlockedCount + " header area fields");
+        }
+    } catch (e) {
+        console.error("Error in unlockHeaderAreaFields:", e);
     }
 }
 
