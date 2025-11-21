@@ -4,6 +4,12 @@ async function showDirtyFields() {
         const attributes = entity.attributes.get();
         const dirtyFields = attributes.filter(attribute => attribute.getIsDirty());
         
+        // If no dirty fields, show toast message and return
+        if (dirtyFields.length === 0) {
+            showToast('No dirty fields found.', 'info');
+            return;
+        }
+        
         // Get entity information
         const entityName = entity.getEntityName();
         const recordId = entity.getId().replace(/[{}]/g, "").toLowerCase();
@@ -47,10 +53,6 @@ async function fetchFieldMetadata(entityName, clientUrl) {
 }
 
 function generateDirtyFieldsHtml(dirtyFields, metadata) {
-    if (dirtyFields.length === 0) {
-        return '<div style="padding: 20px; text-align: center; color: #666; font-size: 16px;">No dirty fields found.</div>';
-    }
-    
     const escapeHtml = (str) => {
         if (!str) return '';
         return str.replace(/&/g, '&amp;')
