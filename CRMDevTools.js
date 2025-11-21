@@ -69,13 +69,11 @@ function openPopup() {
   try {
     // Safely get user context with defensive checks
     if (typeof Xrm === 'undefined' || !Xrm.Utility || !Xrm.Utility.getGlobalContext) {
-      console.error("AdminPlus: Xrm context not available");
       return;
     }
     
     var globalContext = Xrm.Utility.getGlobalContext();
     if (!globalContext || !globalContext.userSettings) {
-      console.error("AdminPlus: User settings not available");
       return;
     }
     
@@ -93,7 +91,7 @@ function openPopup() {
             break;
           }
         } catch (e) {
-          console.warn("AdminPlus: Could not access role at index " + i);
+          // Silently skip invalid roles
         }
       }
     }
@@ -108,7 +106,6 @@ function openPopup() {
       return;    
     }
   } catch (e) {
-    console.error("AdminPlus: Error checking permissions:", e);
     // Continue anyway - let user try to use the tool
   }	 
   

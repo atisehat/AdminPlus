@@ -1,9 +1,6 @@
 // ============================================================================
 // AdminPlus - Fields Control Tools
-// Version: 2.0.0
 // ============================================================================
-
-console.log("AdminPlus fieldsControl.js v2.0.0 loaded successfully");
 
 // Show Logical Names for tabs, sections, and fields (comprehensive)
 function renameTabsSectionsFields() {      
@@ -31,7 +28,6 @@ function renameTabsSectionsFields() {
         // Rename navigation items
         renameNavigationItems();
         
-        console.log("AdminPlus: All elements renamed to show logical names");
     } catch (e) {
         console.error("Error in renameTabsSectionsFields:", e);
     }   
@@ -256,7 +252,6 @@ function unlockAllFields() {
         // Unlock subgrids (enable adding/editing records)
         unlockSubgrids();
         
-        console.log("AdminPlus: Unlocked " + unlockedCount + " controls and all attributes");
     } catch (e) {
         console.error("Error in unlockAllFields:", e);
     }
@@ -353,9 +348,6 @@ function unlockBusinessProcessFlowFields() {
                             }
                         });
                         
-                        if (bpfUnlockedCount > 0) {
-                            console.log("AdminPlus: Unlocked " + bpfUnlockedCount + " Business Process Flow fields");
-                        }
                     }
                 }
             } catch (e) {
@@ -491,9 +483,6 @@ function unlockHeaderAreaFields() {
             // Silently fail - don't log
         }
         
-        if (headerUnlockedCount > 0) {
-            console.log("AdminPlus: Unlocked " + headerUnlockedCount + " header area fields");
-        }
     } catch (e) {
         console.error("Error in unlockHeaderAreaFields:", e);
     }
@@ -511,7 +500,6 @@ function unlockSubgrids() {
                     if (gridContext) {
                         // Note: Some subgrid operations may be limited by permissions
                         // This attempts to make them as accessible as possible
-                        console.log("Subgrid found:", control.getName());
                     }
                 }
             } catch (e) {
@@ -561,7 +549,6 @@ function showAllTabsAndSections() {
         // Show hidden navigation items
         showHiddenNavigationItems();
 
-        console.log("AdminPlus: All hidden elements have been made visible");
     } catch (e) {
         console.error("Error in showAllTabsAndSections:", e);
     }
