@@ -252,6 +252,9 @@ function unlockAllFields() {
         // Unlock subgrids (enable adding/editing records)
         unlockSubgrids();
         
+        // Specifically target whole number fields (they can be stubborn)
+        unlockWholeNumberFields();
+        
     } catch (e) {
         console.error("Error in unlockAllFields:", e);
     }
@@ -284,6 +287,22 @@ function unlockAllAttributes() {
                     var currentLevel = attribute.getRequiredLevel();
                     if (currentLevel === "required") {
                         attribute.setRequiredLevel("none");
+                    }
+                }
+                
+                // Unlock all controls for this attribute (especially important for whole numbers in header)
+                if (attribute.controls && typeof attribute.controls.get === 'function') {
+                    var controls = attribute.controls.get();
+                    if (controls && controls.forEach) {
+                        controls.forEach(function(ctrl) {
+                            try {
+                                if (ctrl && typeof ctrl.setDisabled === 'function') {
+                                    ctrl.setDisabled(false);
+                                }
+                            } catch (e) {
+                                // Silently continue
+                            }
+                        });
                     }
                 }
             } catch (e) {
@@ -508,6 +527,78 @@ function unlockSubgrids() {
         });
     } catch (e) {
         console.error("Error in unlockSubgrids:", e);
+    }
+}
+
+// Helper function to specifically unlock whole number fields (they can be stubborn in header area)
+function unlockWholeNumberFields() {
+    try {
+        if (!Xrm.Page.data || !Xrm.Page.data.entity || !Xrm.Page.data.entity.attributes) {
+            return;
+        }
+        
+        var allAttributes = Xrm.Page.data.entity.attributes.get();
+        if (!allAttributes || !allAttributes.forEach) {
+            return;
+        }
+        
+        allAttributes.forEach(function(attribute) {
+            try {
+                if (!attribute || typeof attribute.getAttributeType !== 'function') return;
+                
+                var attrType = attribute.getAttributeType();
+                
+                // Target integer/whole number fields specifically
+                if (attrType === "integer" || attrType === "decimal" || 
+                    attrType === "double" || attrType === "money" || attrType === "bigint") {
+                    
+                    // Unlock at attribute level
+                    if (typeof attribute.setRequiredLevel === 'function') {
+                        try {
+                            attribute.setRequiredLevel("none");
+                        } catch (e) {
+                            // Silently continue
+                        }
+                    }
+                    
+                    if (typeof attribute.setSubmitMode === 'function') {
+                        try {
+                            attribute.setSubmitMode("always");
+                        } catch (e) {
+                            // Silently continue
+                        }
+                    }
+                    
+                    // Unlock all controls for this numeric attribute
+                    if (attribute.controls && typeof attribute.controls.get === 'function') {
+                        var controls = attribute.controls.get();
+                        if (controls && controls.forEach) {
+                            controls.forEach(function(ctrl) {
+                                try {
+                                    if (!ctrl) return;
+                                    
+                                    // Aggressively unlock
+                                    if (typeof ctrl.setDisabled === 'function') {
+                                        ctrl.setDisabled(false);
+                                    }
+                                    
+                                    // Also try to set it as editable
+                                    if (typeof ctrl.setVisible === 'function') {
+                                        ctrl.setVisible(true);
+                                    }
+                                } catch (e) {
+                                    // Silently continue
+                                }
+                            });
+                        }
+                    }
+                }
+            } catch (e) {
+                // Silently continue
+            }
+        });
+    } catch (e) {
+        // Silently fail
     }
 }
 
