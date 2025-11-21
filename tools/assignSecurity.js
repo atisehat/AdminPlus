@@ -70,13 +70,9 @@ function editSecurity() {
 	       <button id="assignSubmitButton" style="display: none;">Submit</button>
 	    </div>	    
 	  `;
-	  // Close ALL existing tool windows before opening this one
-	  removeExistingPopups('commonPopup');
-	  removeExistingPopups('assignPopup');
-	  
-	  // Clean up any leftover tooltip styles
-	  const tooltipStyles = document.querySelectorAll('style[data-adminplus-tooltip]');
-	  tooltipStyles.forEach(style => style.remove());
+	  // Remove any existing Assign Security popup to prevent layout corruption
+	  const existingAssignSec = document.querySelector('.assignPopup[data-popup-id="assignSecurity"]');
+	  if (existingAssignSec) existingAssignSec.remove();
 	  
 	  newContainer.setAttribute('data-popup-id', 'assignSecurity');
 	  document.body.appendChild(newContainer);

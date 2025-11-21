@@ -345,9 +345,6 @@ function generatePopupHtml(entityName, cleanRecordId, fieldListHtml, pluralName)
 }
 
 function appendPopupToBody(html) {
-    // Add tooltip styling
-    addTooltipStyles();
-    
     // Create popup using template utility
     const popupContainer = createStandardPopup({
         title: 'Entity & Fields Info',
@@ -355,6 +352,11 @@ function appendPopupToBody(html) {
         popupId: 'entityInfo',
         width: '75%',
         movable: true
+    });
+    
+    // Add tooltip styling scoped to this popup
+    addTooltipStyles({
+        popupContainer: popupContainer
     });
     
     // Add click-to-copy functionality for field cards

@@ -28,12 +28,21 @@ function createStandardPopup(config) {
         customStyles = {}
     } = config;
 
-    // Close ALL existing tool windows before opening a new one
-    removeExistingPopups('commonPopup');
-    
-    // Clean up any leftover tooltip styles from previous popups
-    const existingTooltipStyles = document.querySelectorAll('style[data-adminplus-tooltip]');
-    existingTooltipStyles.forEach(style => style.remove());
+    // Remove existing popup of the SAME type only
+    if (popupId) {
+        const existingPopup = document.querySelector(`.commonPopup[data-popup-id="${popupId}"]`);
+        if (existingPopup) {
+            // Clean up any associated style elements before removing
+            const styleId = existingPopup.getAttribute('data-style-id');
+            if (styleId) {
+                const associatedStyle = document.querySelector(`style[data-popup-style="${styleId}"]`);
+                if (associatedStyle) {
+                    associatedStyle.remove();
+                }
+            }
+            existingPopup.remove();
+        }
+    }
 
     // Create popup container
     const popupContainer = document.createElement('div');
@@ -42,6 +51,9 @@ function createStandardPopup(config) {
     // Add unique identifier if provided
     if (popupId) {
         popupContainer.setAttribute('data-popup-id', popupId);
+        // Generate unique style ID for this popup instance
+        const styleId = `${popupId}-${Date.now()}`;
+        popupContainer.setAttribute('data-style-id', styleId);
     }
     
     // Apply default styles
@@ -74,9 +86,14 @@ function createStandardPopup(config) {
     // Setup close button functionality
     const closeButton = popupContainer.querySelector('.close-button');
     closeButton.addEventListener('click', () => {
-        // Clean up tooltip styles when closing
-        const tooltipStyles = document.querySelectorAll('style[data-adminplus-tooltip]');
-        tooltipStyles.forEach(style => style.remove());
+        // Clean up any associated style elements before closing
+        const styleId = popupContainer.getAttribute('data-style-id');
+        if (styleId) {
+            const associatedStyle = document.querySelector(`style[data-popup-style="${styleId}"]`);
+            if (associatedStyle) {
+                associatedStyle.remove();
+            }
+        }
         
         if (onClose && typeof onClose === 'function') {
             onClose();
@@ -182,16 +199,23 @@ function createNoteBanner(text, options = {}) {
  */
 function removeExistingPopups(className = 'commonPopup') {
     const existingPopups = document.querySelectorAll(`.${className}`);
-    existingPopups.forEach(popup => popup.remove());
-    
-    // Clean up any leftover tooltip styles
-    const tooltipStyles = document.querySelectorAll('style[data-adminplus-tooltip]');
-    tooltipStyles.forEach(style => style.remove());
+    existingPopups.forEach(popup => {
+        // Clean up any associated style elements before removing
+        const styleId = popup.getAttribute('data-style-id');
+        if (styleId) {
+            const associatedStyle = document.querySelector(`style[data-popup-style="${styleId}"]`);
+            if (associatedStyle) {
+                associatedStyle.remove();
+            }
+        }
+        popup.remove();
+    });
 }
 
 /**
- * Adds custom tooltip styling to the page
+ * Adds custom tooltip styling to the page (can be scoped to specific popup)
  * @param {Object} [options] - Tooltip styling options
+ * @param {string} [options.popupContainer] - Optional popup container element to scope styles to
  * @param {string} [options.width='500px'] - Tooltip width
  * @param {string} [options.backgroundColor='rgba(43, 43, 43, 0.95)'] - Background color
  * @param {string} [options.fontSize='12px'] - Font size
@@ -199,21 +223,34 @@ function removeExistingPopups(className = 'commonPopup') {
  */
 function addTooltipStyles(options = {}) {
     const {
+        popupContainer,
         width = '500px',
         backgroundColor = 'rgba(43, 43, 43, 0.95)',
         fontSize = '12px'
     } = options;
 
     const tooltipStyle = document.createElement('style');
-    // Mark this style for cleanup
-    tooltipStyle.setAttribute('data-adminplus-tooltip', 'true');
+    
+    // If popup container provided, scope styles to it and link them
+    let scopeSelector = '';
+    if (popupContainer) {
+        const styleId = popupContainer.getAttribute('data-style-id');
+        if (styleId) {
+            tooltipStyle.setAttribute('data-popup-style', styleId);
+            const popupId = popupContainer.getAttribute('data-popup-id');
+            if (popupId) {
+                scopeSelector = `.commonPopup[data-popup-id="${popupId}"] `;
+            }
+        }
+    }
+    
     tooltipStyle.innerHTML = `
-        .field-card[data-tooltip],
-        .tooltip-enabled[data-tooltip] {
+        ${scopeSelector}.field-card[data-tooltip],
+        ${scopeSelector}.tooltip-enabled[data-tooltip] {
             position: relative;
         }
-        .field-card[data-tooltip]:hover::before,
-        .tooltip-enabled[data-tooltip]:hover::before {
+        ${scopeSelector}.field-card[data-tooltip]:hover::before,
+        ${scopeSelector}.tooltip-enabled[data-tooltip]:hover::before {
             content: attr(data-tooltip);
             position: absolute;
             left: 0;

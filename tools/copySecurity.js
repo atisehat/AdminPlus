@@ -61,12 +61,9 @@ function copySecurity() {
 		            <p style="margin-top: 1%; margin-left: 3%;"><strong>**Note: </strong> Only 'Owner' or 'Access' type teams are assignable.</p>
 			  </div>
 		    `;
-		// Close ALL existing tool windows before opening this one
-		removeExistingPopups('commonPopup');
-		
-		// Clean up any leftover tooltip styles
-		const tooltipStyles = document.querySelectorAll('style[data-adminplus-tooltip]');
-		tooltipStyles.forEach(style => style.remove());
+		// Remove any existing Copy Security popup to prevent layout corruption
+		const existingCopySec = document.querySelector('.commonPopup[data-popup-id="copySecurity"]');
+		if (existingCopySec) existingCopySec.remove();
 		
 		newContainer.setAttribute('data-popup-id', 'copySecurity');
 		document.body.appendChild(newContainer);
