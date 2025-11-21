@@ -6,7 +6,6 @@ function makePopupMovable(newContainer) {
   
    var header = newContainer.querySelector('.commonPopup-header');   
    if (!header) {
-       console.warn("Header element not found in the container");
        return;
    }   
    header.onmousedown = function(e) {

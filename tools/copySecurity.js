@@ -232,7 +232,6 @@ function copySecurity() {
 	                        showCustomAlert(`Security updated for ${selectedUserName2}`);
 	                    }
 	                } else {
-	                    console.log("updateUserDetails is NOT accessible");
 	                    updateWasSuccessful = false;
 	                }
 	

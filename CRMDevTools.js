@@ -306,3 +306,4 @@ window.renameTabsSectionsFields = renameTabsSectionsFields;
 window.closePopup = closePopup;
 window.openUrl = openUrl;
 window.showDirtyFields = showDirtyFields;
+window.showToast = showToast;
