@@ -69,7 +69,10 @@ function editSecurity() {
      	       <p><strong>**Note: </strong> Only 'Owner' or 'Access' type teams are assignable.</p>
 	       <button id="assignSubmitButton" style="display: none;">Submit</button>
 	    </div>	    
-	  `;		
+	  `;
+	  // Remove any existing popups to prevent layout corruption
+	  removeExistingPopups('commonPopup');
+	  removeExistingPopups('assignPopup');
 	  document.body.appendChild(newContainer);
 	  attachBackButton(newContainer);		
 	  makePopupMovable(newContainer);	

@@ -345,6 +345,9 @@ function generatePopupHtml(entityName, cleanRecordId, fieldListHtml, pluralName)
 }
 
 function appendPopupToBody(html) {
+    // Remove any existing popups to prevent layout corruption
+    removeExistingPopups('commonPopup');
+    
     // Add tooltip styling
     addTooltipStyles();
     

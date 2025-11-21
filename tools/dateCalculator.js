@@ -351,6 +351,8 @@ function attachModalEventHandlers(container) {
 }
 
 async function dateCalc() {
+    // Remove any existing popups to prevent layout corruption
+    removeExistingPopups('commonPopup');
     const modalContent = createModalContent();
     document.body.appendChild(modalContent);
     attachModalEventHandlers(modalContent);    

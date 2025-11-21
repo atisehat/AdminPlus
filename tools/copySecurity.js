@@ -60,7 +60,9 @@ function copySecurity() {
 			    <button id="submitButton">Submit</button>
 		            <p style="margin-top: 1%; margin-left: 3%;"><strong>**Note: </strong> Only 'Owner' or 'Access' type teams are assignable.</p>
 			  </div>
-		    `;		
+		    `;
+		// Remove any existing popups to prevent layout corruption
+		removeExistingPopups('commonPopup');
 		document.body.appendChild(newContainer);
 		attachBackButton(newContainer);		
 	makePopupMovable(newContainer);	
