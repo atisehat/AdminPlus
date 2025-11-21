@@ -60,8 +60,16 @@ function renameTabsSectionsFields() {
         
         // Rename navigation items
         renameNavigationItems();
+        
+        // Show success toast
+        if (typeof showToast === 'function') {
+            showToast('Logical names are now displayed', 'success');
+        }
     } catch (e) {
         console.error("AdminPlus: Error showing logical names", e);
+        if (typeof showToast === 'function') {
+            showToast('Error displaying logical names', 'error');
+        }
     }   
 }
 
@@ -366,8 +374,16 @@ function unlockAllFields() {
         
         // Unlock subgrids (enable adding/editing records)
         unlockSubgrids();
+        
+        // Show success toast
+        if (typeof showToast === 'function') {
+            showToast('All fields have been unlocked', 'success');
+        }
     } catch (e) {
         console.error("AdminPlus: Error unlocking fields", e);
+        if (typeof showToast === 'function') {
+            showToast('Error unlocking fields', 'error');
+        }
     }
 }
 
@@ -714,8 +730,16 @@ function showAllTabsAndSections() {
 
         // Show hidden navigation items
         showHiddenNavigationItems();
+        
+        // Show success toast
+        if (typeof showToast === 'function') {
+            showToast('Hidden items are now visible', 'success');
+        }
     } catch (e) {
         console.error("AdminPlus: Error showing hidden elements", e);
+        if (typeof showToast === 'function') {
+            showToast('Error showing hidden items', 'error');
+        }
     }
 }
 

@@ -170,3 +170,176 @@ function sortByProperty(array, property) {
   });
 }
 
+// ============================================================================
+// Modern Toast Notification System
+// ============================================================================
+
+/**
+ * Show a modern toast notification that auto-dismisses
+ * @param {string} message - The message to display
+ * @param {string} type - Type of notification: 'success', 'info', 'warning', 'error'
+ * @param {number} duration - Duration in milliseconds (default: 3000)
+ */
+function showToast(message, type, duration) {
+    // Set defaults
+    type = type || 'success';
+    duration = duration || 3000;
+    
+    // Remove any existing toasts
+    var existingToast = document.getElementById('adminplus-toast');
+    if (existingToast) {
+        existingToast.remove();
+    }
+    
+    // Create toast container
+    var toast = document.createElement('div');
+    toast.id = 'adminplus-toast';
+    toast.className = 'adminplus-toast adminplus-toast-' + type;
+    
+    // Create icon based on type
+    var icon = document.createElement('span');
+    icon.className = 'adminplus-toast-icon';
+    
+    var iconMap = {
+        'success': '✓',
+        'info': 'ℹ',
+        'warning': '⚠',
+        'error': '✕'
+    };
+    icon.textContent = iconMap[type] || '✓';
+    
+    // Create message
+    var messageSpan = document.createElement('span');
+    messageSpan.className = 'adminplus-toast-message';
+    messageSpan.textContent = message;
+    
+    // Assemble toast
+    toast.appendChild(icon);
+    toast.appendChild(messageSpan);
+    
+    // Add styles if not already present
+    if (!document.getElementById('adminplus-toast-styles')) {
+        var style = document.createElement('style');
+        style.id = 'adminplus-toast-styles';
+        style.innerHTML = `
+            .adminplus-toast {
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: white;
+                padding: 16px 24px;
+                border-radius: 8px;
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                z-index: 999999;
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+                font-size: 15px;
+                min-width: 300px;
+                max-width: 500px;
+                animation: adminplus-toast-in 0.3s ease-out;
+            }
+            
+            .adminplus-toast.adminplus-toast-out {
+                animation: adminplus-toast-out 0.3s ease-in;
+            }
+            
+            .adminplus-toast-icon {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 28px;
+                height: 28px;
+                border-radius: 50%;
+                font-size: 16px;
+                font-weight: bold;
+                flex-shrink: 0;
+            }
+            
+            .adminplus-toast-message {
+                color: #333;
+                line-height: 1.4;
+            }
+            
+            /* Success */
+            .adminplus-toast-success {
+                border-left: 4px solid #10b981;
+            }
+            
+            .adminplus-toast-success .adminplus-toast-icon {
+                background-color: #d1fae5;
+                color: #10b981;
+            }
+            
+            /* Info */
+            .adminplus-toast-info {
+                border-left: 4px solid #3b82f6;
+            }
+            
+            .adminplus-toast-info .adminplus-toast-icon {
+                background-color: #dbeafe;
+                color: #3b82f6;
+            }
+            
+            /* Warning */
+            .adminplus-toast-warning {
+                border-left: 4px solid #f59e0b;
+            }
+            
+            .adminplus-toast-warning .adminplus-toast-icon {
+                background-color: #fef3c7;
+                color: #f59e0b;
+            }
+            
+            /* Error */
+            .adminplus-toast-error {
+                border-left: 4px solid #ef4444;
+            }
+            
+            .adminplus-toast-error .adminplus-toast-icon {
+                background-color: #fee2e2;
+                color: #ef4444;
+            }
+            
+            /* Animations */
+            @keyframes adminplus-toast-in {
+                from {
+                    opacity: 0;
+                    transform: translate(-50%, -50%) scale(0.9);
+                }
+                to {
+                    opacity: 1;
+                    transform: translate(-50%, -50%) scale(1);
+                }
+            }
+            
+            @keyframes adminplus-toast-out {
+                from {
+                    opacity: 1;
+                    transform: translate(-50%, -50%) scale(1);
+                }
+                to {
+                    opacity: 0;
+                    transform: translate(-50%, -50%) scale(0.9);
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+    
+    // Add to document
+    document.body.appendChild(toast);
+    
+    // Auto dismiss
+    setTimeout(function() {
+        toast.classList.add('adminplus-toast-out');
+        setTimeout(function() {
+            if (toast && toast.parentNode) {
+                toast.remove();
+            }
+        }, 300);
+    }, duration);
+}
+
