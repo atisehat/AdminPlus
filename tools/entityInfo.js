@@ -1,8 +1,10 @@
 async function fetchEntityFields() {
+    console.log('Entity Info: fetchEntityFields called');
     const entityName = Xrm.Page.data.entity.getEntityName();
     const recordId = Xrm.Page.data.entity.getId();
     const cleanRecordId = recordId.replace(/[{}]/g, "").toLowerCase();
     const clientUrl = Xrm.Page.context.getClientUrl();
+    console.log('Entity Info: Entity Name =', entityName, 'Record ID =', cleanRecordId);
     
     try {
         // Fetch entity metadata and plural name in parallel
