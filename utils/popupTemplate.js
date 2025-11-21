@@ -4,6 +4,41 @@
  */
 
 /**
+ * Cleans up styles associated with a specific popup
+ * @param {HTMLElement} popupContainer - The popup container element
+ */
+function cleanupPopupStyles(popupContainer) {
+    if (!popupContainer) return;
+    
+    const styleId = popupContainer.getAttribute('data-style-id');
+    if (styleId) {
+        const associatedStyle = document.querySelector(`style[data-popup-style="${styleId}"]`);
+        if (associatedStyle) {
+            associatedStyle.remove();
+        }
+    }
+}
+
+/**
+ * Closes all tool popup windows and cleans up associated styles
+ * Call this before opening a new tool window to ensure clean state
+ */
+function closeAllToolPopups() {
+    // Find all commonPopup windows (tool popups)
+    const allPopups = document.querySelectorAll('.commonPopup');
+    allPopups.forEach(popup => {
+        // Clean up any associated style elements
+        cleanupPopupStyles(popup);
+        popup.remove();
+    });
+    
+    // Also clean up any orphaned tooltip styles that might be left behind
+    // This catches any styles that weren't properly linked to a popup
+    const orphanedStyles = document.querySelectorAll('style[data-popup-style]');
+    orphanedStyles.forEach(style => style.remove());
+}
+
+/**
  * Creates a standardized popup window
  * @param {Object} config - Configuration object
  * @param {string} config.title - Title text for the header
@@ -28,21 +63,9 @@ function createStandardPopup(config) {
         customStyles = {}
     } = config;
 
-    // Remove existing popup of the SAME type only
-    if (popupId) {
-        const existingPopup = document.querySelector(`.commonPopup[data-popup-id="${popupId}"]`);
-        if (existingPopup) {
-            // Clean up any associated style elements before removing
-            const styleId = existingPopup.getAttribute('data-style-id');
-            if (styleId) {
-                const associatedStyle = document.querySelector(`style[data-popup-style="${styleId}"]`);
-                if (associatedStyle) {
-                    associatedStyle.remove();
-                }
-            }
-            existingPopup.remove();
-        }
-    }
+    // ALWAYS close all existing tool popups before opening a new one
+    // This ensures clean state and no interference between tools
+    closeAllToolPopups();
 
     // Create popup container
     const popupContainer = document.createElement('div');
@@ -86,14 +109,8 @@ function createStandardPopup(config) {
     // Setup close button functionality
     const closeButton = popupContainer.querySelector('.close-button');
     closeButton.addEventListener('click', () => {
-        // Clean up any associated style elements before closing
-        const styleId = popupContainer.getAttribute('data-style-id');
-        if (styleId) {
-            const associatedStyle = document.querySelector(`style[data-popup-style="${styleId}"]`);
-            if (associatedStyle) {
-                associatedStyle.remove();
-            }
-        }
+        // Thorough cleanup before closing
+        cleanupPopupStyles(popupContainer);
         
         if (onClose && typeof onClose === 'function') {
             onClose();
@@ -201,15 +218,13 @@ function removeExistingPopups(className = 'commonPopup') {
     const existingPopups = document.querySelectorAll(`.${className}`);
     existingPopups.forEach(popup => {
         // Clean up any associated style elements before removing
-        const styleId = popup.getAttribute('data-style-id');
-        if (styleId) {
-            const associatedStyle = document.querySelector(`style[data-popup-style="${styleId}"]`);
-            if (associatedStyle) {
-                associatedStyle.remove();
-            }
-        }
+        cleanupPopupStyles(popup);
         popup.remove();
     });
+    
+    // Clean up any orphaned styles as a safety measure
+    const orphanedStyles = document.querySelectorAll('style[data-popup-style]');
+    orphanedStyles.forEach(style => style.remove());
 }
 
 /**
