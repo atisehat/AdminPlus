@@ -8,7 +8,7 @@ async function showDirtyFields() {
         
         // If no dirty fields, show toast message and return
         if (dirtyFields.length === 0) {
-            showToast('No dirty fields found.', 'info');
+            showToast('No dirty fields found.', 'success');
             return;
         }
         
