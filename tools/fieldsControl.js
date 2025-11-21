@@ -214,9 +214,17 @@ function unlockAllFields() {
         var unlockedCount = 0;
         
         // Unlock all standard controls
-        allControls.forEach(function(control) {
-            try {
-                if (control && typeof control.setDisabled === 'function') {
+        if (allControls && allControls.forEach) {
+            allControls.forEach(function(control) {
+                try {
+                    if (!control) return;
+                    
+                    // Check if control has necessary methods
+                    if (typeof control.getControlType !== 'function' || 
+                        typeof control.setDisabled !== 'function') {
+                        return;
+                    }
+                    
                     var controlType = control.getControlType();
                     
                     // Unlock standard fields, lookups, and option sets
@@ -230,11 +238,11 @@ function unlockAllFields() {
                         control.setDisabled(false);
                         unlockedCount++;
                     }
+                } catch (e) {
+                    // Silently continue - don't log to avoid spam
                 }
-            } catch (e) {
-                console.warn("Could not unlock control:", control.getName(), e);
-            }
-        });
+            });
+        }
         
         // Unlock fields in form components
         unlockFieldsInFormComponents();
@@ -257,23 +265,34 @@ function unlockAllFields() {
 // Helper function to unlock all attributes at the data level
 function unlockAllAttributes() {
     try {
+        if (!Xrm.Page.data || !Xrm.Page.data.entity || !Xrm.Page.data.entity.attributes) {
+            return;
+        }
+        
         var allAttributes = Xrm.Page.data.entity.attributes.get();
+        if (!allAttributes || !allAttributes.forEach) {
+            return;
+        }
+        
         allAttributes.forEach(function(attribute) {
             try {
+                if (!attribute) return;
+                
                 // Set submit mode to always submit
                 if (typeof attribute.setSubmitMode === 'function') {
                     attribute.setSubmitMode("always");
                 }
                 
                 // Make attribute required level "none" to allow clearing
-                if (typeof attribute.setRequiredLevel === 'function') {
+                if (typeof attribute.setRequiredLevel === 'function' && 
+                    typeof attribute.getRequiredLevel === 'function') {
                     var currentLevel = attribute.getRequiredLevel();
                     if (currentLevel === "required") {
                         attribute.setRequiredLevel("none");
                     }
                 }
             } catch (e) {
-                console.warn("Could not unlock attribute:", attribute.getName(), e);
+                // Silently continue
             }
         });
     } catch (e) {
@@ -432,35 +451,44 @@ function unlockHeaderAreaFields() {
         
         // Also try to unlock ALL controls that have "header" in their parent hierarchy
         try {
-            var allAttributes = Xrm.Page.data.entity.attributes.get();
-            allAttributes.forEach(function(attr) {
-                try {
-                    if (attr && typeof attr.controls !== 'undefined' && attr.controls) {
-                        var attrControls = attr.controls.get();
-                        attrControls.forEach(function(ctrl) {
-                            try {
-                                // Try unlocking every control aggressively
-                                if (typeof ctrl.setDisabled === 'function') {
-                                    var wasDisabled = ctrl.getDisabled();
-                                    if (wasDisabled) {
-                                        ctrl.setDisabled(false);
-                                        // Check if it actually unlocked
-                                        if (!ctrl.getDisabled()) {
-                                            headerUnlockedCount++;
+            if (Xrm.Page.data && Xrm.Page.data.entity && Xrm.Page.data.entity.attributes) {
+                var allAttributes = Xrm.Page.data.entity.attributes.get();
+                if (allAttributes && allAttributes.forEach) {
+                    allAttributes.forEach(function(attr) {
+                        try {
+                            if (!attr || !attr.controls) return;
+                            
+                            var attrControls = attr.controls.get();
+                            if (!attrControls || !attrControls.forEach) return;
+                            
+                            attrControls.forEach(function(ctrl) {
+                                try {
+                                    if (!ctrl) return;
+                                    
+                                    // Try unlocking every control aggressively
+                                    if (typeof ctrl.setDisabled === 'function' && 
+                                        typeof ctrl.getDisabled === 'function') {
+                                        var wasDisabled = ctrl.getDisabled();
+                                        if (wasDisabled) {
+                                            ctrl.setDisabled(false);
+                                            // Check if it actually unlocked
+                                            if (!ctrl.getDisabled()) {
+                                                headerUnlockedCount++;
+                                            }
                                         }
                                     }
+                                } catch (e) {
+                                    // Silently fail
                                 }
-                            } catch (e) {
-                                // Silently fail
-                            }
-                        });
-                    }
-                } catch (e) {
-                    // Silently fail
+                            });
+                        } catch (e) {
+                            // Silently fail
+                        }
+                    });
                 }
-            });
+            }
         } catch (e) {
-            console.warn("Could not iterate through all attribute controls:", e);
+            // Silently fail - don't log
         }
         
         if (headerUnlockedCount > 0) {
