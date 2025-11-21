@@ -90,7 +90,7 @@ function renameTabsSectionsFields() {
     }   
 }
 
-// Restore original display names by refreshing the form
+// Restore original display names by reloading the page
 function restoreDisplayNames() {
     try {
         // Mark as inactive first
@@ -98,34 +98,13 @@ function restoreDisplayNames() {
         
         // Show toast
         if (typeof showToast === 'function') {
-            showToast('Refreshing to restore display names...', 'info');
+            showToast('Restoring display names...', 'info');
         }
         
-        // Refresh the form to restore all original labels
-        if (typeof Xrm !== 'undefined' && Xrm.Page && typeof Xrm.Page.data !== 'undefined' && Xrm.Page.data.refresh) {
-            setTimeout(function() {
-                Xrm.Page.data.refresh(false).then(
-                    function() {
-                        if (typeof showToast === 'function') {
-                            showToast('Display names restored', 'success');
-                        }
-                    },
-                    function() {
-                        if (typeof showToast === 'function') {
-                            showToast('Display names restored', 'success');
-                        }
-                    }
-                );
-            }, 100);
-        } else {
-            // Fallback: reload the page if refresh is not available
-            if (typeof showToast === 'function') {
-                showToast('Display names restored', 'success');
-            }
-            setTimeout(function() {
-                window.location.reload();
-            }, 1000);
-        }
+        // Reload the page to restore all original labels
+        setTimeout(function() {
+            window.location.reload();
+        }, 500);
     } catch (e) {
         console.error("AdminPlus: Error restoring display names", e);
         if (typeof showToast === 'function') {
