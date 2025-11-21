@@ -31,7 +31,7 @@ loadCSS('styles/sidebar.css');
 
 // Load utility scripts first (with proper sequencing)
 let utilScriptsLoaded = 0;
-const totalUtilScripts = 3;
+const totalUtilScripts = 2;
 
 function onUtilScriptLoaded() {
   utilScriptsLoaded++;
@@ -50,7 +50,6 @@ function onUtilScriptLoaded() {
 
 loadScript('utils/api.js', onUtilScriptLoaded);
 loadScript('utils/ui.js', onUtilScriptLoaded);
-loadScript('utils/popupTemplate.js', onUtilScriptLoaded);
 
 // ============================================================================
 // Sidebar Management
