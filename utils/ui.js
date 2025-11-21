@@ -178,12 +178,12 @@ function sortByProperty(array, property) {
  * Show a modern toast notification that auto-dismisses
  * @param {string} message - The message to display
  * @param {string} type - Type of notification: 'success', 'info', 'warning', 'error'
- * @param {number} duration - Duration in milliseconds (default: 3000)
+ * @param {number} duration - Duration in milliseconds (default: 2000)
  */
 function showToast(message, type, duration) {
     // Set defaults
     type = type || 'success';
-    duration = duration || 3000;
+    duration = duration || 2000;
     
     // Remove any existing toasts
     var existingToast = document.getElementById('adminplus-toast');
@@ -266,6 +266,7 @@ function showToast(message, type, duration) {
             /* Success */
             .adminplus-toast-success {
                 border-left: 4px solid #10b981;
+                border-right: 4px solid #10b981;
             }
             
             .adminplus-toast-success .adminplus-toast-icon {
@@ -276,6 +277,7 @@ function showToast(message, type, duration) {
             /* Info */
             .adminplus-toast-info {
                 border-left: 4px solid #3b82f6;
+                border-right: 4px solid #3b82f6;
             }
             
             .adminplus-toast-info .adminplus-toast-icon {
@@ -286,6 +288,7 @@ function showToast(message, type, duration) {
             /* Warning */
             .adminplus-toast-warning {
                 border-left: 4px solid #f59e0b;
+                border-right: 4px solid #f59e0b;
             }
             
             .adminplus-toast-warning .adminplus-toast-icon {
@@ -296,6 +299,7 @@ function showToast(message, type, duration) {
             /* Error */
             .adminplus-toast-error {
                 border-left: 4px solid #ef4444;
+                border-right: 4px solid #ef4444;
             }
             
             .adminplus-toast-error .adminplus-toast-icon {
