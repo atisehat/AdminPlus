@@ -114,12 +114,6 @@ function openPopup() {
 	    <button onclick="closePopup(); dateCalc();" class="app-button" title="Date Calculator">
 	      <span class="app-icon">📅</span>
 	    </button>
-	    <button onclick="openRestBuilder(getOrgUrl());" class="app-button" title="REST Builder">
-	      <span class="app-icon">🔨</span>
-	    </button>
-	    <button onclick="closePopup(); openUrl('userProvision');" class="app-button" title="User Provision">
-	      <span class="app-icon">👥</span>
-	    </button>
 	  </div>
 	</div>
    </div>
