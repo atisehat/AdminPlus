@@ -1,3 +1,10 @@
+// ============================================================================
+// AdminPlus - Fields Control Tools
+// Version: 2.0.0
+// ============================================================================
+
+console.log("AdminPlus fieldsControl.js v2.0.0 loaded successfully");
+
 // Show Logical Names for tabs, sections, and fields (comprehensive)
 function renameTabsSectionsFields() {      
     try {
