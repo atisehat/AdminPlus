@@ -330,6 +330,10 @@ function generateFieldListHtml(fields, fieldValues, fieldMetadata) {
 }
 
 function generatePopupHtml(entityName, cleanRecordId, fieldListHtml, pluralName) {
+    // Generate inline tooltip styles that will be embedded in popup
+    // This ensures styles are automatically cleaned up when popup is removed
+    const tooltipStyles = generateTooltipStyles('entityInfo');
+    
     // Use template utility functions for consistent styling
     const infoHeader = createInfoHeader([
         { label: 'Entity Name', value: entityName },
@@ -341,22 +345,20 @@ function generatePopupHtml(entityName, cleanRecordId, fieldListHtml, pluralName)
     
     const scrollSection = createScrollSection(fieldListHtml);
     
-    return infoHeader + noteBanner + scrollSection;
+    // Embed tooltip styles at the beginning so they're scoped to this popup
+    return tooltipStyles + infoHeader + noteBanner + scrollSection;
 }
 
 function appendPopupToBody(html) {
     // Create popup using template utility
+    // Tooltip styles are now embedded in the HTML, so they're automatically
+    // cleaned up when the popup is removed - no manual cleanup needed!
     const popupContainer = createStandardPopup({
         title: 'Entity & Fields Info',
         content: html,
         popupId: 'entityInfo',
         width: '75%',
         movable: true
-    });
-    
-    // Add tooltip styling scoped to this popup
-    addTooltipStyles({
-        popupContainer: popupContainer
     });
     
     // Add click-to-copy functionality for field cards

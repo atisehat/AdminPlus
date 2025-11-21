@@ -4,12 +4,15 @@
  */
 
 /**
- * Cleans up styles associated with a specific popup
+ * Cleans up any external styles associated with a specific popup
+ * Note: Inline styles (embedded in popup HTML) are automatically removed with the popup
+ * This function only cleans up styles that were added to document.head (legacy approach)
  * @param {HTMLElement} popupContainer - The popup container element
  */
 function cleanupPopupStyles(popupContainer) {
     if (!popupContainer) return;
     
+    // Clean up any external styles (legacy addTooltipStyles approach)
     const styleId = popupContainer.getAttribute('data-style-id');
     if (styleId) {
         const associatedStyle = document.querySelector(`style[data-popup-style="${styleId}"]`);
@@ -20,22 +23,32 @@ function cleanupPopupStyles(popupContainer) {
 }
 
 /**
- * Closes all tool popup windows and cleans up associated styles
- * Call this before opening a new tool window to ensure clean state
+ * Closes all tool popup windows and cleans up all associated styles
+ * Call this before opening a new tool window to ensure completely clean state
  */
 function closeAllToolPopups() {
     // Find all commonPopup windows (tool popups)
     const allPopups = document.querySelectorAll('.commonPopup');
     allPopups.forEach(popup => {
-        // Clean up any associated style elements
+        // Clean up any external style elements (legacy approach)
         cleanupPopupStyles(popup);
+        // Popup removal will automatically remove any inline styles
         popup.remove();
     });
     
-    // Also clean up any orphaned tooltip styles that might be left behind
-    // This catches any styles that weren't properly linked to a popup
-    const orphanedStyles = document.querySelectorAll('style[data-popup-style]');
-    orphanedStyles.forEach(style => style.remove());
+    // THOROUGH CLEANUP: Remove any orphaned tooltip styles from document.head
+    // This catches legacy styles and ensures completely clean state
+    const orphanedExternalStyles = document.querySelectorAll('style[data-popup-style]');
+    orphanedExternalStyles.forEach(style => style.remove());
+    
+    // Also remove any old inline styles that might have leaked (shouldn't happen, but safety measure)
+    const orphanedInlineStyles = document.querySelectorAll('style[data-inline-popup-style]');
+    orphanedInlineStyles.forEach(style => {
+        // Only remove if not inside a popup (orphaned)
+        if (!style.closest('.commonPopup')) {
+            style.remove();
+        }
+    });
 }
 
 /**
@@ -109,7 +122,8 @@ function createStandardPopup(config) {
     // Setup close button functionality
     const closeButton = popupContainer.querySelector('.close-button');
     closeButton.addEventListener('click', () => {
-        // Thorough cleanup before closing
+        // Clean up any external styles (legacy approach)
+        // Inline styles are automatically removed when popup is removed
         cleanupPopupStyles(popupContainer);
         
         if (onClose && typeof onClose === 'function') {
@@ -211,32 +225,81 @@ function createNoteBanner(text, options = {}) {
 }
 
 /**
- * Removes all existing popups of a specific class
+ * Removes all existing popups of a specific class and cleans up any external styles
+ * Inline styles are automatically removed with the popup HTML
  * @param {string} [className='commonPopup'] - Class name of popups to remove
  */
 function removeExistingPopups(className = 'commonPopup') {
     const existingPopups = document.querySelectorAll(`.${className}`);
     existingPopups.forEach(popup => {
-        // Clean up any associated style elements before removing
+        // Clean up any external style elements (legacy approach)
         cleanupPopupStyles(popup);
+        // Popup removal automatically removes inline styles
         popup.remove();
     });
     
-    // Clean up any orphaned styles as a safety measure
-    const orphanedStyles = document.querySelectorAll('style[data-popup-style]');
-    orphanedStyles.forEach(style => style.remove());
+    // Clean up any orphaned external styles as a safety measure
+    const orphanedExternalStyles = document.querySelectorAll('style[data-popup-style]');
+    orphanedExternalStyles.forEach(style => style.remove());
 }
 
 /**
- * Adds custom tooltip styling to the page (can be scoped to specific popup)
+ * Generates inline tooltip CSS for embedding directly in popup HTML
+ * This ensures styles are automatically removed when popup is removed
+ * @param {string} popupId - Unique identifier for the popup (for scoping)
  * @param {Object} [options] - Tooltip styling options
- * @param {string} [options.popupContainer] - Optional popup container element to scope styles to
  * @param {string} [options.width='500px'] - Tooltip width
  * @param {string} [options.backgroundColor='rgba(43, 43, 43, 0.95)'] - Background color
  * @param {string} [options.fontSize='12px'] - Font size
- * @returns {HTMLStyleElement} The created style element
+ * @returns {string} HTML string containing style tag
+ */
+function generateTooltipStyles(popupId, options = {}) {
+    const {
+        width = '500px',
+        backgroundColor = 'rgba(43, 43, 43, 0.95)',
+        fontSize = '12px'
+    } = options;
+
+    // Scope styles to ONLY this specific popup ID
+    const scopeSelector = `.commonPopup[data-popup-id="${popupId}"]`;
+    
+    return `
+        <style data-inline-popup-style="${popupId}">
+            ${scopeSelector} .field-card[data-tooltip],
+            ${scopeSelector} .tooltip-enabled[data-tooltip] {
+                position: relative;
+            }
+            ${scopeSelector} .field-card[data-tooltip]:hover::before,
+            ${scopeSelector} .tooltip-enabled[data-tooltip]:hover::before {
+                content: attr(data-tooltip);
+                position: absolute;
+                left: 0;
+                top: 100%;
+                margin-top: 8px;
+                padding: 10px 14px;
+                background-color: ${backgroundColor};
+                color: white;
+                border-radius: 6px;
+                font-size: ${fontSize};
+                line-height: 1.5;
+                white-space: pre-wrap;
+                width: ${width};
+                box-sizing: border-box;
+                z-index: 100000;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+                pointer-events: none;
+                word-wrap: break-word;
+            }
+        </style>
+    `;
+}
+
+/**
+ * @deprecated Use generateTooltipStyles() instead for automatic cleanup
+ * Adds custom tooltip styling to the page (can be scoped to specific popup)
  */
 function addTooltipStyles(options = {}) {
+    console.warn('addTooltipStyles() is deprecated. Use generateTooltipStyles() for embedded styles instead.');
     const {
         popupContainer,
         width = '500px',
@@ -246,7 +309,6 @@ function addTooltipStyles(options = {}) {
 
     const tooltipStyle = document.createElement('style');
     
-    // If popup container provided, scope styles to it and link them
     let scopeSelector = '';
     if (popupContainer) {
         const styleId = popupContainer.getAttribute('data-style-id');
