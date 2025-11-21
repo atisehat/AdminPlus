@@ -108,23 +108,109 @@ function unlockAllFields() {
     unlockFieldsInFormComponents();
 }
 
-// Show all hidden tabs, sections, and controls
+// Show all hidden tabs, sections, and controls (including subgrids, quick views, iframes, etc.)
 function showAllTabsAndSections() {
-    Xrm.Page.ui.tabs.forEach(function(tab) {
-        if (!tab.getVisible()) {
-            tab.setVisible(true);
-        }
-        tab.sections.forEach(function(section) {
-            if (!section.getVisible()) {
-                section.setVisible(true);
+    try {
+        // Show all hidden tabs and their sections/controls
+        Xrm.Page.ui.tabs.forEach(function(tab) {
+            if (!tab.getVisible()) {
+                tab.setVisible(true);
             }
-            section.controls.forEach(function(control) {
-                if (!control.getVisible()) {
-                    control.setVisible(true);
+            tab.sections.forEach(function(section) {
+                if (!section.getVisible()) {
+                    section.setVisible(true);
                 }
+                section.controls.forEach(function(control) {
+                    if (!control.getVisible()) {
+                        control.setVisible(true);
+                    }
+                });
             });
         });
-    });
+
+        // Show all hidden controls (including those not in tabs - like header fields)
+        var allControls = Xrm.Page.ui.controls.get();
+        allControls.forEach(function(control) {
+            try {
+                if (control && typeof control.getVisible === 'function' && !control.getVisible()) {
+                    control.setVisible(true);
+                }
+            } catch (e) {
+                console.warn("Could not show control:", e);
+            }
+        });
+
+        // Show hidden controls in form components
+        showHiddenControlsInFormComponents();
+
+        // Show hidden navigation items
+        showHiddenNavigationItems();
+
+        console.log("AdminPlus: All hidden elements have been made visible");
+    } catch (e) {
+        console.error("Error in showAllTabsAndSections:", e);
+    }
+}
+
+// Helper function to show hidden controls in form components
+function showHiddenControlsInFormComponents() {
+    try {
+        Xrm.Page.ui.controls.forEach(function(control) {
+            if (control.getControlType() === "formcomponent") {
+                var formComponentControlName = control.getName();
+                var formComponentControl = Xrm.Page.ui.controls.get(formComponentControlName);
+                
+                if (formComponentControl && formComponentControl.ui) {
+                    // Show hidden tabs in form component
+                    if (formComponentControl.ui.tabs) {
+                        formComponentControl.ui.tabs.forEach(function(tab) {
+                            if (typeof tab.getVisible === 'function' && !tab.getVisible()) {
+                                tab.setVisible(true);
+                            }
+                            // Show hidden sections in form component tabs
+                            if (tab.sections) {
+                                tab.sections.forEach(function(section) {
+                                    if (typeof section.getVisible === 'function' && !section.getVisible()) {
+                                        section.setVisible(true);
+                                    }
+                                    // Show hidden controls in form component sections
+                                    if (section.controls) {
+                                        section.controls.forEach(function(sectionControl) {
+                                            if (typeof sectionControl.getVisible === 'function' && !sectionControl.getVisible()) {
+                                                sectionControl.setVisible(true);
+                                            }
+                                        });
+                                    }
+                                });
+                            }
+                        });
+                    }
+                }
+            }
+        });
+    } catch (e) {
+        console.error("Error in showHiddenControlsInFormComponents:", e);
+    }
+}
+
+// Helper function to show hidden navigation items (related entities, subgrids in navigation)
+function showHiddenNavigationItems() {
+    try {
+        if (Xrm.Page.ui.navigation && typeof Xrm.Page.ui.navigation.items !== 'undefined') {
+            var navItems = Xrm.Page.ui.navigation.items.get();
+            navItems.forEach(function(navItem) {
+                try {
+                    if (typeof navItem.getVisible === 'function' && !navItem.getVisible()) {
+                        navItem.setVisible(true);
+                    }
+                } catch (e) {
+                    console.warn("Could not show navigation item:", e);
+                }
+            });
+        }
+    } catch (e) {
+        console.error("Error in showHiddenNavigationItems:", e);
+    }
 }
 
 // Helper function to unlock fields in form components
