@@ -61,8 +61,11 @@ function copySecurity() {
 		            <p style="margin-top: 1%; margin-left: 3%;"><strong>**Note: </strong> Only 'Owner' or 'Access' type teams are assignable.</p>
 			  </div>
 		    `;
-		// Remove any existing popups to prevent layout corruption
-		removeExistingPopups('commonPopup');
+		// Remove any existing Copy Security popup to prevent layout corruption
+		const existingCopySec = document.querySelector('.commonPopup[data-popup-id="copySecurity"]');
+		if (existingCopySec) existingCopySec.remove();
+		
+		newContainer.setAttribute('data-popup-id', 'copySecurity');
 		document.body.appendChild(newContainer);
 		attachBackButton(newContainer);		
 	makePopupMovable(newContainer);	

@@ -345,9 +345,6 @@ function generatePopupHtml(entityName, cleanRecordId, fieldListHtml, pluralName)
 }
 
 function appendPopupToBody(html) {
-    // Remove any existing popups to prevent layout corruption
-    removeExistingPopups('commonPopup');
-    
     // Add tooltip styling
     addTooltipStyles();
     
@@ -355,6 +352,7 @@ function appendPopupToBody(html) {
     const popupContainer = createStandardPopup({
         title: 'Entity & Fields Info',
         content: html,
+        popupId: 'entityInfo',
         width: '75%',
         movable: true
     });

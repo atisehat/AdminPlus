@@ -351,9 +351,12 @@ function attachModalEventHandlers(container) {
 }
 
 async function dateCalc() {
-    // Remove any existing popups to prevent layout corruption
-    removeExistingPopups('commonPopup');
+    // Remove any existing Date Calculator popup to prevent layout corruption
+    const existingDateCalc = document.querySelector('.commonPopup[data-popup-id="dateCalculator"]');
+    if (existingDateCalc) existingDateCalc.remove();
+    
     const modalContent = createModalContent();
+    modalContent.setAttribute('data-popup-id', 'dateCalculator');
     document.body.appendChild(modalContent);
     attachModalEventHandlers(modalContent);    
     const defaultSchedule = await setupHolidayScheduleDropdown();   

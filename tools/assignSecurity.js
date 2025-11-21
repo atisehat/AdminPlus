@@ -70,9 +70,11 @@ function editSecurity() {
 	       <button id="assignSubmitButton" style="display: none;">Submit</button>
 	    </div>	    
 	  `;
-	  // Remove any existing popups to prevent layout corruption
-	  removeExistingPopups('commonPopup');
-	  removeExistingPopups('assignPopup');
+	  // Remove any existing Assign Security popup to prevent layout corruption
+	  const existingAssignSec = document.querySelector('.assignPopup[data-popup-id="assignSecurity"]');
+	  if (existingAssignSec) existingAssignSec.remove();
+	  
+	  newContainer.setAttribute('data-popup-id', 'assignSecurity');
 	  document.body.appendChild(newContainer);
 	  attachBackButton(newContainer);		
 	  makePopupMovable(newContainer);	

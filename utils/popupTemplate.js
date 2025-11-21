@@ -8,6 +8,7 @@
  * @param {Object} config - Configuration object
  * @param {string} config.title - Title text for the header
  * @param {string} config.content - HTML content for the popup body
+ * @param {string} [config.popupId] - Unique identifier for this popup type (e.g., 'entityInfo', 'dirtyFields')
  * @param {string} [config.width='75%'] - Width of the popup (default: 75%)
  * @param {string} [config.maxHeight='90vh'] - Maximum height of the popup (default: 90vh)
  * @param {boolean} [config.movable=true] - Whether the popup should be draggable (default: true)
@@ -19,6 +20,7 @@ function createStandardPopup(config) {
     const {
         title,
         content,
+        popupId,
         width = '75%',
         maxHeight = '90vh',
         movable = true,
@@ -26,9 +28,22 @@ function createStandardPopup(config) {
         customStyles = {}
     } = config;
 
+    // Remove existing popup of the SAME type only
+    if (popupId) {
+        const existingPopup = document.querySelector(`.commonPopup[data-popup-id="${popupId}"]`);
+        if (existingPopup) {
+            existingPopup.remove();
+        }
+    }
+
     // Create popup container
     const popupContainer = document.createElement('div');
     popupContainer.className = 'commonPopup';
+    
+    // Add unique identifier if provided
+    if (popupId) {
+        popupContainer.setAttribute('data-popup-id', popupId);
+    }
     
     // Apply default styles
     popupContainer.style.border = customStyles.border || '3px solid #1a1a1a';

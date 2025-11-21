@@ -198,13 +198,11 @@ function generatePopupHtml(entityName, recordId, dirtyCount, fieldListHtml) {
 }
 
 function appendPopupToBody(html) {
-    // Remove any existing popups to prevent layout corruption
-    removeExistingPopups('commonPopup');
-    
     // Create popup using template utility
     const popupContainer = createStandardPopup({
         title: 'Dirty Fields Info',
         content: html,
+        popupId: 'dirtyFields',
         width: '75%',
         movable: true
     });
