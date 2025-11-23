@@ -14,69 +14,97 @@ function editSecurity() {
 	
 	function createAppendSecurityPopup() {		
 	  var newContainer = document.createElement('div');		
-	  newContainer.className = 'assignPopup';		
-	  newContainer.innerHTML =  `               
-	    <div class="commonPopup-header">Assign User Security</div>
-	    <button class="commonback-button" id="commonback-button">Back</button>		  
-	    <div class="assignSecurityPopup-row">
-	      <div class="assignSection leftUser-section" id="section1">
-	        <h3>Current User Security:</h3>
-	        <input type="text" id="searchInput1" placeholder="Search Users">
-	        <div class="leftUser-list-container">
-	          <div id="userList1"></div>
-	        </div>
-	      </div> 
-	      <div class="assignSection rightBuss-section" id="section2">
-       		<h3 id="bUh3" style="display: none;" >Change Business Unit:</h3>
-	        <input type="text" id="searchInput2" placeholder="Search Business Units" style="display: none;">
-	        <div class="businessUnit-list-container">
-	          <div id="businessUnitList"></div>
+	  newContainer.className = 'commonPopup';
+	  newContainer.style.border = '3px solid #1a1a1a';
+	  newContainer.style.borderRadius = '12px';
+	  newContainer.style.width = '75%';
+	  newContainer.style.maxHeight = '90vh';
+	  
+	  newContainer.innerHTML =  `
+	    <div class="commonPopup-header" style="background-color: #2b2b2b; position: relative; cursor: move; border-radius: 9px 9px 0 0; margin: 0; border-bottom: 2px solid #1a1a1a;">
+	      <span style="color: white;">Assign User Security</span>
+	      <span class="close-button" style="position: absolute; right: 0; top: 0; bottom: 0; width: 45px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 20px; color: white; font-weight: bold; transition: background-color 0.2s ease; border-radius: 0 9px 0 0;">&times;</span>
+	    </div>
+	    <div class="popup-body" style="padding: 0; overflow: hidden;">
+	      <div class="commonSection content-section" style="padding: 0; border-right: 0; height: 100%;">
+	        <div class="scroll-section" style="padding: 20px; overflow-y: auto; max-height: calc(90vh - 100px);">
+	          <div class="assignSecurityPopup-row">
+	            <div class="assignSection leftUser-section" id="section1">
+	              <h3>Current User Security:</h3>
+	              <input type="text" id="searchInput1" placeholder="Search Users">
+	              <div class="leftUser-list-container">
+	                <div id="userList1"></div>
+	              </div>
+	            </div> 
+	            <div class="assignSection rightBuss-section" id="section2">
+	              <h3 id="bUh3" style="display: none;" >Change Business Unit:</h3>
+	              <input type="text" id="searchInput2" placeholder="Search Business Units" style="display: none;">
+	              <div class="businessUnit-list-container">
+	                <div id="businessUnitList"></div>
+	              </div>
+	            </div>
+	          </div>
+	          <div id="sectionsRow1" class="assignSecurityPopup-row">
+	            <div class="assignSection leftDetails-section-row" id="section3">
+	              <h3>Business Unit & Teams:</h3>
+	              <div class="leftRoles-and-teams-list-row">
+	                <ul></ul>
+	              </div>
+	            </div>
+	            <div class="assignSection rightTeam-section" id="section5">	        
+	              <div class="teams-wrapper">
+	                <h3 id="teamsH3" style="display: block;" >To modify user security settings, please choose a user from the list.</h3>
+	                <div class="teamsRoles-list-container">	          
+	                  <div id="teamsList"></div>		   
+	                </div>	  
+	              </div>
+	            </div>
+	          </div>
+	          <div id="sectionsRow2" class="assignSecurityPopup-row">
+	            <div class="assignSection leftDetails-section-row" id="section4">
+	              <h3>Security Roles:</h3>
+	              <div class="leftRoles-and-teams-list-row">
+	                <ul></ul>
+	              </div>		
+	            </div>
+	            <div class="assignSection rightTeam-section" id="section6">	        
+	              <div class="teams-wrapper">	        
+	                <div class="teamsRoles-list-container">
+	                  <div id="securityRolesList"></div>	          		 
+	                </div>
+	              </div>
+	            </div>
+	          </div>
+	          <div class="assignSubmit-button-container">
+	            <p><strong>**Note: </strong> Only 'Owner' or 'Access' type teams are assignable.</p>
+	            <button id="assignSubmitButton" style="display: none;">Submit</button>
+	          </div>
 	        </div>
 	      </div>
 	    </div>
-	    <div id="sectionsRow1" class="assignSecurityPopup-row">
-	      <div class="assignSection leftDetails-section-row" id="section3">
-	        <h3>Business Unit & Teams:</h3>
-	        <div class="leftRoles-and-teams-list-row">
-	          <ul></ul>
-	        </div>
-	      </div>
-	      <div class="assignSection rightTeam-section" id="section5">	        
-	     	 <div class="teams-wrapper">
-		 <h3 id="teamsH3" style="display: block;" >To modify user security settings, please choose a user from the list.</h3>
-	          <div class="teamsRoles-list-container">	          
-		  <div id="teamsList"></div>		   
-		</div>	  
-	       </div>
-	      </div>
-	    </div>
-	    <div id="sectionsRow2" class="assignSecurityPopup-row">
-	      <div class="assignSection leftDetails-section-row" id="section4">
-	        <h3>Security Roles:</h3>
-	        <div class="leftRoles-and-teams-list-row">
-	          <ul></ul>
-	        </div>		
-	      </div>
-	      <div class="assignSection rightTeam-section" id="section6">	        
-	         <div class="teams-wrapper">	        
-		 <div class="teamsRoles-list-container">
-		   <div id="securityRolesList"></div>	          		 
-	         </div>
-	       </div>
-	      </div>
-	    </div>
-	    <div class="assignSubmit-button-container">
-     	       <p><strong>**Note: </strong> Only 'Owner' or 'Access' type teams are assignable.</p>
-	       <button id="assignSubmitButton" style="display: none;">Submit</button>
-	    </div>	    
 	  `;
+	  
 	  // Remove any existing Assign Security popup to prevent layout corruption
-	  const existingAssignSec = document.querySelector('.assignPopup[data-popup-id="assignSecurity"]');
+	  const existingAssignSec = document.querySelector('.commonPopup[data-popup-id="assignSecurity"]');
 	  if (existingAssignSec) existingAssignSec.remove();
 	  
 	  newContainer.setAttribute('data-popup-id', 'assignSecurity');
 	  document.body.appendChild(newContainer);
-	  attachBackButton(newContainer);		
+	  
+	  // Setup close button functionality
+	  const closeButton = newContainer.querySelector('.close-button');
+	  closeButton.addEventListener('click', () => {
+	    newContainer.remove();
+	  });
+	  
+	  // Add hover effect for close button
+	  closeButton.addEventListener('mouseenter', function() {
+	    this.style.backgroundColor = '#e81123';
+	  });
+	  closeButton.addEventListener('mouseleave', function() {
+	    this.style.backgroundColor = 'transparent';
+	  });
+	  
 	  makePopupMovable(newContainer);	
 	}
  
