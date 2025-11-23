@@ -1,3 +1,4 @@
+// Date Calculator Tool - Keep sidebar open
 let listOfHolidays = [];
 let calcDateDays = { startDate: null, endDate: null };
 const typeNames = { 0: "Default", 1: "Customer Service", 2: "Holiday Schedule", "-1": "Inner Calendar" };
