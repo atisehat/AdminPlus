@@ -60,8 +60,8 @@ function editSecurity() {
 	                <div id="teamsH3" style="display: flex; align-items: center; justify-content: center; width: 100%; text-align: center; padding: 10px 20px; color: #444; font-size: 18px; margin-top: -100px;">
 	                  <span style="margin-right: 15px; line-height: 1; display: flex; align-items: center;">
 	                    <svg width="60" height="30" viewBox="0 0 60 30" fill="none" xmlns="http://www.w3.org/2000/svg">
-	                      <path d="M15 15L30 5L30 25L15 15Z" fill="#444"/>
-	                      <rect x="0" y="10" width="15" height="10" fill="#444"/>
+	                      <path d="M0 15L15 5L15 25L0 15Z" fill="#444"/>
+	                      <rect x="15" y="10" width="45" height="10" fill="#444"/>
 	                    </svg>
 	                  </span>
 	                  <span style="line-height: 1.5; font-weight: bold;">To modify user security, please choose a user from the list of users.</span>
