@@ -91,9 +91,9 @@ function editSecurity() {
 	    </div>
 	  `;
 	  
-	  // Remove any existing Assign Security popup to prevent layout corruption
-	  const existingAssignSec = document.querySelector('.commonPopup[data-popup-id="assignSecurity"]');
-	  if (existingAssignSec) existingAssignSec.remove();
+	  // Close any existing popups (from other tools)
+	  const existingPopups = document.querySelectorAll('.commonPopup');
+	  existingPopups.forEach(popup => popup.remove());
 	  
 	  newContainer.setAttribute('data-popup-id', 'assignSecurity');
 	  document.body.appendChild(newContainer);
