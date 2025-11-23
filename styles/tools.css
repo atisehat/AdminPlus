@@ -255,14 +255,16 @@
     flex: 1; 
     max-height: 145px; 
     overflow-y: auto; 
-    text-align: left; 
+    text-align: left;
+    padding-left: 15px;
 }
 
 
 .team-action-checkboxes { 
-    width: 34%; 
+    width: 40%; 
     height: 145px; 
-    padding-left: 15px;
+    padding-right: 15px;
+    order: 1;
 }
 
 .team-action-checkboxes input[type="checkbox"] { 
@@ -276,6 +278,10 @@
 .teams-wrapper { 
     display: flex; 
     align-items: flex-start; 
+}
+
+.teamsRoles-list-container {
+    order: 2;
 }
 
 #assignSubmitButton { 
