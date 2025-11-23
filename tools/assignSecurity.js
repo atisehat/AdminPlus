@@ -79,9 +79,9 @@ function editSecurity() {
 	              </div>
 	            </div>
 	          </div>
-	          <div class="assignSecurityPopup-row">
+	          <div class="assignSecurityPopup-row" style="margin-top: -10px;">
 	            <div class="assignSection" style="width: 38%;"></div>
-	            <div class="assignSection" style="width: 62%; display: flex; flex-direction: column; align-items: center; gap: 10px;">
+	            <div class="assignSection" style="width: 62%; display: flex; flex-direction: column; align-items: center; gap: 10px; padding-top: 0;">
 	              <p style="margin: 0; font-size: 13px; color: #666;"><strong>**Note: </strong> Only 'Owner' or 'Access' type teams are assignable.</p>
 	              <button id="assignSubmitButton" style="display: none;">Submit</button>
 	            </div>
