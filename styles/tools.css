@@ -335,7 +335,7 @@
     overflow-y: auto; 
     display: grid; 
     margin-top: 15px; 
-    padding-left: 10px; 
+    padding-left: 0px; 
 }
 
 .holidayRow { 
@@ -358,7 +358,7 @@
 }
 
 .headerWrapper { 
-    margin-left: 10px; 
+    margin-left: 0px; 
 }
 
 .section1-row1 { 
@@ -373,11 +373,10 @@
 
 .section1-row1:first-child {
     border-right: 2px solid #e0e0e0;
-    padding-right: 15px;
 }
 
 .section1-row1:nth-child(2) {
-    padding-left: 15px;
+    border-right: none;
 }
 
 .section1-row2 { 
@@ -392,11 +391,10 @@
 
 .section1-row2:first-of-type {
     border-right: 2px solid #e0e0e0;
-    padding-right: 15px;
 }
 
 .section1-row2:nth-of-type(2) {
-    padding-left: 15px;
+    border-right: none;
 }
 
 .calendar { 
