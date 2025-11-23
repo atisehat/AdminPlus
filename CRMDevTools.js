@@ -107,7 +107,7 @@ function openPopup() {
 	    <button onclick="editSecurity();" class="app-button" title="Assign Security">
 	      <span class="app-icon">🔐</span>
 	    </button>
-	    <button onclick="closePopup(); copySecurity();" class="app-button" title="Copy Security">
+	    <button onclick="copySecurity();" class="app-button" title="Copy Security">
 	      <span class="app-icon">📄</span>
 	    </button>
 	    <button onclick="closePopup(); dateCalc();" class="app-button" title="Date Calculator">
