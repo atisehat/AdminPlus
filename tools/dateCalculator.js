@@ -110,10 +110,18 @@ async function displayHolidays(scheduleName) {
 
 function createModalContent() {
     const container = document.createElement('div');
-    container.className = 'commonPopup';    
+    container.className = 'commonPopup';
+    container.style.border = '3px solid #1a1a1a';
+    container.style.borderRadius = '12px';
+    container.style.width = '75%';
+    container.style.maxHeight = '90vh';
+    
     container.innerHTML = `
-        <div class="commonPopup-header">Date Calculator</div>
-         <button class="commonback-button" id="commonback-button">Back</button>
+        <div class="commonPopup-header" style="background-color: #2b2b2b; position: relative; cursor: move; border-radius: 9px 9px 0 0; margin: 0; border-bottom: 2px solid #1a1a1a;">
+          <span style="color: white;">Date Calculator</span>
+          <span class="close-button" style="position: absolute; right: 0; top: 0; bottom: 0; width: 45px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 20px; color: white; font-weight: bold; transition: background-color 0.2s ease; border-radius: 0 9px 0 0;">&times;</span>
+        </div>
+        <div class="popup-body" style="padding: 20px; overflow: visible;">
    
          <div class="securityPopup-row">
             <div class="section1-row1" id="section1">
@@ -251,7 +259,8 @@ function createModalContent() {
                     <button id="section4SubmitBtn">Submit</button>
                 </div>                
              </div>
-         </div>           
+         </div>
+        </div>           
     `;    
     return container;    
 }
@@ -344,16 +353,29 @@ function setupSection4FormListeners() {
 }
 
 function attachModalEventHandlers(container) {
-    attachBackButton(container);
+    // Setup close button functionality
+    const closeButton = container.querySelector('.close-button');
+    closeButton.addEventListener('click', () => {
+      container.remove();
+    });
+    
+    // Add hover effect to close button
+    closeButton.addEventListener('mouseenter', () => {
+      closeButton.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
+    });
+    closeButton.addEventListener('mouseleave', () => {
+      closeButton.style.backgroundColor = 'transparent';
+    });
+    
     makePopupMovable(container); 
     setupDateFormListeners();
     setupSection4FormListeners();
 }
 
 async function dateCalc() {
-    // Remove any existing Date Calculator popup to prevent layout corruption
-    const existingDateCalc = document.querySelector('.commonPopup[data-popup-id="dateCalculator"]');
-    if (existingDateCalc) existingDateCalc.remove();
+    // Close any existing popups (from other tools)
+    const existingPopups = document.querySelectorAll('.commonPopup');
+    existingPopups.forEach(popup => popup.remove());
     
     const modalContent = createModalContent();
     modalContent.setAttribute('data-popup-id', 'dateCalculator');
