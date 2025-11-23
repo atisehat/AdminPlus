@@ -140,12 +140,6 @@
     gap: 8px;
 }
 
-.leftUser-section h3 { 
-    text-align: left; 
-    margin-bottom: 10px; 
-    color: #444; 
-}
-
 .leftUser-section { 
     height: 200px; 
     width: 38%; 
