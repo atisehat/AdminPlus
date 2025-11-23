@@ -24,12 +24,21 @@
 }
 
 /* ========== Copy Security ========== */
+.securityPopup-row .commonSection:nth-child(1) {
+    border-right: 3px solid #ccc;
+}
+
+.securityPopup-row .commonSection:nth-child(2) {
+    border-right: none;
+}
+
 #section1, #section3, #section4 {
     border-right: 3px solid #ccc;
 }
 
 #section2, #section5, #section6 {
     border-right: none;
+    padding-left: 15px;
 }
 
 .user-section h3 { 
