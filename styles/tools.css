@@ -30,13 +30,12 @@
     box-sizing: border-box;
 }
 
-#section1, #section3, #section4 {
+#section1, #section3 {
     border-right: 2px solid #e0e0e0;
-    padding-right: 20px;
 }
 
-#section2, #section5, #section6 {
-    padding-left: 20px;
+#section2, #section4, #section5, #section6 {
+    border-right: none;
 }
 
 .user-section h3 { 
