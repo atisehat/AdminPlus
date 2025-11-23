@@ -100,8 +100,9 @@
 .section-header-with-search {
     display: flex;
     align-items: center;
+    justify-content: space-between;
     margin-bottom: 10px;
-    gap: 10px;
+    gap: 15px;
 }
 
 .section-header-with-search h3 {
@@ -120,12 +121,12 @@
 
 /* Specific width for Current User Security search input */
 .leftUser-section .section-header-with-search input {
-    max-width: 200px;
-    flex: 0 0 200px;
+    max-width: 180px;
+    flex: 0 0 180px;
 }
 
 .assignSection { 
-    padding: 10px; 
+    padding: 5px 8px; 
 }
 
 .leftUser-section, .leftDetails-section-row { 
@@ -136,8 +137,7 @@
     display: flex; 
     width: 100%;
     box-sizing: border-box;
-    margin-bottom: 20px;
-    align-items: flex-start;
+    gap: 8px;
 }
 
 .leftUser-section h3 { 
@@ -147,9 +147,10 @@
 }
 
 .leftUser-section { 
-    width: 40%; 
+    height: 200px; 
+    width: 38%; 
     box-sizing: border-box; 
-    padding-right: 10px;
+    padding-right: 8px;
 }
 
 
@@ -170,14 +171,16 @@
 }
 
 .leftUser-list-container { 
-    max-height: 200px; 
+    max-height: 64%; 
     overflow-y: auto; 
 }
 
 .leftDetails-section-row { 
-    width: 40%; 
+    display: inline-block; 
+    width: 38%; 
+    height: 260px; 
     box-sizing: border-box; 
-    padding-right: 10px;
+    padding-right: 8px;
 }
 
 .rightBuss-section h3 { 
@@ -188,16 +191,16 @@
 
 .rightBuss-section { 
     text-align: left; 
-    width: 60%; 
+    width: 62%; 
     box-sizing: border-box;
-    padding-left: 15px;
+    padding-left: 10px;
 }
 
 .rightTeam-section { 
     text-align: left; 
-    width: 60%; 
+    width: 62%; 
     box-sizing: border-box;
-    padding-left: 15px;
+    padding-left: 10px;
 }
 
 
@@ -223,25 +226,31 @@
 }
 
 .rightDetails-section-row { 
-    width: 60%; 
+    display: inline-block; 
+    width: 62%; 
+    height: 150px; 
+    vertical-align: top; 
     box-sizing: border-box; 
     text-align: left; 
-    padding-left: 15px;
+    padding-left: 10px;
 }
 
 .leftRoles-and-teams-list-row { 
-    max-height: 200px; 
+    max-height: 95%; 
+    margin-left: 10px; 
     overflow-y: auto; 
 }
 
 .businessUnit-list-container { 
-    max-height: 200px; 
+    flex: 1; 
+    max-height: 100px; 
     overflow-y: auto; 
     text-align: left; 
 }
 
 .teamsRoles-list-container { 
-    max-height: 200px; 
+    flex: 1; 
+    max-height: 145px; 
     overflow-y: auto; 
     text-align: left; 
 }
@@ -249,6 +258,7 @@
 
 .team-action-checkboxes { 
     width: 34%; 
+    height: 145px; 
     padding-left: 15px;
 }
 
