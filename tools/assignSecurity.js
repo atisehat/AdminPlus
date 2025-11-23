@@ -27,7 +27,7 @@ function editSecurity() {
 	    </div>
 	    <div class="popup-body" style="padding: 0; overflow: hidden;">
 	      <div class="commonSection content-section" style="padding: 0; border-right: 0; height: 100%;">
-	        <div class="scroll-section" style="padding: 20px; overflow-y: auto; max-height: calc(90vh - 100px);">
+	        <div class="scroll-section" style="padding: 20px; overflow-y: auto; overflow-x: hidden; max-height: calc(90vh - 100px);">
 	          <div class="assignSecurityPopup-row">
 	            <div class="assignSection leftUser-section" id="section1">
 	              <div class="section-header-with-search">
