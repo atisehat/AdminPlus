@@ -57,7 +57,10 @@ function editSecurity() {
 	            </div>
 	            <div class="assignSection rightTeam-section" id="section5">	        
 	              <div class="teams-wrapper">
-	                <h3 id="teamsH3" style="display: block;" >To modify user security settings, please choose a user from the list.</h3>
+	                <div id="teamsH3" style="display: flex; align-items: center; justify-content: center; width: 100%; text-align: center; padding: 20px; color: #666; font-size: 14px;">
+	                  <span style="font-size: 24px; margin-right: 10px;">👈</span>
+	                  <span>To modify user security, please choose a user from the list of users.</span>
+	                </div>
 	                <div class="teamsRoles-list-container">	          
 	                  <div id="teamsList"></div>		   
 	                </div>	  
