@@ -64,9 +64,12 @@ function copySecurity() {
 		        </div>
 		      </div>
 		    </div>
-		    <div style="margin-top: 20px; display: flex; justify-content: flex-end; align-items: center; gap: 20px;">
-		      <p style="margin: 0; font-size: 13px; color: #666;"><strong>**Note: </strong> Only 'Owner' or 'Access' type teams are assignable.</p>
-		      <button id="submitButton">Submit</button>
+		    <div class="securityPopup-row" style="margin-top: -25px;">
+		      <div style="width: 50%;"></div>
+		      <div style="width: 50%; display: flex; flex-direction: column; align-items: center; gap: 10px;">
+		        <p style="margin: 0; font-size: 13px; color: #666;"><strong>**Note: </strong> Only 'Owner' or 'Access' type teams are assignable.</p>
+		        <button id="submitButton">Submit</button>
+		      </div>
 		    </div>
 		  </div>
 		`;
