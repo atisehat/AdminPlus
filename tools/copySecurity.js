@@ -64,7 +64,7 @@ function copySecurity() {
 		        </div>
 		      </div>
 		    </div>
-		    <div class="securityPopup-row" style="margin-top: 0px;">
+		    <div class="securityPopup-row" style="margin-top: 5px;">
 		      <div style="width: 50%;"></div>
 		      <div style="width: 50%; display: flex; flex-direction: column; align-items: center; gap: 10px;">
 		        <p style="margin: 0; font-size: 13px; color: #666;"><strong>**Note: </strong> Only 'Owner' or 'Access' type teams are assignable.</p>
