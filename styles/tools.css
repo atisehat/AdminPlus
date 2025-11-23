@@ -172,6 +172,7 @@
     width: 38%; 
     box-sizing: border-box; 
     padding-right: 8px;
+    flex-shrink: 0;
 }
 
 
@@ -197,11 +198,11 @@
 }
 
 .leftDetails-section-row { 
-    display: inline-block; 
     width: 38%; 
     height: 260px; 
     box-sizing: border-box; 
     padding-right: 8px;
+    flex-shrink: 0;
 }
 
 .rightBuss-section h3 { 
@@ -215,6 +216,7 @@
     width: 62%; 
     box-sizing: border-box;
     padding-left: 10px;
+    flex-shrink: 0;
 }
 
 .rightTeam-section { 
@@ -222,6 +224,7 @@
     width: 62%; 
     box-sizing: border-box;
     padding-left: 10px;
+    flex-shrink: 0;
 }
 
 

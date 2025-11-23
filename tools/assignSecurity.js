@@ -18,6 +18,7 @@ function editSecurity() {
 	  newContainer.style.border = '3px solid #1a1a1a';
 	  newContainer.style.borderRadius = '12px';
 	  newContainer.style.width = '75%';
+	  newContainer.style.minWidth = '900px';
 	  newContainer.style.maxHeight = '90vh';
 	  
 	  newContainer.innerHTML =  `
