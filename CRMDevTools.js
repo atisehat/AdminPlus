@@ -3,7 +3,7 @@
 // ============================================================================
 
 const baseUrl = 'https://atisehat.github.io/AdminPlus/';
-const cacheBuster = '?v=' + new Date().getTime();
+const cacheBuster = '?v=' + new Date().getTime(); // Force refresh
 
 // ============================================================================
 // Resource Loading
