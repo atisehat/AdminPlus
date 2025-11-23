@@ -30,12 +30,13 @@
     box-sizing: border-box;
 }
 
-#section1, #section3 {
+#section1, #section3, #section4 {
     border-right: 2px solid #e0e0e0;
+    padding-right: 20px;
 }
 
-#section2, #section4, #section5, #section6 {
-    border-right: none;
+#section2, #section5, #section6 {
+    padding-left: 20px;
 }
 
 .user-section h3 { 
@@ -618,5 +619,26 @@
     background-color: #0a0a0a;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
     transform: translateY(0);
+}
+
+/* ========== Date Calculator Specific Overrides ========== */
+.dateCalculatorPopup #section1 {
+    border-right: 2px solid #e0e0e0;
+    padding-right: 15px;
+}
+
+.dateCalculatorPopup #section2 {
+    border-right: none;
+    padding-left: 15px;
+}
+
+.dateCalculatorPopup #section3 {
+    border-right: 2px solid #e0e0e0;
+    padding-right: 15px;
+}
+
+.dateCalculatorPopup #section4 {
+    border-right: none;
+    padding-left: 15px;
 }
 
