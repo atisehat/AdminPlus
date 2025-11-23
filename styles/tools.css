@@ -24,21 +24,20 @@
 }
 
 /* ========== Copy Security ========== */
-.securityPopup-row .commonSection:nth-child(1) {
-    border-right: 3px solid #ccc;
-}
-
-.securityPopup-row .commonSection:nth-child(2) {
-    border-right: none;
+.securityPopup-row {
+    display: flex;
+    width: 100%;
+    box-sizing: border-box;
+    gap: 20px;
 }
 
 #section1, #section3, #section4 {
-    border-right: 3px solid #ccc;
+    border-right: 2px solid #e0e0e0;
+    padding-right: 15px;
 }
 
 #section2, #section5, #section6 {
-    border-right: none;
-    padding-left: 15px;
+    padding-left: 5px;
 }
 
 .user-section h3 { 
@@ -51,6 +50,7 @@
     text-align: center; 
     height: 270px; 
     width: 50%;
+    box-sizing: border-box;
 }
 
 .user-section input { 
@@ -90,11 +90,8 @@
 }
 
 .details-section-row { 
-    display: inline-block; 
     width: 50%; 
     height: 200px; 
-    margin-left: 10px; 
-    vertical-align: top; 
     box-sizing: border-box; 
     text-align: left; 
 }

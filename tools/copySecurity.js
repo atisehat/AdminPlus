@@ -19,61 +19,54 @@ function copySecurity() {
 		    <span style="color: white;">Copy User Security</span>
 		    <span class="close-button" style="position: absolute; right: 0; top: 0; bottom: 0; width: 45px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 20px; color: white; font-weight: bold; transition: background-color 0.2s ease; border-radius: 0 9px 0 0;">&times;</span>
 		  </div>
-		  <div class="popup-body" style="padding: 0; overflow: hidden;">
-		    <div class="commonSection content-section" style="padding: 0; border-right: 0; height: 100%;">
-		      <div class="scroll-section" style="padding: 20px; overflow: visible; max-height: none;">
-		        <div class="securityPopup-row">
-		          <div class="commonSection user-section" id="section1">
-		            <h3>FROM</h3>
-		            <input type="text" id="searchInput1" placeholder="Search Users">
-		            <div class="user-list-container">
-		              <div id="userList1"></div>
-		            </div>
-		          </div>
-		          <div class="commonSection user-section" id="section2">
-		            <h3>TO</h3>
-		            <input type="text" id="searchInput2" placeholder="Search Users">
-		            <div class="user-list-container">
-		              <div id="userList2"></div>
-		            </div>
-		          </div>
-		        </div>
-		        <div id="sectionsRow1" class="securityPopup-row">
-		          <div class="commonSection details-section-row" id="section3">
-		            <h3>Business Unit & Teams</h3>
-		            <div class="roles-and-teams-list-row">
-		              <ul></ul>
-		            </div>
-		          </div>
-		          <div class="commonSection details-section-row" id="section5">
-		            <h3>Business Unit & Teams</h3>
-		            <div class="roles-and-teams-list-row">
-		              <ul></ul>
-		            </div>
-		          </div>
-		        </div>
-		        <div id="sectionsRow2" class="securityPopup-row">
-		          <div class="commonSection details-section-row" id="section4">
-		            <h3>Security Roles</h3>
-		            <div class="roles-and-teams-list-row">
-		              <ul></ul>
-		            </div>
-		          </div>
-		          <div class="commonSection details-section-row" id="section6">
-		            <h3>Security Roles</h3>
-		            <div class="roles-and-teams-list-row">
-		              <ul></ul>
-		            </div>
-		          </div>
-		        </div>
-		        <div class="securityPopup-row" style="margin-top: -25px;">
-		          <div class="commonSection" style="width: 50%;"></div>
-		          <div class="commonSection" style="width: 50%; display: flex; flex-direction: column; align-items: center; gap: 10px;">
-		            <p style="margin: 0; font-size: 13px; color: #666;"><strong>**Note: </strong> Only 'Owner' or 'Access' type teams are assignable.</p>
-		            <button id="submitButton">Submit</button>
-		          </div>
+		  <div class="popup-body" style="padding: 20px; overflow: visible;">
+		    <div class="securityPopup-row">
+		      <div class="user-section" id="section1">
+		        <h3>FROM</h3>
+		        <input type="text" id="searchInput1" placeholder="Search Users">
+		        <div class="user-list-container">
+		          <div id="userList1"></div>
 		        </div>
 		      </div>
+		      <div class="user-section" id="section2">
+		        <h3>TO</h3>
+		        <input type="text" id="searchInput2" placeholder="Search Users">
+		        <div class="user-list-container">
+		          <div id="userList2"></div>
+		        </div>
+		      </div>
+		    </div>
+		    <div class="securityPopup-row" style="margin-top: 15px;">
+		      <div class="details-section-row" id="section3">
+		        <h3>Business Unit & Teams</h3>
+		        <div class="roles-and-teams-list-row">
+		          <ul></ul>
+		        </div>
+		      </div>
+		      <div class="details-section-row" id="section5">
+		        <h3>Business Unit & Teams</h3>
+		        <div class="roles-and-teams-list-row">
+		          <ul></ul>
+		        </div>
+		      </div>
+		    </div>
+		    <div class="securityPopup-row" style="margin-top: 15px;">
+		      <div class="details-section-row" id="section4">
+		        <h3>Security Roles</h3>
+		        <div class="roles-and-teams-list-row">
+		          <ul></ul>
+		        </div>
+		      </div>
+		      <div class="details-section-row" id="section6">
+		        <h3>Security Roles</h3>
+		        <div class="roles-and-teams-list-row">
+		          <ul></ul>
+		        </div>
+		      </div>
+		    </div>
+		    <div style="margin-top: 20px; display: flex; justify-content: flex-end; align-items: center; gap: 20px;">
+		      <p style="margin: 0; font-size: 13px; color: #666;"><strong>**Note: </strong> Only 'Owner' or 'Access' type teams are assignable.</p>
+		      <button id="submitButton">Submit</button>
 		    </div>
 		  </div>
 		`;

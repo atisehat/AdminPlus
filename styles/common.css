@@ -43,8 +43,7 @@
 
 .commonSection { 
     padding: 10px; 
-    border-right: 3px solid #ccc; 
-    overflow-y: scroll; 
+    overflow-y: auto; 
 }
 
 /* Common Layout Styles */
