@@ -154,7 +154,7 @@ function createModalContent() {
             </div>
         </div>       	
          <div class="securityPopup-row">
-            <div class="commonSection section1-row2" id="section3">
+            <div class="section1-row2" id="section3">
                 <div class="excludeSettingsWrapper">
                     <h4>Days Between Two Dates:</h4>                    
                     <div class="checkboxWrapper">
@@ -171,61 +171,61 @@ function createModalContent() {
                     </div>
                 </div>                
                 <div class="dateSection">
-                <div class="dateRow">
-                    <div>
-                        <label for="startDate1">Start Date:</label>
-                        <input type="date" id="startDate1" name="startDate1">
-                    </div>
-                    <div>
-                        <label for="endDate1">End Date:</label>
-                        <input type="date" id="endDate1" name="endDate1">
-                    </div>
-                </div>                          
-                <div class="calculationsWrapper">
-                    <div class="calculationRow">
-                        <span>Days from Start Date to End Date:</span>
-                        <span>--  </span>
-                    </div>
-                    <div class="calculationRow">
-                        <span>Excluded Schedule Days:</span>
-                        <span>--  </span>
-                    </div>
-                    <div class="calculationRow">
-                        <span>Excluded Weekends:</span>
-                        <span>--  </span>
-                    </div>
-                    <div class="calculationRow">
-                        <span>Excluded Additional Days:</span>
-                        <span>--  </span>
-                    </div>                   
-                    <hr class="separator">
-                    <div class="calculationRow">
-                        <span><strong>Total Days:</strong></span>
-                        <span><strong>--  </strong></span>
-                    </div>                    
-                </div>                
-            </div>
-            <div class="section3-submitBtn">
-                <button id="section3SubmitBtn">Submit</button>
-            </div>
-            <div class="notes">
-                <strong>Note:</strong>                
-                <span>Calculation will count the End Date as a full date (1 Day)</span>                          
-            </div>
-            </div>            
-             <div class="commonSection section1-row2" id="section4">                                 
-                    <div class="addSettingsWrapper">
-                        <h4>Add Days to a Date:</h4>                    
-                        <div class="checkboxWrapper">
-                            <input type="checkbox" id="addSchedule" name="addOptions" value="addSchedule">
-                            <label for="addSchedule">Exclude System Schedule Days</label>
+                    <div class="dateRow">
+                        <div>
+                            <label for="startDate1">Start Date:</label>
+                            <input type="date" id="startDate1" name="startDate1">
+                        </div>
+                        <div>
+                            <label for="endDate1">End Date:</label>
+                            <input type="date" id="endDate1" name="endDate1">
+                        </div>
+                    </div>                          
+                    <div class="calculationsWrapper">
+                        <div class="calculationRow">
+                            <span>Days from Start Date to End Date:</span>
+                            <span>--  </span>
+                        </div>
+                        <div class="calculationRow">
+                            <span>Excluded Schedule Days:</span>
+                            <span>--  </span>
+                        </div>
+                        <div class="calculationRow">
+                            <span>Excluded Weekends:</span>
+                            <span>--  </span>
+                        </div>
+                        <div class="calculationRow">
+                            <span>Excluded Additional Days:</span>
+                            <span>--  </span>
+                        </div>                   
+                        <hr class="separator">
+                        <div class="calculationRow">
+                            <span><strong>Total Days:</strong></span>
+                            <span><strong>--  </strong></span>
                         </div>                    
-                        <div class="checkboxWrapper">
-                            <input type="checkbox" id="addWeekends" name="addOptions" value="addWeekends">
-                            <label for="addWeekends">Exclude Weekends</label>
-                        </div>                                            
                     </div>                
-                    <div class="dateSection">
+                </div>
+                <div class="section3-submitBtn">
+                    <button id="section3SubmitBtn">Submit</button>
+                </div>
+                <div class="notes">
+                    <strong>Note:</strong>                
+                    <span>Calculation will count the End Date as a full date (1 Day)</span>                          
+                </div>
+            </div>            
+            <div class="section1-row2" id="section4">                                 
+                <div class="addSettingsWrapper">
+                    <h4>Add Days to a Date:</h4>                    
+                    <div class="checkboxWrapper">
+                        <input type="checkbox" id="addSchedule" name="addOptions" value="addSchedule">
+                        <label for="addSchedule">Exclude System Schedule Days</label>
+                    </div>                    
+                    <div class="checkboxWrapper">
+                        <input type="checkbox" id="addWeekends" name="addOptions" value="addWeekends">
+                        <label for="addWeekends">Exclude Weekends</label>
+                    </div>                                            
+                </div>                
+                <div class="dateSection">
                     <div class="addDateRow">
                         <div>
                             <label for="pickDate">Start Date:</label>
@@ -259,7 +259,7 @@ function createModalContent() {
                 <div class="section4-submitBtn">
                     <button id="section4SubmitBtn">Submit</button>
                 </div>                
-             </div>
+            </div>
          </div>
         </div>           
     `;    
