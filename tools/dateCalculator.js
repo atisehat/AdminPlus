@@ -126,12 +126,13 @@ function createModalContent() {
    
          <div class="securityPopup-row">
             <div class="section1-row1" id="section1">
-                <h3 style="margin-bottom: 12px;">System Schedule(s):</h3>                    
-                <select id="holidayScheduleDropdown"></select>
+                <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 12px;">
+                    <h3 style="margin: 0; white-space: nowrap;">System Schedule(s):</h3>                    
+                    <select id="holidayScheduleDropdown" style="flex: 1;"></select>
+                </div>
                 <div class="holidaysList" id="holidaysList"></div>     			      
             </div>
             <div class="section1-row1" id="section2">
-                <h3 style="margin-bottom: 12px;">Calendar:</h3>
                 <div class="calendar" id="calendar">
                     <div class="calendarHeader" id="calendarHeader">
                         <button id="prevMonth">&lt;</button>
