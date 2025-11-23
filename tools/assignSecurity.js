@@ -30,15 +30,19 @@ function editSecurity() {
 	        <div class="scroll-section" style="padding: 20px; overflow-y: auto; max-height: calc(90vh - 100px);">
 	          <div class="assignSecurityPopup-row">
 	            <div class="assignSection leftUser-section" id="section1">
-	              <h3>Current User Security:</h3>
-	              <input type="text" id="searchInput1" placeholder="Search Users">
+	              <div class="section-header-with-search">
+	                <h3>Current User Security:</h3>
+	                <input type="text" id="searchInput1" placeholder="Search Users">
+	              </div>
 	              <div class="leftUser-list-container">
 	                <div id="userList1"></div>
 	              </div>
 	            </div> 
 	            <div class="assignSection rightBuss-section" id="section2">
-	              <h3 id="bUh3" style="display: none;" >Change Business Unit:</h3>
-	              <input type="text" id="searchInput2" placeholder="Search Business Units" style="display: none;">
+	              <div class="section-header-with-search">
+	                <h3 id="bUh3" style="display: none;" >Change Business Unit:</h3>
+	                <input type="text" id="searchInput2" placeholder="Search Business Units" style="display: none;">
+	              </div>
 	              <div class="businessUnit-list-container">
 	                <div id="businessUnitList"></div>
 	              </div>
@@ -558,28 +562,29 @@ function editSecurity() {
 	    }	
 	    sectionElement.setAttribute('data-hasRadioButtons', 'true');	    
 		
+	    // Create header wrapper with heading and search input on the same line
+	    const headerWrapper = document.createElement('div');
+	    headerWrapper.className = 'section-header-with-search';
+	    
 	    if (headingText) {
 	        const heading = document.createElement('h3');
 	        heading.appendChild(document.createTextNode(headingText));
-	        sectionElement.appendChild(heading);
+	        headerWrapper.appendChild(heading);
 	    }
-		
-	    // If no radioData
-	    if (!radioData || !Array.isArray(radioData)) {
-	        return;
-	    }     
 
 	    if (inputIds) {
-	        const inputWrapper = document.createElement('div');
-	        inputWrapper.className = 'teamsRoles-input-wrapper';
-	
 	        const searchInput = document.createElement('input');
 	        searchInput.type = 'text';
 	        searchInput.id = inputId;
 	        searchInput.placeholder = inputIds;
-	
-	        inputWrapper.appendChild(searchInput);
-	        sectionElement.appendChild(inputWrapper);
+	        headerWrapper.appendChild(searchInput);
+	    }
+	    
+	    sectionElement.appendChild(headerWrapper);
+		
+	    // If no radioData
+	    if (!radioData || !Array.isArray(radioData)) {
+	        return;
 	    }
 		
 	    let teamsWrapper = sectionElement.querySelector('.teams-wrapper');
