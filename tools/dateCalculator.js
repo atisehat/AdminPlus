@@ -128,7 +128,7 @@ function createModalContent() {
             <div class="section1-row1" id="section1">
                 <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 12px;">
                     <h3 style="margin: 0; white-space: nowrap;">System Schedule(s):</h3>                    
-                    <select id="holidayScheduleDropdown" style="max-width: 350px;"></select>
+                    <select id="holidayScheduleDropdown" style="flex: 1; max-width: 350px; min-width: 0;"></select>
                 </div>
                 <div class="holidaysList" id="holidaysList"></div>     			      
             </div>
