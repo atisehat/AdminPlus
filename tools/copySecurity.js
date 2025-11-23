@@ -36,7 +36,7 @@ function copySecurity() {
 		        </div>
 		      </div>
 		    </div>
-		    <div class="securityPopup-row" style="margin-top: 15px;">
+		    <div class="securityPopup-row">
 		      <div class="details-section-row" id="section3">
 		        <h3>Business Unit & Teams</h3>
 		        <div class="roles-and-teams-list-row">
@@ -50,7 +50,7 @@ function copySecurity() {
 		        </div>
 		      </div>
 		    </div>
-		    <div class="securityPopup-row" style="margin-top: 15px;">
+		    <div class="securityPopup-row">
 		      <div class="details-section-row" id="section4">
 		        <h3>Security Roles</h3>
 		        <div class="roles-and-teams-list-row">

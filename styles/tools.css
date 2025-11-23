@@ -50,6 +50,8 @@
     height: 270px; 
     width: 50%;
     box-sizing: border-box;
+    padding-top: 10px;
+    padding-bottom: 20px;
 }
 
 .user-section input { 
@@ -93,6 +95,8 @@
     height: 200px; 
     box-sizing: border-box; 
     text-align: left; 
+    padding-top: 15px;
+    padding-bottom: 15px;
 }
 
 /* ========== Assign Security ========== */
