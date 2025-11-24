@@ -47,6 +47,7 @@ function onUtilScriptLoaded() {
     loadScript('tools/dateCalculator.js');
     loadScript('tools/openRecord.js');
     loadScript('tools/cloneRecord.js');
+    loadScript('tools/commandChecker.js');
   }
 }
 
@@ -120,6 +121,9 @@ function openPopup() {
 	    </button>
 	    <button onclick="cloneRecord();" class="app-button" title="Clone Record">
 	      <span class="app-icon">🔄</span>
+	    </button>
+	    <button onclick="commandChecker();" class="app-button" title="Command Checker">
+	      <span class="app-icon">🔍</span>
 	    </button>
 	  </div>
 	</div>
@@ -310,3 +314,4 @@ window.showDirtyFields = showDirtyFields;
 window.showToast = showToast;
 window.openRecord = openRecord;
 window.cloneRecord = cloneRecord;
+window.commandChecker = commandChecker;
