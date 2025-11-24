@@ -543,20 +543,10 @@ function handleCloneRecord(container, fieldAnalysis, entityName) {
                                         successCount++;
                                         console.log(`✓ Set field ${fieldName} (${attrType}):`, valueToSet);
                                     } else {
-                                        // Field not on create form - check if it exists in metadata
-                                        // Only skip if field actually exists on the entity
-                                        const allAttributes = Xrm.Page.data.entity.attributes.get();
-                                        const fieldExists = allAttributes.some(attr => attr.getName() === fieldName);
-                                        
-                                        if (!fieldExists) {
-                                            // Field might exist on main form but not create form
-                                            skippedFields[fieldName] = fieldsToClone[fieldName];
-                                            console.log(`⊝ Field ${fieldName} not on create form - will apply after save`);
-                                        } else {
-                                            // Field exists but attribute not found - unusual case
-                                            console.warn(`Field ${fieldName} exists but could not be accessed`);
-                                            errorCount++;
-                                        }
+                                        // Field not on create form - will need to apply after save
+                                        // Only store fields that user CHECKED to clone
+                                        skippedFields[fieldName] = fieldsToClone[fieldName];
+                                        console.log(`⊝ Field ${fieldName} not on create form - will apply after save`);
                                     }
                                 } catch (e) {
                                     errorCount++;
@@ -778,9 +768,20 @@ function applySkippedFields() {
         // Clean up sessionStorage
         cleanupSkippedFieldsStorage();
         
-        // Auto-save the record with the new fields
+        // Auto-save the record with the new fields (only if we successfully applied some)
         if (appliedCount > 0) {
             console.log('Auto-saving record with applied fields...');
+            
+            // Validate form first to check for required fields
+            const isValid = Xrm.Page.data.entity.getIsValid();
+            
+            if (!isValid) {
+                console.warn('Form validation failed - missing required fields');
+                if (typeof showToast === 'function') {
+                    showToast(`Applied ${appliedCount} field(s) but form has validation errors. Please complete required fields and save manually.`, 'warning', 6000);
+                }
+                return;
+            }
             
             Xrm.Page.data.entity.save().then(
                 function() {
@@ -796,7 +797,8 @@ function applySkippedFields() {
                 function(error) {
                     console.error('✗ Error saving record:', error);
                     if (typeof showToast === 'function') {
-                        showToast(`Applied ${appliedCount} field(s) but auto-save failed. Please save manually.`, 'warning', 5000);
+                        const errorMsg = error.message || 'Unknown error';
+                        showToast(`Applied ${appliedCount} field(s) but save failed: ${errorMsg}. Please save manually.`, 'warning', 6000);
                     }
                 }
             );
