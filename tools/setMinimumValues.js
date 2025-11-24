@@ -507,280 +507,165 @@ function handleCloneRecord(container, fieldAnalysis, entityName) {
             console.warn('Could not get current form ID:', e);
         }
         
-        // Use direct URL navigation with form ID parameter
-        // This is more reliable than Xrm.Navigation.openForm with formId option
+        // Use entity record create with parameters
+        // Build parameters object for URL-based field population
         const clientUrl = Xrm.Page.context.getClientUrl();
         
+        // Clean the form ID
         if (currentFormId) {
-            // Clean the form ID (remove curly braces if present)
             currentFormId = currentFormId.replace(/[{}]/g, "").toLowerCase();
-            console.log('Opening clone with same form ID via URL:', currentFormId);
-            
-            // Construct URL with form ID to force same form layout
-            const cloneUrl = `${clientUrl}/main.aspx?etn=${entityName}&pagetype=entityrecord&formid=${currentFormId}`;
-            
-            // Open in same window
-            window.location.href = cloneUrl;
-            
-            // Store the fields to clone in sessionStorage so they persist across navigation
-            sessionStorage.setItem('adminplus_clone_data', JSON.stringify(fieldsToClone));
-            sessionStorage.setItem('adminplus_clone_entity', entityName);
-            
-            return; // Exit since we're navigating away
-            
-        } else {
-            console.log('Opening clone with default form (form ID not found)');
-            
-            // Fallback to Xrm.Navigation if no form ID
-            const formOptions = {
-                entityName: entityName,
-                useQuickCreateForm: false,
-                openInNewWindow: false
-            };
-            
-            // Store clone data in sessionStorage
-            sessionStorage.setItem('adminplus_clone_data', JSON.stringify(fieldsToClone));
-            sessionStorage.setItem('adminplus_clone_entity', entityName);
-            
-            // Navigate to create form
-            Xrm.Navigation.openForm(formOptions).then(function(result) {
-            // Form opened successfully
-            console.log('Clone form opened', result);
-            
-            // Set the field values on the new form after it loads
-            // We need to wait for the new form to be ready
-            const maxAttempts = 20;
-            let attempts = 0;
-            
-            const setValues = setInterval(() => {
-                attempts++;
+            console.log('Will use form ID:', currentFormId);
+        }
+        
+        // Construct URL with all parameters including field values
+        let cloneUrl = `${clientUrl}/main.aspx?etn=${entityName}&pagetype=entityrecord`;
+        
+        // Add form ID if available
+        if (currentFormId) {
+            cloneUrl += `&formid=${currentFormId}`;
+        }
+        
+        // Add extraqs parameter with field values (for simple fields)
+        const extraQsParams = [];
+        Object.keys(fieldsToClone).forEach(fieldName => {
+            const value = fieldsToClone[fieldName];
+            // Only add simple values to URL (not lookups or complex objects)
+            if (value !== null && value !== undefined && typeof value !== 'object') {
+                extraQsParams.push(`${fieldName}=${encodeURIComponent(value)}`);
+            }
+        });
+        
+        if (extraQsParams.length > 0) {
+            cloneUrl += `&extraqs=${encodeURIComponent(extraQsParams.join('&'))}`;
+        }
+        
+        console.log('Opening clone URL:', cloneUrl);
+        
+        // Open in new window/tab
+        const cloneWindow = window.open(cloneUrl, '_blank', 'height=700,width=1200,location=no,menubar=no,resizable=yes,scrollbars=yes,status=no,titlebar=no,toolbar=no');
+        
+        if (!cloneWindow) {
+            if (typeof showToast === 'function') {
+                showToast('Popup blocked. Please allow popups for this site.', 'warning', 4000);
+            }
+            return;
+        }
+        
+        // Store complex fields (lookups, etc.) in window reference for post-load processing
+        if (cloneWindow) {
+            cloneWindow.adminPlusCloneData = fieldsToClone;
+            cloneWindow.adminPlusCloneEntity = entityName;
+        }
+        
+        // Show toast
+        if (typeof showToast === 'function') {
+            showToast('Clone opened in new window. Applying field values...', 'info', 3000);
+        }
+        
+        // Monitor the new window and set values when ready
+        const checkInterval = setInterval(() => {
+            try {
+                if (!cloneWindow || cloneWindow.closed) {
+                    clearInterval(checkInterval);
+                    return;
+                }
                 
-                try {
-                    // Check if we can access the form context
-                    if (typeof Xrm !== 'undefined' && Xrm.Page && Xrm.Page.data && Xrm.Page.data.entity) {
-                        // Check if this is a new record (no ID)
-                        const newRecordId = Xrm.Page.data.entity.getId();
-                        if (!newRecordId) {
-                            // This is the new form, set the values
-                            let successCount = 0;
-                            let errorCount = 0;
-                            let skippedCount = 0;
-                            const skippedFields = [];
-                            const errorFields = [];
-                            
-                            Object.keys(fieldsToClone).forEach(fieldName => {
-                                try {
-                                    const attribute = Xrm.Page.data.entity.attributes.get(fieldName);
-                                    if (!attribute) {
-                                        // Field doesn't exist on create form - this is normal, not an error
-                                        skippedCount++;
-                                        skippedFields.push(fieldName);
-                                        console.log(`⊝ Skipped ${fieldName} - not on create form`);
-                                        return;
-                                    }
-                                    
-                                    const attrType = attribute.getAttributeType();
-                                    let valueToSet = fieldsToClone[fieldName];
-                                    
-                                    // Special handling for lookup fields
-                                    if (attrType === 'lookup') {
-                                        // Ensure lookup value is in correct format
-                                        if (valueToSet && !Array.isArray(valueToSet)) {
-                                            // Single lookup - wrap in array if not already
-                                            if (valueToSet.id && valueToSet.name && valueToSet.entityType) {
-                                                valueToSet = [valueToSet];
-                                            }
-                                        }
-                                        // Verify lookup array has required properties
-                                        if (Array.isArray(valueToSet) && valueToSet.length > 0) {
-                                            const lookup = valueToSet[0];
-                                            if (!lookup.id || !lookup.name || !lookup.entityType) {
-                                                console.warn(`✗ Invalid lookup format for ${fieldName}:`, valueToSet);
-                                                errorCount++;
-                                                errorFields.push(`${fieldName} (invalid lookup format)`);
-                                                return;
-                                            }
+                // Check if the new window's Xrm is available
+                if (cloneWindow.Xrm && cloneWindow.Xrm.Page && cloneWindow.Xrm.Page.data && cloneWindow.Xrm.Page.data.entity) {
+                    const newRecordId = cloneWindow.Xrm.Page.data.entity.getId();
+                    
+                    // Make sure it's a new record
+                    if (!newRecordId) {
+                        console.log('New window form loaded, setting complex field values...');
+                        clearInterval(checkInterval);
+                        
+                        // Set all field values in the new window
+                        let successCount = 0;
+                        let errorCount = 0;
+                        let skippedCount = 0;
+                        const skippedFields = [];
+                        const errorFields = [];
+                        
+                        Object.keys(fieldsToClone).forEach(fieldName => {
+                            try {
+                                const attribute = cloneWindow.Xrm.Page.data.entity.attributes.get(fieldName);
+                                if (!attribute) {
+                                    skippedCount++;
+                                    skippedFields.push(fieldName);
+                                    console.log(`⊝ Skipped ${fieldName} - not on form`);
+                                    return;
+                                }
+                                
+                                const attrType = attribute.getAttributeType();
+                                let valueToSet = fieldsToClone[fieldName];
+                                
+                                // Special handling for lookup fields
+                                if (attrType === 'lookup') {
+                                    if (valueToSet && !Array.isArray(valueToSet)) {
+                                        if (valueToSet.id && valueToSet.name && valueToSet.entityType) {
+                                            valueToSet = [valueToSet];
                                         }
                                     }
-                                    
-                                    // Try to set the value
-                                    attribute.setValue(valueToSet);
-                                    successCount++;
-                                    console.log(`✓ Set field ${fieldName} (${attrType}):`, valueToSet);
-                                    
-                                } catch (e) {
-                                    // Real error - permission, validation, etc.
-                                    errorCount++;
-                                    errorFields.push(`${fieldName} (${e.message || 'unknown error'})`);
-                                    console.error(`✗ Could not set field ${fieldName}:`, e);
+                                    if (Array.isArray(valueToSet) && valueToSet.length > 0) {
+                                        const lookup = valueToSet[0];
+                                        if (!lookup.id || !lookup.name || !lookup.entityType) {
+                                            console.warn(`✗ Invalid lookup format for ${fieldName}`);
+                                            errorCount++;
+                                            errorFields.push(`${fieldName} (invalid lookup)`);
+                                            return;
+                                        }
+                                    }
                                 }
-                            });
-                            
-                            // Show results with detailed breakdown
-                            console.log(`\n=== Clone Results ===`);
-                            console.log(`✓ Successfully set: ${successCount} field(s)`);
-                            console.log(`⊝ Skipped (not on create form): ${skippedCount} field(s)`, skippedFields);
-                            console.log(`✗ Failed (errors): ${errorCount} field(s)`, errorFields);
-                            console.log(`Total attempted: ${Object.keys(fieldsToClone).length} field(s)`);
-                            console.log(`====================\n`);
-                            
-                            if (typeof showToast === 'function') {
-                                if (errorCount > 0) {
-                                    showToast(`Cloned ${successCount} field(s), ${errorCount} failed, ${skippedCount} not on form. Check console.`, 'warning', 5000);
-                                } else if (skippedCount > 0) {
-                                    showToast(`Cloned ${successCount} field(s). ${skippedCount} skipped (not on create form).`, 'success', 4000);
-                                } else {
-                                    showToast(`Successfully cloned all ${successCount} field(s)! Review and save.`, 'success', 3000);
-                                }
+                                
+                                attribute.setValue(valueToSet);
+                                successCount++;
+                                console.log(`✓ Set field ${fieldName} (${attrType})`);
+                                
+                            } catch (e) {
+                                errorCount++;
+                                errorFields.push(`${fieldName} (${e.message || 'error'})`);
+                                console.error(`✗ Could not set field ${fieldName}:`, e);
                             }
-                            
-                            // Clear the interval
-                            clearInterval(setValues);
+                        });
+                        
+                        // Show results
+                        console.log(`\n=== Clone Results ===`);
+                        console.log(`✓ Successfully set: ${successCount} field(s)`);
+                        console.log(`⊝ Skipped (not on form): ${skippedCount} field(s)`, skippedFields);
+                        console.log(`✗ Failed (errors): ${errorCount} field(s)`, errorFields);
+                        console.log(`====================\n`);
+                        
+                        if (typeof showToast === 'function') {
+                            if (errorCount > 0) {
+                                showToast(`Cloned ${successCount} fields, ${errorCount} failed, ${skippedCount} not on form.`, 'warning', 5000);
+                            } else if (skippedCount > 0) {
+                                showToast(`Cloned ${successCount} fields. ${skippedCount} skipped (not on form).`, 'success', 4000);
+                            } else {
+                                showToast(`Successfully cloned all ${successCount} fields!`, 'success', 3000);
+                            }
                         }
                     }
-                } catch (e) {
-                    console.warn('Waiting for form to load...', e);
                 }
-                
-                // Stop trying after max attempts
-                if (attempts >= maxAttempts) {
-                    clearInterval(setValues);
-                    console.warn('Could not set cloned values - form did not load in time');
-                    if (typeof showToast === 'function') {
-                        showToast('Form opened but values may not be set', 'warning');
-                    }
-                }
-            }, 500);
-            
-            }).catch(function(error) {
-                console.error('Error opening clone form:', error);
-                if (typeof showToast === 'function') {
-                    showToast('Error opening new record form', 'error');
-                }
-            });
-        }
+            } catch (e) {
+                // Still waiting for window to be ready
+            }
+        }, 500);
+        
+        // Timeout after 15 seconds
+        setTimeout(() => {
+            clearInterval(checkInterval);
+        }, 15000);
+        
         
     } catch (error) {
         console.error('Error cloning record:', error);
         if (typeof showToast === 'function') {
-            showToast('Error cloning record', 'error');
+            showToast('Error cloning record: ' + error.message, 'error', 3000);
+        }
+    } finally {
+        if (typeof hideLoadingDialog === 'function') {
+            hideLoadingDialog();
         }
     }
-}
-
-// Check for stored clone data when form loads
-// This handles the case where we navigated via direct URL
-function checkForCloneData() {
-    try {
-        // Check if we're on a new record form
-        if (!Xrm.Page || !Xrm.Page.data || !Xrm.Page.data.entity) {
-            return;
-        }
-        
-        const recordId = Xrm.Page.data.entity.getId();
-        if (recordId) {
-            // Not a new record, ignore
-            return;
-        }
-        
-        // Check if there's clone data in sessionStorage
-        const cloneDataStr = sessionStorage.getItem('adminplus_clone_data');
-        const cloneEntity = sessionStorage.getItem('adminplus_clone_entity');
-        
-        if (!cloneDataStr || !cloneEntity) {
-            return;
-        }
-        
-        const currentEntity = Xrm.Page.data.entity.getEntityName();
-        if (currentEntity !== cloneEntity) {
-            // Different entity, ignore
-            return;
-        }
-        
-        // We have clone data for this entity on a new form!
-        console.log('Found clone data in sessionStorage, applying values...');
-        
-        const fieldsToClone = JSON.parse(cloneDataStr);
-        
-        // Clear the sessionStorage so it doesn't keep applying
-        sessionStorage.removeItem('adminplus_clone_data');
-        sessionStorage.removeItem('adminplus_clone_entity');
-        
-        // Apply the cloned values
-        let successCount = 0;
-        let errorCount = 0;
-        let skippedCount = 0;
-        const skippedFields = [];
-        const errorFields = [];
-        
-        Object.keys(fieldsToClone).forEach(fieldName => {
-            try {
-                const attribute = Xrm.Page.data.entity.attributes.get(fieldName);
-                if (!attribute) {
-                    skippedCount++;
-                    skippedFields.push(fieldName);
-                    console.log(`⊝ Skipped ${fieldName} - not on this form`);
-                    return;
-                }
-                
-                const attrType = attribute.getAttributeType();
-                let valueToSet = fieldsToClone[fieldName];
-                
-                // Special handling for lookup fields
-                if (attrType === 'lookup') {
-                    if (valueToSet && !Array.isArray(valueToSet)) {
-                        if (valueToSet.id && valueToSet.name && valueToSet.entityType) {
-                            valueToSet = [valueToSet];
-                        }
-                    }
-                    if (Array.isArray(valueToSet) && valueToSet.length > 0) {
-                        const lookup = valueToSet[0];
-                        if (!lookup.id || !lookup.name || !lookup.entityType) {
-                            console.warn(`✗ Invalid lookup format for ${fieldName}:`, valueToSet);
-                            errorCount++;
-                            errorFields.push(`${fieldName} (invalid lookup format)`);
-                            return;
-                        }
-                    }
-                }
-                
-                attribute.setValue(valueToSet);
-                successCount++;
-                console.log(`✓ Set field ${fieldName} (${attrType}):`, valueToSet);
-                
-            } catch (e) {
-                errorCount++;
-                errorFields.push(`${fieldName} (${e.message || 'unknown error'})`);
-                console.error(`✗ Could not set field ${fieldName}:`, e);
-            }
-        });
-        
-        // Show results
-        console.log(`\n=== Clone Results ===`);
-        console.log(`✓ Successfully set: ${successCount} field(s)`);
-        console.log(`⊝ Skipped (not on form): ${skippedCount} field(s)`, skippedFields);
-        console.log(`✗ Failed (errors): ${errorCount} field(s)`, errorFields);
-        console.log(`Total attempted: ${Object.keys(fieldsToClone).length} field(s)`);
-        console.log(`====================\n`);
-        
-        if (typeof showToast === 'function') {
-            if (errorCount > 0) {
-                showToast(`Cloned ${successCount} field(s), ${errorCount} failed, ${skippedCount} not on form. Check console.`, 'warning', 5000);
-            } else if (skippedCount > 0) {
-                showToast(`Cloned ${successCount} field(s). ${skippedCount} skipped (not on form).`, 'success', 4000);
-            } else {
-                showToast(`Successfully cloned all ${successCount} field(s)! Review and save.`, 'success', 3000);
-            }
-        }
-        
-    } catch (error) {
-        console.error('Error applying clone data:', error);
-    }
-}
-
-// Register the check for clone data when the form loads
-if (typeof Xrm !== 'undefined' && Xrm.Page && Xrm.Page.data && Xrm.Page.data.entity) {
-    // For forms that are already loaded
-    setTimeout(checkForCloneData, 1000);
 }
 
