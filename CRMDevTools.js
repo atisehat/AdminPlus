@@ -48,6 +48,8 @@ function onUtilScriptLoaded() {
     loadScript('tools/openRecord.js');
     loadScript('tools/cloneRecord.js');
     loadScript('tools/commandChecker.js');
+    loadScript('tools/performanceDiagnostics.js');
+    loadScript('tools/traceLogging.js');
   }
 }
 
@@ -124,6 +126,12 @@ function openPopup() {
 	    </button>
 	    <button onclick="commandChecker();" class="app-button" title="Command Checker">
 	      <span class="app-icon">🐛</span>
+	    </button>
+	    <button onclick="performanceDiagnostics();" class="app-button" title="Performance Diagnostics">
+	      <span class="app-icon">⚡</span>
+	    </button>
+	    <button onclick="traceLogging();" class="app-button" title="Trace Logging">
+	      <span class="app-icon">📊</span>
 	    </button>
 	  </div>
 	</div>
@@ -315,28 +323,5 @@ window.showToast = showToast;
 window.openRecord = openRecord;
 window.cloneRecord = cloneRecord;
 window.commandChecker = commandChecker;
-
-// Show Command Checker success message after page reload
-(function() {
-    try {
-        const commandCheckerEnabled = sessionStorage.getItem('adminplus_command_checker_enabled');
-        if (commandCheckerEnabled === 'true') {
-            sessionStorage.removeItem('adminplus_command_checker_enabled');
-            
-            // Wait for page to be fully loaded
-            if (document.readyState === 'complete') {
-                setTimeout(() => {
-                    showToast('Command Checker enabled successfully!', 'success', 4000);
-                }, 1000);
-            } else {
-                window.addEventListener('load', () => {
-                    setTimeout(() => {
-                        showToast('Command Checker enabled successfully!', 'success', 4000);
-                    }, 1000);
-                });
-            }
-        }
-    } catch (e) {
-        console.error('Error showing Command Checker success message:', e);
-    }
-})();
+window.performanceDiagnostics = performanceDiagnostics;
+window.traceLogging = traceLogging;
