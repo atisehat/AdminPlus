@@ -425,11 +425,33 @@ function handleCloneRecord(container, fieldAnalysis, entityName) {
                 }
                 
                 // Store the value to clone
-                fieldsToClone[fieldName] = field.currentValue;
-                console.log(`Collected field ${fieldName} (${fieldType}):`, field.currentValue);
+                let valueToStore = field.currentValue;
+                
+                // Validate lookup values have required properties
+                if (fieldType === 'lookup' || fieldType === 'other') {
+                    if (Array.isArray(valueToStore)) {
+                        // Check if all lookup objects have required properties
+                        const hasValidLookups = valueToStore.every(lv => 
+                            lv && lv.id && lv.name && lv.entityType
+                        );
+                        if (!hasValidLookups) {
+                            console.warn(`Skipping ${fieldName} - lookup missing required properties (id, name, entityType)`);
+                            return;
+                        }
+                    } else if (typeof valueToStore === 'object' && valueToStore !== null) {
+                        // Single lookup object
+                        if (!valueToStore.id || !valueToStore.name || !valueToStore.entityType) {
+                            console.warn(`Skipping ${fieldName} - lookup missing required properties (id, name, entityType)`);
+                            return;
+                        }
+                    }
+                }
+                
+                fieldsToClone[fieldName] = valueToStore;
+                console.log(`✓ Collected field ${fieldName} (${fieldType}):`, valueToStore);
                 
             } catch (e) {
-                console.error(`Error collecting field value for ${fieldName}:`, e);
+                console.error(`✗ Error collecting field value for ${fieldName}:`, e);
             }
         });
         
@@ -492,18 +514,51 @@ function handleCloneRecord(container, fieldAnalysis, entityName) {
                                 try {
                                     const attribute = Xrm.Page.data.entity.attributes.get(fieldName);
                                     if (attribute) {
-                                        attribute.setValue(fieldsToClone[fieldName]);
+                                        const attrType = attribute.getAttributeType();
+                                        let valueToSet = fieldsToClone[fieldName];
+                                        
+                                        // Special handling for lookup fields
+                                        if (attrType === 'lookup') {
+                                            // Ensure lookup value is in correct format
+                                            if (valueToSet && !Array.isArray(valueToSet)) {
+                                                // Single lookup - wrap in array if not already
+                                                if (valueToSet.id && valueToSet.name && valueToSet.entityType) {
+                                                    valueToSet = [valueToSet];
+                                                }
+                                            }
+                                            // Verify lookup array has required properties
+                                            if (Array.isArray(valueToSet) && valueToSet.length > 0) {
+                                                const lookup = valueToSet[0];
+                                                if (!lookup.id || !lookup.name || !lookup.entityType) {
+                                                    console.warn(`Invalid lookup format for ${fieldName}:`, valueToSet);
+                                                    errorCount++;
+                                                    return;
+                                                }
+                                            }
+                                        }
+                                        
+                                        attribute.setValue(valueToSet);
                                         successCount++;
-                                        console.log(`Set field ${fieldName}:`, fieldsToClone[fieldName]);
+                                        console.log(`✓ Set field ${fieldName} (${attrType}):`, valueToSet);
+                                    } else {
+                                        console.warn(`Field ${fieldName} not found on form`);
+                                        errorCount++;
                                     }
                                 } catch (e) {
                                     errorCount++;
-                                    console.warn(`Could not set field ${fieldName}:`, e);
+                                    console.error(`✗ Could not set field ${fieldName}:`, e);
                                 }
                             });
                             
+                            // Show results
+                            console.log(`Clone Results: ${successCount} succeeded, ${errorCount} failed`);
+                            
                             if (typeof showToast === 'function') {
-                                showToast(`Cloned ${successCount} field(s). Review and save.`, 'success', 3000);
+                                if (errorCount > 0) {
+                                    showToast(`Cloned ${successCount} field(s), ${errorCount} failed. Check console.`, 'warning', 4000);
+                                } else {
+                                    showToast(`Successfully cloned ${successCount} field(s). Review and save.`, 'success', 3000);
+                                }
                             }
                             
                             // Clear the interval
