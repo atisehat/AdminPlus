@@ -12,6 +12,9 @@ async function commandChecker() {
             return;
         }
         
+        // Mark that we're enabling it
+        sessionStorage.setItem('adminplus_command_checker_enabled', 'true');
+        
         // Add ribbondebug parameter to URL and reload
         const currentUrl = window.location.href;
         const newUrl = currentUrl.includes('?') 
@@ -27,4 +30,22 @@ async function commandChecker() {
         }
     }
 }
+
+// Show success message after page reload
+(function() {
+    try {
+        const commandCheckerEnabled = sessionStorage.getItem('adminplus_command_checker_enabled');
+        if (commandCheckerEnabled === 'true') {
+            sessionStorage.removeItem('adminplus_command_checker_enabled');
+            
+            setTimeout(() => {
+                if (typeof showToast === 'function') {
+                    showToast('Command Checker enabled successfully!', 'success', 4000);
+                }
+            }, 1000);
+        }
+    } catch (e) {
+        console.error('Error showing Command Checker success message:', e);
+    }
+})();
 
