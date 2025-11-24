@@ -846,34 +846,57 @@ function applySkippedFields() {
         if (appliedCount > 0) {
             console.log('Auto-saving record with applied fields...');
             
-            // Check if there are missing required fields
+            // Store original required levels so we can restore them after save
+            const requiredFieldsToRestore = [];
             const missingRequiredFields = [];
+            
             try {
                 const attributes = Xrm.Page.data.entity.attributes.get();
                 attributes.forEach(attr => {
-                    if (attr.getRequiredLevel() === 'required') {
-                        const value = attr.getValue();
-                        if (value === null || value === undefined || value === '') {
+                    try {
+                        const requiredLevel = attr.getRequiredLevel();
+                        if (requiredLevel === 'required') {
+                            const value = attr.getValue();
                             const fieldName = attr.getName();
-                            missingRequiredFields.push(fieldName);
-                            console.warn(`Required field ${fieldName} is empty - will force save anyway`);
+                            
+                            if (value === null || value === undefined || value === '') {
+                                // This required field is empty - temporarily remove requirement
+                                missingRequiredFields.push(fieldName);
+                                requiredFieldsToRestore.push({
+                                    attribute: attr,
+                                    fieldName: fieldName,
+                                    originalLevel: requiredLevel
+                                });
+                                // Temporarily set to "none" to allow save
+                                attr.setRequiredLevel('none');
+                                console.log(`Temporarily removed required level from ${fieldName}`);
+                            }
                         }
+                    } catch (e) {
+                        // Skip fields that cause errors
                     }
                 });
             } catch (e) {
-                console.warn('Could not validate required fields:', e);
+                console.warn('Could not process required fields:', e);
             }
             
-            // Force save even if required fields are missing
-            // Using the save options to suppress duplicate detection and required field validation
-            const saveOptions = {
-                saveMode: 1 // Save without validating required fields
-            };
+            console.log(`Force saving with ${missingRequiredFields.length} temporarily unrequired field(s)...`);
             
-            console.log('Attempting to force save...');
-            Xrm.Page.data.entity.save(saveOptions).then(
+            // Save the record
+            Xrm.Page.data.entity.save().then(
                 function() {
                     console.log('✓ Record saved successfully with all fields');
+                    
+                    // Restore required levels after successful save
+                    requiredFieldsToRestore.forEach(fieldInfo => {
+                        try {
+                            fieldInfo.attribute.setRequiredLevel(fieldInfo.originalLevel);
+                            console.log(`Restored required level for ${fieldInfo.fieldName}`);
+                        } catch (e) {
+                            console.warn(`Could not restore required level for ${fieldInfo.fieldName}:`, e);
+                        }
+                    });
+                    
                     if (typeof showToast === 'function') {
                         let message = `Successfully applied ${appliedCount} additional field(s)!`;
                         if (missingRequiredFields.length > 0) {
@@ -887,6 +910,17 @@ function applySkippedFields() {
                 },
                 function(error) {
                     console.error('✗ Error saving record:', error);
+                    
+                    // Restore required levels even after failed save
+                    requiredFieldsToRestore.forEach(fieldInfo => {
+                        try {
+                            fieldInfo.attribute.setRequiredLevel(fieldInfo.originalLevel);
+                            console.log(`Restored required level for ${fieldInfo.fieldName} after save error`);
+                        } catch (e) {
+                            console.warn(`Could not restore required level for ${fieldInfo.fieldName}:`, e);
+                        }
+                    });
+                    
                     if (typeof showToast === 'function') {
                         let errorMsg = 'Unknown error';
                         if (error && error.message) {
