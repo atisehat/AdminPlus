@@ -579,6 +579,34 @@ function handleCloneRecord(container, fieldAnalysis, entityName) {
                                 sessionStorage.setItem('adminplus_clone_session_id', sessionId);
                                 sessionStorage.setItem('adminplus_waiting_for_save', 'true');
                                 
+                                // Mark this specific form context with a unique identifier
+                                const formContext = Xrm.Page;
+                                sessionStorage.setItem('adminplus_form_identifier', 'new_form_' + Date.now());
+                                
+                                // Add a form close handler to cleanup if user navigates away
+                                try {
+                                    const onCloseHandler = function() {
+                                        console.log('Form being closed/navigated away - cleaning up clone session');
+                                        const waiting = sessionStorage.getItem('adminplus_waiting_for_save');
+                                        if (waiting === 'true') {
+                                            // User closed the form without completing the save cycle
+                                            cleanupSkippedFieldsStorage();
+                                        }
+                                    };
+                                    
+                                    // Add to OnSave to detect if save is happening
+                                    Xrm.Page.data.entity.addOnSave(function(context) {
+                                        console.log('OnSave event detected');
+                                        sessionStorage.setItem('adminplus_save_in_progress', 'true');
+                                    });
+                                    
+                                    // Detect page unload/navigation
+                                    window.addEventListener('beforeunload', onCloseHandler);
+                                    window.addEventListener('pagehide', onCloseHandler);
+                                } catch (e) {
+                                    console.warn('Could not attach close handlers:', e);
+                                }
+                                
                                 // Start monitoring for save
                                 console.log('✓ Stored skipped fields, monitoring for save...');
                                 startSaveMonitoring();
@@ -646,10 +674,15 @@ function startSaveMonitoring() {
                 return; // Keep waiting
             }
             
+            // Check if a save is in progress or completed
+            const saveInProgress = sessionStorage.getItem('adminplus_save_in_progress');
+            
             // Check if record has been saved (has an ID now)
             const recordId = Xrm.Page.data.entity.getId();
-            if (!recordId) {
-                return; // Still not saved, keep waiting
+            
+            // Only proceed if we have both: a save was initiated AND record now has ID
+            if (!recordId || saveInProgress !== 'true') {
+                return; // Still not saved or save not initiated, keep waiting
             }
             
             // Verify we're still on the expected entity before proceeding
@@ -662,6 +695,9 @@ function startSaveMonitoring() {
                 cleanupSkippedFieldsStorage();
                 return;
             }
+            
+            // Clear the save in progress flag
+            sessionStorage.removeItem('adminplus_save_in_progress');
             
             // Record has been saved! Stop monitoring
             clearInterval(monitorInterval);
@@ -887,6 +923,8 @@ function cleanupSkippedFieldsStorage() {
     sessionStorage.removeItem('adminplus_waiting_for_save');
     sessionStorage.removeItem('adminplus_clone_session_id');
     sessionStorage.removeItem('adminplus_saved_record_id');
+    sessionStorage.removeItem('adminplus_save_in_progress');
+    sessionStorage.removeItem('adminplus_form_identifier');
     console.log('Cleaned up clone session storage');
 }
 
