@@ -543,9 +543,20 @@ function handleCloneRecord(container, fieldAnalysis, entityName) {
                                         successCount++;
                                         console.log(`✓ Set field ${fieldName} (${attrType}):`, valueToSet);
                                     } else {
-                                        // Field not on create form - save for later
-                                        skippedFields[fieldName] = fieldsToClone[fieldName];
-                                        console.log(`⊝ Field ${fieldName} not on create form - will apply after save`);
+                                        // Field not on create form - check if it exists in metadata
+                                        // Only skip if field actually exists on the entity
+                                        const allAttributes = Xrm.Page.data.entity.attributes.get();
+                                        const fieldExists = allAttributes.some(attr => attr.getName() === fieldName);
+                                        
+                                        if (!fieldExists) {
+                                            // Field might exist on main form but not create form
+                                            skippedFields[fieldName] = fieldsToClone[fieldName];
+                                            console.log(`⊝ Field ${fieldName} not on create form - will apply after save`);
+                                        } else {
+                                            // Field exists but attribute not found - unusual case
+                                            console.warn(`Field ${fieldName} exists but could not be accessed`);
+                                            errorCount++;
+                                        }
                                     }
                                 } catch (e) {
                                     errorCount++;
@@ -649,10 +660,15 @@ function startSaveMonitoring() {
             
             console.log('✓ Record saved detected! Applying skipped fields...');
             
-            // Apply skipped fields after a short delay
+            // Show visual feedback immediately
+            if (typeof showToast === 'function') {
+                showToast('Applying remaining fields...', 'info', 1500);
+            }
+            
+            // Apply skipped fields after a minimal delay
             setTimeout(() => {
                 applySkippedFields();
-            }, 2000); // Wait 2 seconds for form to stabilize
+            }, 800); // Wait 800ms for form to stabilize - faster response
             
         } catch (e) {
             console.warn('Error in save monitoring:', e);
@@ -715,13 +731,9 @@ function applySkippedFields() {
         
         console.log(`Found ${fieldCount} skipped fields to apply`);
         
-        // Show loading message
-        if (typeof showToast === 'function') {
-            showToast(`Applying ${fieldCount} additional field(s)...`, 'info', 2000);
-        }
-        
         let appliedCount = 0;
         let errorCount = 0;
+        let stillSkippedCount = 0;
         
         Object.keys(skippedFields).forEach(fieldName => {
             try {
@@ -751,8 +763,9 @@ function applySkippedFields() {
                     appliedCount++;
                     console.log(`✓ Applied skipped field ${fieldName} (${attrType})`);
                 } else {
-                    console.warn(`Field ${fieldName} still not on form`);
-                    errorCount++;
+                    // Field still not on main form - truly missing
+                    stillSkippedCount++;
+                    console.warn(`Field ${fieldName} not available on main form either - cannot apply`);
                 }
             } catch (e) {
                 errorCount++;
@@ -760,7 +773,7 @@ function applySkippedFields() {
             }
         });
         
-        console.log(`Applied ${appliedCount} skipped field(s), ${errorCount} failed`);
+        console.log(`Applied ${appliedCount} skipped field(s), ${errorCount} failed, ${stillSkippedCount} not on form`);
         
         // Clean up sessionStorage
         cleanupSkippedFieldsStorage();
@@ -773,16 +786,25 @@ function applySkippedFields() {
                 function() {
                     console.log('✓ Record saved successfully with all fields');
                     if (typeof showToast === 'function') {
-                        showToast(`Successfully applied and saved ${appliedCount} additional field(s)!`, 'success', 4000);
+                        let message = `Applied ${appliedCount} additional field(s)!`;
+                        if (stillSkippedCount > 0) {
+                            message += ` (${stillSkippedCount} not on form)`;
+                        }
+                        showToast(message, 'success', 4000);
                     }
                 },
                 function(error) {
                     console.error('✗ Error saving record:', error);
                     if (typeof showToast === 'function') {
-                        showToast(`Applied ${appliedCount} field(s) but save failed. Please save manually.`, 'warning', 5000);
+                        showToast(`Applied ${appliedCount} field(s) but auto-save failed. Please save manually.`, 'warning', 5000);
                     }
                 }
             );
+        } else if (stillSkippedCount > 0 && errorCount === 0) {
+            // All skipped fields are not available on main form either
+            if (typeof showToast === 'function') {
+                showToast(`${stillSkippedCount} field(s) not available on main form - skipped`, 'info', 3000);
+            }
         } else if (errorCount > 0) {
             if (typeof showToast === 'function') {
                 showToast(`Could not apply ${errorCount} field(s). Check console.`, 'error', 4000);
