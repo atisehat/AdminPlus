@@ -652,6 +652,17 @@ function startSaveMonitoring() {
                 return; // Still not saved, keep waiting
             }
             
+            // Verify we're still on the expected entity before proceeding
+            const expectedEntity = sessionStorage.getItem('adminplus_skipped_entity');
+            const currentEntity = Xrm.Page.data.entity.getEntityName();
+            
+            if (expectedEntity && currentEntity !== expectedEntity) {
+                console.log('User navigated to different entity type. Cleaning up.');
+                clearInterval(monitorInterval);
+                cleanupSkippedFieldsStorage();
+                return;
+            }
+            
             // Record has been saved! Stop monitoring
             clearInterval(monitorInterval);
             
@@ -663,7 +674,7 @@ function startSaveMonitoring() {
             console.log('✓ Record saved detected! Record ID:', cleanRecordId);
             console.log('Applying skipped fields...');
             
-            // Show visual feedback immediately
+            // Show visual feedback immediately (only after verification)
             if (typeof showToast === 'function') {
                 showToast('Applying remaining fields...', 'info', 1500);
             }
@@ -799,16 +810,17 @@ function applySkippedFields() {
         if (appliedCount > 0) {
             console.log('Auto-saving record with applied fields...');
             
-            // Check if all required fields have values
-            let hasRequiredFieldErrors = false;
+            // Check if there are missing required fields
+            const missingRequiredFields = [];
             try {
                 const attributes = Xrm.Page.data.entity.attributes.get();
                 attributes.forEach(attr => {
                     if (attr.getRequiredLevel() === 'required') {
                         const value = attr.getValue();
                         if (value === null || value === undefined || value === '') {
-                            console.warn(`Required field ${attr.getName()} is empty`);
-                            hasRequiredFieldErrors = true;
+                            const fieldName = attr.getName();
+                            missingRequiredFields.push(fieldName);
+                            console.warn(`Required field ${fieldName} is empty - will force save anyway`);
                         }
                     }
                 });
@@ -816,24 +828,25 @@ function applySkippedFields() {
                 console.warn('Could not validate required fields:', e);
             }
             
-            if (hasRequiredFieldErrors) {
-                console.warn('Form has missing required fields');
-                if (typeof showToast === 'function') {
-                    showToast(`Applied ${appliedCount} field(s) but required fields are missing. Please complete and save manually.`, 'warning', 6000);
-                }
-                return;
-            }
+            // Force save even if required fields are missing
+            // Using the save options to suppress duplicate detection and required field validation
+            const saveOptions = {
+                saveMode: 1 // Save without validating required fields
+            };
             
-            // Attempt to save
-            Xrm.Page.data.entity.save().then(
+            console.log('Attempting to force save...');
+            Xrm.Page.data.entity.save(saveOptions).then(
                 function() {
                     console.log('✓ Record saved successfully with all fields');
                     if (typeof showToast === 'function') {
                         let message = `Successfully applied ${appliedCount} additional field(s)!`;
+                        if (missingRequiredFields.length > 0) {
+                            message += ` Note: ${missingRequiredFields.length} required field(s) still empty.`;
+                        }
                         if (stillSkippedCount > 0) {
                             message += ` (${stillSkippedCount} not on form)`;
                         }
-                        showToast(message, 'success', 4000);
+                        showToast(message, 'success', 5000);
                     }
                 },
                 function(error) {
