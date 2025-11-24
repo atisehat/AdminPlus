@@ -473,22 +473,39 @@ function handleCloneRecord(container, fieldAnalysis, entityName) {
             showToast('Opening new record with cloned values...', 'info', 2000);
         }
         
-        // Open a new form with the cloned values
-        const clientUrl = Xrm.Page.context.getClientUrl();
-        const formUrl = `${clientUrl}/main.aspx?etn=${entityName}&pagetype=entityrecord`;
+        // Get current form ID to use the same form for the clone
+        let currentFormId = null;
+        try {
+            const formContext = Xrm.Page.ui.formContext || Xrm.Page;
+            const formSelector = formContext.ui.formSelector;
+            if (formSelector && typeof formSelector.getCurrentItem === 'function') {
+                const currentItem = formSelector.getCurrentItem();
+                if (currentItem && typeof currentItem.getId === 'function') {
+                    currentFormId = currentItem.getId();
+                    console.log('Current form ID:', currentFormId);
+                }
+            }
+        } catch (e) {
+            console.warn('Could not get current form ID:', e);
+        }
         
-        // Build parameters for pre-populated fields
-        const params = {};
-        Object.keys(fieldsToClone).forEach(fieldName => {
-            params[fieldName] = fieldsToClone[fieldName];
-        });
-        
-        // Navigate to create form with parameters
-        Xrm.Navigation.openForm({
+        // Build form options
+        const formOptions = {
             entityName: entityName,
             useQuickCreateForm: false,
             openInNewWindow: false
-        }).then(function(result) {
+        };
+        
+        // If we found the current form ID, use it for the clone
+        if (currentFormId) {
+            formOptions.formId = currentFormId;
+            console.log('Opening clone with same form ID:', currentFormId);
+        } else {
+            console.log('Opening clone with default form (form ID not found)');
+        }
+        
+        // Navigate to create form with parameters
+        Xrm.Navigation.openForm(formOptions).then(function(result) {
             // Form opened successfully
             console.log('Clone form opened', result);
             
