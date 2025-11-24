@@ -46,6 +46,7 @@ function onUtilScriptLoaded() {
     loadScript('tools/securityOperations.js');
     loadScript('tools/dateCalculator.js');
     loadScript('tools/openRecord.js');
+    loadScript('tools/setMinimumValues.js');
   }
 }
 
@@ -116,6 +117,9 @@ function openPopup() {
 	    </button>
 	    <button onclick="openRecord();" class="app-button" title="Open Record">
 	      <span class="app-icon">🔗</span>
+	    </button>
+	    <button onclick="setMinimumValues();" class="app-button" title="Set Minimum Values">
+	      <span class="app-icon">⚡</span>
 	    </button>
 	  </div>
 	</div>
@@ -305,3 +309,4 @@ window.openUrl = openUrl;
 window.showDirtyFields = showDirtyFields;
 window.showToast = showToast;
 window.openRecord = openRecord;
+window.setMinimumValues = setMinimumValues;
