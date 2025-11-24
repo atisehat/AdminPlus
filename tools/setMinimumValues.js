@@ -61,7 +61,8 @@ function analyzeFormFields() {
         double: [],
         integer: [],
         money: [],
-        optionset: []
+        optionset: [],
+        lookup: []
     };
     
     try {
@@ -133,6 +134,9 @@ function analyzeFormFields() {
                             fieldInfo.options = options;
                         }
                         fields.optionset.push(fieldInfo);
+                        break;
+                    case 'lookup':
+                        fields.lookup.push(fieldInfo);
                         break;
                 }
             } catch (e) {
@@ -224,8 +228,9 @@ function generateFieldsHTML(fieldAnalysis) {
     let html = '';
     
     const typeConfigs = {
+        lookup: { label: 'Lookup Fields', icon: '🔗', color: '#8b5cf6' },
         string: { label: 'Text Fields (Single Line)', icon: '📝', color: '#3b82f6' },
-        memo: { label: 'Text Fields (Multiple Lines)', icon: '📄', color: '#8b5cf6' },
+        memo: { label: 'Text Fields (Multiple Lines)', icon: '📄', color: '#6366f1' },
         boolean: { label: 'Yes/No Fields', icon: '☑️', color: '#10b981' },
         datetime: { label: 'Date & Time Fields', icon: '📅', color: '#f59e0b' },
         decimal: { label: 'Decimal Number Fields', icon: '🔢', color: '#ec4899' },
@@ -265,6 +270,15 @@ function generateFieldsHTML(fieldAnalysis) {
                     displayValue = field.currentValue.toLocaleString();
                 } else if (type === 'money') {
                     displayValue = '$' + field.currentValue.toFixed(2);
+                } else if (type === 'lookup') {
+                    // Handle lookup values (array of lookup objects)
+                    if (Array.isArray(field.currentValue) && field.currentValue.length > 0) {
+                        displayValue = field.currentValue.map(lv => lv.name).join(', ');
+                    } else if (field.currentValue.name) {
+                        displayValue = field.currentValue.name;
+                    } else {
+                        displayValue = 'Lookup value set';
+                    }
                 } else {
                     displayValue = String(field.currentValue);
                     if (displayValue.length > 30) {
@@ -392,32 +406,65 @@ function handleCloneRecord(container, fieldAnalysis, entityName) {
         // Navigate to create form with parameters
         Xrm.Navigation.openForm({
             entityName: entityName,
-            useQuickCreateForm: false
+            useQuickCreateForm: false,
+            openInNewWindow: false
         }).then(function(result) {
             // Form opened successfully
-            console.log('Clone form opened');
+            console.log('Clone form opened', result);
             
-            // Set the field values on the new form
-            setTimeout(() => {
+            // Set the field values on the new form after it loads
+            // We need to wait for the new form to be ready
+            const maxAttempts = 20;
+            let attempts = 0;
+            
+            const setValues = setInterval(() => {
+                attempts++;
+                
                 try {
-                    Object.keys(fieldsToClone).forEach(fieldName => {
-                        try {
-                            const attribute = Xrm.Page.data.entity.attributes.get(fieldName);
-                            if (attribute) {
-                                attribute.setValue(fieldsToClone[fieldName]);
+                    // Check if we can access the form context
+                    if (typeof Xrm !== 'undefined' && Xrm.Page && Xrm.Page.data && Xrm.Page.data.entity) {
+                        // Check if this is a new record (no ID)
+                        const newRecordId = Xrm.Page.data.entity.getId();
+                        if (!newRecordId) {
+                            // This is the new form, set the values
+                            let successCount = 0;
+                            let errorCount = 0;
+                            
+                            Object.keys(fieldsToClone).forEach(fieldName => {
+                                try {
+                                    const attribute = Xrm.Page.data.entity.attributes.get(fieldName);
+                                    if (attribute) {
+                                        attribute.setValue(fieldsToClone[fieldName]);
+                                        successCount++;
+                                        console.log(`Set field ${fieldName}:`, fieldsToClone[fieldName]);
+                                    }
+                                } catch (e) {
+                                    errorCount++;
+                                    console.warn(`Could not set field ${fieldName}:`, e);
+                                }
+                            });
+                            
+                            if (typeof showToast === 'function') {
+                                showToast(`Cloned ${successCount} field(s). Review and save.`, 'success', 3000);
                             }
-                        } catch (e) {
-                            console.warn(`Could not set field ${fieldName}:`, e);
+                            
+                            // Clear the interval
+                            clearInterval(setValues);
                         }
-                    });
-                    
-                    if (typeof showToast === 'function') {
-                        showToast(`Cloned ${Object.keys(fieldsToClone).length} field(s). Review and save.`, 'success', 3000);
                     }
                 } catch (e) {
-                    console.error('Error setting cloned values:', e);
+                    console.warn('Waiting for form to load...', e);
                 }
-            }, 1000);
+                
+                // Stop trying after max attempts
+                if (attempts >= maxAttempts) {
+                    clearInterval(setValues);
+                    console.warn('Could not set cloned values - form did not load in time');
+                    if (typeof showToast === 'function') {
+                        showToast('Form opened but values may not be set', 'warning');
+                    }
+                }
+            }, 500);
             
         }).catch(function(error) {
             console.error('Error opening clone form:', error);
