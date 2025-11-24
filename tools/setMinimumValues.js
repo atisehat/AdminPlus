@@ -53,6 +53,7 @@ async function setMinimumValues() {
 
 function analyzeFormFields() {
     const fields = {
+        lookup: [],
         string: [],
         memo: [],
         boolean: [],
@@ -62,7 +63,9 @@ function analyzeFormFields() {
         integer: [],
         money: [],
         optionset: [],
-        lookup: []
+        multiselectoptionset: [],
+        bigint: [],
+        other: []
     };
     
     try {
@@ -103,6 +106,9 @@ function analyzeFormFields() {
                 
                 // Categorize by type
                 switch (attrType) {
+                    case 'lookup':
+                        fields.lookup.push(fieldInfo);
+                        break;
                     case 'string':
                         fields.string.push(fieldInfo);
                         break;
@@ -127,6 +133,9 @@ function analyzeFormFields() {
                     case 'money':
                         fields.money.push(fieldInfo);
                         break;
+                    case 'bigint':
+                        fields.bigint.push(fieldInfo);
+                        break;
                     case 'optionset':
                         // Get options
                         if (controls && controls.length > 0 && typeof controls[0].getOptions === 'function') {
@@ -135,8 +144,18 @@ function analyzeFormFields() {
                         }
                         fields.optionset.push(fieldInfo);
                         break;
-                    case 'lookup':
-                        fields.lookup.push(fieldInfo);
+                    case 'multiselectoptionset':
+                        // Get options
+                        if (controls && controls.length > 0 && typeof controls[0].getOptions === 'function') {
+                            const options = controls[0].getOptions();
+                            fieldInfo.options = options;
+                        }
+                        fields.multiselectoptionset.push(fieldInfo);
+                        break;
+                    default:
+                        // Catch all other field types (owner, customer, state, status, etc.)
+                        console.log(`Other field type detected: ${attrType} (${attrName})`);
+                        fields.other.push(fieldInfo);
                         break;
                 }
             } catch (e) {
@@ -237,7 +256,10 @@ function generateFieldsHTML(fieldAnalysis) {
         double: { label: 'Floating Point Fields', icon: '➗', color: '#06b6d4' },
         integer: { label: 'Whole Number Fields', icon: '#️⃣', color: '#14b8a6' },
         money: { label: 'Currency Fields', icon: '💰', color: '#22c55e' },
-        optionset: { label: 'Choice Fields (Picklists)', icon: '🎯', color: '#ef4444' }
+        bigint: { label: 'Big Integer Fields', icon: '🔟', color: '#0891b2' },
+        optionset: { label: 'Choice Fields (Single)', icon: '🎯', color: '#ef4444' },
+        multiselectoptionset: { label: 'Choice Fields (Multi-Select)', icon: '🎲', color: '#dc2626' },
+        other: { label: 'Other Fields (Owner, State, Status, etc.)', icon: '⚙️', color: '#6b7280' }
     };
     
     for (const [type, config] of Object.entries(typeConfigs)) {
@@ -270,20 +292,49 @@ function generateFieldsHTML(fieldAnalysis) {
                     displayValue = field.currentValue.toLocaleString();
                 } else if (type === 'money') {
                     displayValue = '$' + field.currentValue.toFixed(2);
-                } else if (type === 'lookup') {
+                } else if (type === 'lookup' || type === 'owner' || type === 'customer') {
                     // Handle lookup values (array of lookup objects)
                     if (Array.isArray(field.currentValue) && field.currentValue.length > 0) {
-                        displayValue = field.currentValue.map(lv => lv.name).join(', ');
+                        displayValue = field.currentValue.map(lv => lv.name || lv.id).join(', ');
                     } else if (field.currentValue.name) {
                         displayValue = field.currentValue.name;
+                    } else if (field.currentValue.id) {
+                        displayValue = 'ID: ' + field.currentValue.id.substring(0, 8) + '...';
                     } else {
                         displayValue = 'Lookup value set';
                     }
-                } else {
-                    displayValue = String(field.currentValue);
-                    if (displayValue.length > 30) {
-                        displayValue = displayValue.substring(0, 30) + '...';
+                } else if (type === 'multiselectoptionset' || type === 'optionset') {
+                    // Handle option set values
+                    if (Array.isArray(field.currentValue)) {
+                        displayValue = field.currentValue.join(', ');
+                    } else {
+                        displayValue = String(field.currentValue);
                     }
+                } else if (type === 'other') {
+                    // Handle other field types
+                    if (Array.isArray(field.currentValue)) {
+                        if (field.currentValue.length > 0 && field.currentValue[0].name) {
+                            displayValue = field.currentValue.map(v => v.name || v).join(', ');
+                        } else {
+                            displayValue = field.currentValue.join(', ');
+                        }
+                    } else if (typeof field.currentValue === 'object' && field.currentValue !== null) {
+                        if (field.currentValue.name) {
+                            displayValue = field.currentValue.name;
+                        } else {
+                            displayValue = JSON.stringify(field.currentValue);
+                        }
+                    } else {
+                        displayValue = String(field.currentValue);
+                    }
+                } else {
+                    // Default string conversion
+                    displayValue = String(field.currentValue);
+                }
+                
+                // Truncate long values
+                if (displayValue && displayValue.length > 35) {
+                    displayValue = displayValue.substring(0, 35) + '...';
                 }
             }
             
@@ -368,15 +419,22 @@ function handleCloneRecord(container, fieldAnalysis, entityName) {
                 
                 // Find the field in analysis
                 const field = fieldAnalysis[fieldType].find(f => f.name === fieldName);
-                if (!field || field.currentValue === null || field.currentValue === undefined) return;
+                if (!field || field.currentValue === null || field.currentValue === undefined) {
+                    console.log(`Skipping field ${fieldName} - no value or not found`);
+                    return;
+                }
                 
                 // Store the value to clone
                 fieldsToClone[fieldName] = field.currentValue;
+                console.log(`Collected field ${fieldName} (${fieldType}):`, field.currentValue);
                 
             } catch (e) {
-                console.error('Error collecting field value:', e);
+                console.error(`Error collecting field value for ${fieldName}:`, e);
             }
         });
+        
+        console.log('Total fields to clone:', Object.keys(fieldsToClone).length);
+        console.log('Fields to clone:', fieldsToClone);
         
         if (Object.keys(fieldsToClone).length === 0) {
             if (typeof showToast === 'function') {
