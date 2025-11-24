@@ -31,24 +31,4 @@ async function commandChecker() {
     }
 }
 
-// Show success message after page reload
-(function() {
-    const commandCheckerEnabled = sessionStorage.getItem('adminplus_command_checker_enabled');
-    if (commandCheckerEnabled !== 'true') return;
-    
-    sessionStorage.removeItem('adminplus_command_checker_enabled');
-    
-    // Wait for showToast to be available
-    const showSuccessMessage = () => {
-        if (typeof showToast === 'function') {
-            showToast('Command Checker enabled successfully!', 'success', 4000);
-        } else {
-            // If not available yet, try again
-            setTimeout(showSuccessMessage, 200);
-        }
-    };
-    
-    // Start checking after a short delay to let scripts load
-    setTimeout(showSuccessMessage, 500);
-})();
 
