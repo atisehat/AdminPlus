@@ -15,6 +15,29 @@ async function commandChecker() {
             return;
         }
         
+        // Save current state before reload
+        try {
+            // Save scroll position
+            sessionStorage.setItem('adminplus_scroll_position', window.scrollY || 0);
+            
+            // Save active tab if available
+            if (typeof Xrm !== 'undefined' && Xrm.Page && Xrm.Page.ui && Xrm.Page.ui.tabs) {
+                const tabs = Xrm.Page.ui.tabs.get();
+                tabs.forEach((tab, index) => {
+                    if (tab.getDisplayState() === 'expanded') {
+                        sessionStorage.setItem('adminplus_active_tab', tab.getName());
+                    }
+                });
+            }
+            
+            // Mark that sidebar should stay open
+            sessionStorage.setItem('adminplus_keep_sidebar_open', 'true');
+            sessionStorage.setItem('adminplus_command_checker_enabled', 'true');
+            
+        } catch (e) {
+            console.warn('Could not save form state:', e);
+        }
+        
         // Get current URL and add ribbondebug parameter
         const currentUrl = window.location.href;
         let newUrl;
@@ -27,7 +50,7 @@ async function commandChecker() {
         
         // Show loading message
         if (typeof showToast === 'function') {
-            showToast('Enabling Command Checker...', 'info', 2000);
+            showToast('Enabling Command Checker - page will reload...', 'info', 2000);
         }
         
         console.log('Reloading with ribbondebug=true');

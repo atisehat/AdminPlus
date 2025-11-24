@@ -315,3 +315,66 @@ window.showToast = showToast;
 window.openRecord = openRecord;
 window.cloneRecord = cloneRecord;
 window.commandChecker = commandChecker;
+
+// ============================================================================
+// Restore State After Command Checker Enable
+// ============================================================================
+(function() {
+    try {
+        // Check if we just enabled Command Checker
+        const commandCheckerEnabled = sessionStorage.getItem('adminplus_command_checker_enabled');
+        const keepSidebarOpen = sessionStorage.getItem('adminplus_keep_sidebar_open');
+        
+        if (commandCheckerEnabled === 'true') {
+            // Clear the flag
+            sessionStorage.removeItem('adminplus_command_checker_enabled');
+            
+            // Show success message
+            setTimeout(() => {
+                if (typeof showToast === 'function') {
+                    showToast('Command Checker enabled! Look for "Command checker" button in ribbons (may be in overflow menu).', 'success', 6000);
+                }
+            }, 1000);
+            
+            // Restore scroll position
+            const scrollPosition = sessionStorage.getItem('adminplus_scroll_position');
+            if (scrollPosition) {
+                setTimeout(() => {
+                    window.scrollTo(0, parseInt(scrollPosition));
+                    sessionStorage.removeItem('adminplus_scroll_position');
+                }, 500);
+            }
+            
+            // Restore active tab
+            const activeTab = sessionStorage.getItem('adminplus_active_tab');
+            if (activeTab && typeof Xrm !== 'undefined' && Xrm.Page && Xrm.Page.ui) {
+                setTimeout(() => {
+                    try {
+                        const tab = Xrm.Page.ui.tabs.get(activeTab);
+                        if (tab) {
+                            tab.setDisplayState('expanded');
+                        }
+                    } catch (e) {
+                        console.warn('Could not restore tab:', e);
+                    }
+                    sessionStorage.removeItem('adminplus_active_tab');
+                }, 500);
+            }
+        }
+        
+        // Keep sidebar open if requested
+        if (keepSidebarOpen === 'true') {
+            sessionStorage.removeItem('adminplus_keep_sidebar_open');
+            
+            // Open sidebar after a short delay to ensure page is loaded
+            setTimeout(() => {
+                if (!document.body.classList.contains('adminplus-sidebar-open')) {
+                    document.body.classList.add('adminplus-sidebar-open');
+                }
+            }, 800);
+        }
+        
+    } catch (e) {
+        console.warn('Error restoring Command Checker state:', e);
+    }
+})();
