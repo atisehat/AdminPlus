@@ -35,7 +35,7 @@ function createOpenRecordPopup() {
     container.style.width = '50%';
     container.style.minWidth = '500px';
     container.style.maxWidth = '700px';
-    container.style.maxHeight = '90vh';
+    container.style.height = 'auto';
     
     container.innerHTML = `
         <div class="commonPopup-header" style="background-color: #2b2b2b; position: relative; cursor: move; border-radius: 9px 9px 0 0; margin: 0; border-bottom: 2px solid #1a1a1a;">
@@ -46,9 +46,9 @@ function createOpenRecordPopup() {
             <div class="commonSection content-section" style="padding: 0; border-right: 0;">
                 
                 <!-- Instructions -->
-                <div style="background-color: #f0f8ff; padding: 15px; border-radius: 8px; margin-bottom: 30px; border-left: 4px solid #3b82f6;">
-                    <p style="margin: 0; font-size: 14px; color: #1e40af; line-height: 1.6;">
-                        <strong>📖 Instructions:</strong> Enter the entity logical name (e.g., "account", "contact", "opportunity") 
+                <div style="background-color: white; padding: 15px; border-radius: 8px; margin-bottom: 30px; border-left: 4px solid #3b82f6; border-right: 4px solid #3b82f6; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">
+                    <p style="margin: 0; font-size: 14px; color: #333; line-height: 1.6;">
+                        <strong style="color: #3b82f6;">📖 Instructions:</strong> Enter the entity logical name (e.g., "account", "contact", "opportunity") 
                         and the record GUID to open that specific record in a new window.
                     </p>
                 </div>
@@ -89,20 +89,20 @@ function createOpenRecordPopup() {
                     </div>
                     
                     <!-- Quick Access Section -->
-                    <div style="background-color: #d1fae5; padding: 15px; border-radius: 8px; border-left: 4px solid #10b981;">
-                        <p style="margin: 0 0 10px 0; font-weight: 600; font-size: 14px; color: #065f46;">
-                            🚀 Quick Access - Current Record:
+                    <div style="background-color: white; padding: 15px; border-radius: 8px; border-left: 4px solid #10b981; border-right: 4px solid #10b981; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">
+                        <p style="margin: 0 0 10px 0; font-weight: 600; font-size: 14px; color: #333;">
+                            <span style="color: #10b981;">🚀 Quick Access</span> - Current Record:
                         </p>
                         <div style="display: flex; gap: 10px; align-items: center;">
                             <button 
                                 id="useCurrentRecord" 
-                                style="padding: 8px 16px; background-color: #10b981; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; transition: background-color 0.2s;"
-                                onmouseover="this.style.backgroundColor='#059669';"
-                                onmouseout="this.style.backgroundColor='#10b981';"
+                                style="padding: 8px 16px; background-color: #2b2b2b; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; transition: all 0.2s; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);"
+                                onmouseover="this.style.backgroundColor='#1a1a1a'; this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 8px rgba(0, 0, 0, 0.3)';"
+                                onmouseout="this.style.backgroundColor='#2b2b2b'; this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 4px rgba(0, 0, 0, 0.2)';"
                             >
                                 Use Current Record
                             </button>
-                            <span style="font-size: 12px; color: #065f46;">Populate fields with the currently open record</span>
+                            <span style="font-size: 12px; color: #6b7280;">Populate fields with the currently open record</span>
                         </div>
                     </div>
                     
