@@ -195,8 +195,8 @@ function createCloneRecordPopup(entityName, recordId, fieldAnalysis) {
                 
                 <!-- Instructions -->
                 <div style="background-color: white; padding: 12px 15px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #3b82f6; border-right: 4px solid #3b82f6; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">
-                    <p style="margin: 0; font-size: 13px; color: #555; line-height: 1.5;">
-                        Select the fields you want to clone to a new record. Fields marked with <span style="color: #ef4444; font-weight: bold;">*</span> are required.
+                    <p style="margin: 0; font-size: 13px; color: #555; line-height: 1.6;">
+                        <strong>Note:</strong> Selected field(s) will be cloned to a new record. Fields marked with <span style="color: #ef4444; font-weight: bold;">*</span> are required and could require a manual save if left unchecked.
                     </p>
                 </div>
                 
