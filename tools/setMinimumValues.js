@@ -1,6 +1,6 @@
-// Set Minimum Values Tool - Apply minimum values to new records only
+// Clone Record Tool - Clone current record to a new record (unsaved)
 async function setMinimumValues() {
-    console.log('Set Minimum Values: Tool initiated');
+    console.log('Clone Record: Tool initiated');
     
     try {
         // Check if we're on a form
@@ -11,11 +11,11 @@ async function setMinimumValues() {
             return;
         }
         
-        // Check if this is a new record (not yet created)
+        // Check if this is an existing record (must be saved to clone)
         const entityId = Xrm.Page.data.entity.getId();
-        if (entityId) {
+        if (!entityId) {
             if (typeof showToast === 'function') {
-                showToast('This tool only works on new records (not yet saved)', 'warning');
+                showToast('Please open an existing record to clone', 'warning');
             }
             return;
         }
@@ -24,18 +24,19 @@ async function setMinimumValues() {
         const existingPopups = document.querySelectorAll('.commonPopup');
         existingPopups.forEach(popup => popup.remove());
         
-        // Get entity name
+        // Get entity name and ID
         const entityName = Xrm.Page.data.entity.getEntityName();
+        const cleanRecordId = entityId.replace(/[{}]/g, "").toLowerCase();
         
         // Analyze form fields
         const fieldAnalysis = analyzeFormFields();
         
         // Create and display the popup
-        const popupContainer = createMinimumValuesPopup(entityName, fieldAnalysis);
+        const popupContainer = createCloneRecordPopup(entityName, cleanRecordId, fieldAnalysis);
         document.body.appendChild(popupContainer);
         
         // Setup event handlers
-        setupMinimumValuesHandlers(popupContainer, fieldAnalysis);
+        setupCloneRecordHandlers(popupContainer, fieldAnalysis, entityName, cleanRecordId);
         
         // Make popup movable
         if (typeof makePopupMovable === 'function') {
@@ -43,7 +44,7 @@ async function setMinimumValues() {
         }
         
     } catch (error) {
-        console.error('Error opening Set Minimum Values tool:', error);
+        console.error('Error opening Clone Record tool:', error);
         if (typeof showToast === 'function') {
             showToast('Error opening tool', 'error');
         }
@@ -146,7 +147,7 @@ function analyzeFormFields() {
     return fields;
 }
 
-function createMinimumValuesPopup(entityName, fieldAnalysis) {
+function createCloneRecordPopup(entityName, recordId, fieldAnalysis) {
     const container = document.createElement('div');
     container.className = 'commonPopup';
     container.style.border = '3px solid #1a1a1a';
@@ -156,12 +157,14 @@ function createMinimumValuesPopup(entityName, fieldAnalysis) {
     container.style.maxWidth = '1000px';
     container.style.maxHeight = '90vh';
     
-    // Count total fields
+    // Count total fields that can be cloned (have values)
+    const fieldsWithValues = Object.values(fieldAnalysis).reduce((sum, arr) => 
+        sum + arr.filter(f => f.currentValue !== null && f.currentValue !== undefined).length, 0);
     const totalFields = Object.values(fieldAnalysis).reduce((sum, arr) => sum + arr.length, 0);
     
     container.innerHTML = `
         <div class="commonPopup-header" style="background-color: #2b2b2b; position: relative; cursor: move; border-radius: 9px 9px 0 0; margin: 0; border-bottom: 2px solid #1a1a1a;">
-            <span style="color: white;">Set Minimum Values - New Record</span>
+            <span style="color: white;">Clone Record</span>
             <span class="close-button" style="position: absolute; right: 0; top: 0; bottom: 0; width: 45px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 20px; color: white; font-weight: bold; transition: background-color 0.2s ease; border-radius: 0 9px 0 0;">&times;</span>
         </div>
         <div class="popup-body" style="padding: 20px;">
@@ -170,16 +173,17 @@ function createMinimumValuesPopup(entityName, fieldAnalysis) {
                 <!-- Info Section -->
                 <div style="background-color: white; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #3b82f6; border-right: 4px solid #3b82f6; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">
                     <p style="margin: 0; font-size: 14px; color: #333; line-height: 1.6;">
-                        <strong style="color: #3b82f6;">ℹ️ Entity:</strong> ${entityName} | 
-                        <strong style="color: #3b82f6;">📊 Total Fields:</strong> ${totalFields} | 
-                        <strong style="color: #10b981;">✅ New Record</strong> (not yet saved)
+                        <strong style="color: #3b82f6;">📋 Entity:</strong> ${entityName} | 
+                        <strong style="color: #3b82f6;">🆔 Record ID:</strong> ${recordId} | 
+                        <strong style="color: #10b981;">✓ ${fieldsWithValues}/${totalFields}</strong> fields with values
                     </p>
                 </div>
                 
                 <!-- Instructions -->
-                <div style="background-color: white; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #f59e0b; border-right: 4px solid #f59e0b; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">
+                <div style="background-color: white; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #10b981; border-right: 4px solid #10b981; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">
                     <p style="margin: 0; font-size: 13px; color: #333; line-height: 1.6;">
-                        <strong style="color: #f59e0b;">⚠️ Instructions:</strong> Select fields below and click "Apply Minimum Values" to set minimum values for each field type. 
+                        <strong style="color: #10b981;">📝 Instructions:</strong> Select fields to clone, then click "Clone Record". 
+                        A new record will open with the selected field values. <strong>Review and modify</strong> before saving. 
                         Fields marked with <span style="color: #ef4444; font-weight: bold;">*</span> are required.
                     </p>
                 </div>
@@ -200,12 +204,12 @@ function createMinimumValuesPopup(entityName, fieldAnalysis) {
                         Select All
                     </button>
                     <button 
-                        id="applyMinimumValuesButton"
+                        id="cloneRecordButton"
                         style="padding: 12px 32px; font-size: 15px; font-weight: 600; width: auto; min-width: 180px; background-color: #2b2b2b; color: white; border: none; cursor: pointer; border-radius: 8px; transition: all 0.2s ease; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);"
                         onmouseover="this.style.backgroundColor='#1a1a1a'; this.style.boxShadow='0 4px 10px rgba(0, 0, 0, 0.3)'; this.style.transform='translateY(-1px)';"
                         onmouseout="this.style.backgroundColor='#2b2b2b'; this.style.boxShadow='0 2px 6px rgba(0, 0, 0, 0.2)'; this.style.transform='translateY(0)';"
                     >
-                        Apply Minimum Values
+                        Clone Record
                     </button>
                 </div>
                 
@@ -220,15 +224,15 @@ function generateFieldsHTML(fieldAnalysis) {
     let html = '';
     
     const typeConfigs = {
-        string: { label: 'Text Fields (Single Line)', icon: '📝', color: '#3b82f6', minValue: 'A' },
-        memo: { label: 'Text Fields (Multiple Lines)', icon: '📄', color: '#8b5cf6', minValue: 'Text' },
-        boolean: { label: 'Yes/No Fields', icon: '☑️', color: '#10b981', minValue: 'No (false)' },
-        datetime: { label: 'Date & Time Fields', icon: '📅', color: '#f59e0b', minValue: 'Current Date/Time' },
-        decimal: { label: 'Decimal Number Fields', icon: '🔢', color: '#ec4899', minValue: '0.00' },
-        double: { label: 'Floating Point Fields', icon: '➗', color: '#06b6d4', minValue: '0.0' },
-        integer: { label: 'Whole Number Fields', icon: '#️⃣', color: '#14b8a6', minValue: '0' },
-        money: { label: 'Currency Fields', icon: '💰', color: '#22c55e', minValue: '$0.00' },
-        optionset: { label: 'Choice Fields (Picklists)', icon: '🎯', color: '#ef4444', minValue: 'First Option' }
+        string: { label: 'Text Fields (Single Line)', icon: '📝', color: '#3b82f6' },
+        memo: { label: 'Text Fields (Multiple Lines)', icon: '📄', color: '#8b5cf6' },
+        boolean: { label: 'Yes/No Fields', icon: '☑️', color: '#10b981' },
+        datetime: { label: 'Date & Time Fields', icon: '📅', color: '#f59e0b' },
+        decimal: { label: 'Decimal Number Fields', icon: '🔢', color: '#ec4899' },
+        double: { label: 'Floating Point Fields', icon: '➗', color: '#06b6d4' },
+        integer: { label: 'Whole Number Fields', icon: '#️⃣', color: '#14b8a6' },
+        money: { label: 'Currency Fields', icon: '💰', color: '#22c55e' },
+        optionset: { label: 'Choice Fields (Picklists)', icon: '🎯', color: '#ef4444' }
     };
     
     for (const [type, config] of Object.entries(typeConfigs)) {
@@ -242,9 +246,6 @@ function generateFieldsHTML(fieldAnalysis) {
                     <h3 style="margin: 0; font-size: 16px; font-weight: 600; color: ${config.color};">
                         ${config.label} (${fields.length})
                     </h3>
-                    <span style="font-size: 12px; color: #6b7280; margin-left: auto;">
-                        Min Value: <strong>${config.minValue}</strong>
-                    </span>
                 </div>
                 <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-left: 15px;">
         `;
@@ -253,14 +254,34 @@ function generateFieldsHTML(fieldAnalysis) {
             const requiredMark = field.isRequired ? '<span style="color: #ef4444; font-weight: bold;"> *</span>' : '';
             const recommendedMark = field.isRecommended ? '<span style="color: #f59e0b; font-weight: bold;"> ⭐</span>' : '';
             const hasValue = field.currentValue !== null && field.currentValue !== undefined;
-            const valueIndicator = hasValue ? '<span style="color: #10b981; font-size: 11px;"> ✓ Has Value</span>' : '';
+            const isEmpty = !hasValue;
+            
+            // Format current value for display
+            let displayValue = '';
+            if (hasValue) {
+                if (type === 'boolean') {
+                    displayValue = field.currentValue ? 'Yes' : 'No';
+                } else if (type === 'datetime' && field.currentValue instanceof Date) {
+                    displayValue = field.currentValue.toLocaleString();
+                } else if (type === 'money') {
+                    displayValue = '$' + field.currentValue.toFixed(2);
+                } else {
+                    displayValue = String(field.currentValue);
+                    if (displayValue.length > 30) {
+                        displayValue = displayValue.substring(0, 30) + '...';
+                    }
+                }
+            }
             
             html += `
-                <div style="display: flex; align-items: center; padding: 8px; background-color: ${hasValue ? '#f0fdf4' : '#f9fafb'}; border-radius: 6px; border: 1px solid ${hasValue ? '#bbf7d0' : '#e5e7eb'};">
-                    <input type="checkbox" class="field-checkbox" data-field-name="${field.name}" data-field-type="${type}" style="margin-right: 8px; width: 16px; height: 16px; cursor: pointer;" ${hasValue ? 'disabled' : ''}>
-                    <label style="font-size: 13px; color: #374151; cursor: pointer; flex: 1;" ${hasValue ? 'style="color: #9ca3af;"' : ''}>
-                        ${field.displayName}${requiredMark}${recommendedMark}${valueIndicator}
-                    </label>
+                <div style="display: flex; flex-direction: column; padding: 8px; background-color: ${hasValue ? '#f0fdf4' : '#fef3c7'}; border-radius: 6px; border: 1px solid ${hasValue ? '#bbf7d0' : '#fde68a'};">
+                    <div style="display: flex; align-items: center;">
+                        <input type="checkbox" class="field-checkbox" data-field-name="${field.name}" data-field-type="${type}" style="margin-right: 8px; width: 16px; height: 16px; cursor: pointer;" ${isEmpty ? 'disabled' : 'checked'}>
+                        <label style="font-size: 13px; color: #374151; cursor: pointer; flex: 1;">
+                            ${field.displayName}${requiredMark}${recommendedMark}
+                        </label>
+                    </div>
+                    ${hasValue ? `<div style="font-size: 11px; color: #6b7280; margin-top: 4px; margin-left: 24px; font-style: italic;">Value: ${displayValue}</div>` : `<div style="font-size: 11px; color: #92400e; margin-top: 4px; margin-left: 24px;">⚠️ No value to clone</div>`}
                 </div>
             `;
         });
@@ -282,7 +303,7 @@ function generateFieldsHTML(fieldAnalysis) {
     return html;
 }
 
-function setupMinimumValuesHandlers(container, fieldAnalysis) {
+function setupCloneRecordHandlers(container, fieldAnalysis, entityName, recordId) {
     // Close button
     const closeButton = container.querySelector('.close-button');
     closeButton.addEventListener('click', () => {
@@ -298,7 +319,8 @@ function setupMinimumValuesHandlers(container, fieldAnalysis) {
     
     // Select All button
     const selectAllButton = container.querySelector('#selectAllButton');
-    let allSelected = false;
+    let allSelected = true; // Start with all checked by default
+    selectAllButton.textContent = 'Deselect All';
     selectAllButton.addEventListener('click', () => {
         const checkboxes = container.querySelectorAll('.field-checkbox:not([disabled])');
         allSelected = !allSelected;
@@ -306,24 +328,24 @@ function setupMinimumValuesHandlers(container, fieldAnalysis) {
         selectAllButton.textContent = allSelected ? 'Deselect All' : 'Select All';
     });
     
-    // Apply button
-    const applyButton = container.querySelector('#applyMinimumValuesButton');
-    applyButton.addEventListener('click', () => handleApplyMinimumValues(container, fieldAnalysis));
+    // Clone button
+    const cloneButton = container.querySelector('#cloneRecordButton');
+    cloneButton.addEventListener('click', () => handleCloneRecord(container, fieldAnalysis, entityName));
 }
 
-function handleApplyMinimumValues(container, fieldAnalysis) {
+function handleCloneRecord(container, fieldAnalysis, entityName) {
     try {
         const selectedCheckboxes = container.querySelectorAll('.field-checkbox:checked');
         
         if (selectedCheckboxes.length === 0) {
             if (typeof showToast === 'function') {
-                showToast('Please select at least one field', 'warning');
+                showToast('Please select at least one field to clone', 'warning');
             }
             return;
         }
         
-        let appliedCount = 0;
-        let errorCount = 0;
+        // Collect field values to clone
+        const fieldsToClone = {};
         
         selectedCheckboxes.forEach(checkbox => {
             try {
@@ -332,70 +354,82 @@ function handleApplyMinimumValues(container, fieldAnalysis) {
                 
                 // Find the field in analysis
                 const field = fieldAnalysis[fieldType].find(f => f.name === fieldName);
-                if (!field) return;
+                if (!field || field.currentValue === null || field.currentValue === undefined) return;
                 
-                // Apply minimum value based on type
-                let minValue;
-                switch (fieldType) {
-                    case 'string':
-                        minValue = 'A';
-                        break;
-                    case 'memo':
-                        minValue = 'Text';
-                        break;
-                    case 'boolean':
-                        minValue = false;
-                        break;
-                    case 'datetime':
-                        minValue = new Date();
-                        break;
-                    case 'decimal':
-                    case 'double':
-                    case 'integer':
-                        minValue = 0;
-                        break;
-                    case 'money':
-                        minValue = 0;
-                        break;
-                    case 'optionset':
-                        // Get first option (usually the first non-null option)
-                        if (field.options && field.options.length > 0) {
-                            const firstOption = field.options.find(opt => opt.value !== null && opt.value !== undefined);
-                            if (firstOption) {
-                                minValue = firstOption.value;
-                            }
-                        }
-                        break;
-                }
-                
-                if (minValue !== undefined) {
-                    field.attribute.setValue(minValue);
-                    appliedCount++;
-                }
+                // Store the value to clone
+                fieldsToClone[fieldName] = field.currentValue;
                 
             } catch (e) {
-                console.error('Error setting field value:', e);
-                errorCount++;
+                console.error('Error collecting field value:', e);
             }
         });
         
-        // Show result
-        if (appliedCount > 0) {
+        if (Object.keys(fieldsToClone).length === 0) {
             if (typeof showToast === 'function') {
-                showToast(`Applied minimum values to ${appliedCount} field(s)`, 'success');
+                showToast('No fields with values selected to clone', 'warning');
             }
-            // Close popup after successful application
-            setTimeout(() => container.remove(), 1000);
+            return;
         }
         
-        if (errorCount > 0) {
-            console.warn(`Failed to set ${errorCount} field(s)`);
+        // Close the popup
+        container.remove();
+        
+        // Show loading message
+        if (typeof showToast === 'function') {
+            showToast('Opening new record with cloned values...', 'info', 2000);
         }
+        
+        // Open a new form with the cloned values
+        const clientUrl = Xrm.Page.context.getClientUrl();
+        const formUrl = `${clientUrl}/main.aspx?etn=${entityName}&pagetype=entityrecord`;
+        
+        // Build parameters for pre-populated fields
+        const params = {};
+        Object.keys(fieldsToClone).forEach(fieldName => {
+            params[fieldName] = fieldsToClone[fieldName];
+        });
+        
+        // Navigate to create form with parameters
+        Xrm.Navigation.openForm({
+            entityName: entityName,
+            useQuickCreateForm: false
+        }).then(function(result) {
+            // Form opened successfully
+            console.log('Clone form opened');
+            
+            // Set the field values on the new form
+            setTimeout(() => {
+                try {
+                    Object.keys(fieldsToClone).forEach(fieldName => {
+                        try {
+                            const attribute = Xrm.Page.data.entity.attributes.get(fieldName);
+                            if (attribute) {
+                                attribute.setValue(fieldsToClone[fieldName]);
+                            }
+                        } catch (e) {
+                            console.warn(`Could not set field ${fieldName}:`, e);
+                        }
+                    });
+                    
+                    if (typeof showToast === 'function') {
+                        showToast(`Cloned ${Object.keys(fieldsToClone).length} field(s). Review and save.`, 'success', 3000);
+                    }
+                } catch (e) {
+                    console.error('Error setting cloned values:', e);
+                }
+            }, 1000);
+            
+        }).catch(function(error) {
+            console.error('Error opening clone form:', error);
+            if (typeof showToast === 'function') {
+                showToast('Error opening new record form', 'error');
+            }
+        });
         
     } catch (error) {
-        console.error('Error applying minimum values:', error);
+        console.error('Error cloning record:', error);
         if (typeof showToast === 'function') {
-            showToast('Error applying minimum values', 'error');
+            showToast('Error cloning record', 'error');
         }
     }
 }

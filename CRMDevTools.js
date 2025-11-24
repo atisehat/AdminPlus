@@ -118,8 +118,8 @@ function openPopup() {
 	    <button onclick="openRecord();" class="app-button" title="Open Record">
 	      <span class="app-icon">🔗</span>
 	    </button>
-	    <button onclick="setMinimumValues();" class="app-button" title="Set Minimum Values">
-	      <span class="app-icon">⚡</span>
+	    <button onclick="setMinimumValues();" class="app-button" title="Clone Record">
+	      <span class="app-icon">🔄</span>
 	    </button>
 	  </div>
 	</div>
