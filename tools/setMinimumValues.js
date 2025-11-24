@@ -476,13 +476,31 @@ function handleCloneRecord(container, fieldAnalysis, entityName) {
         // Get current form ID to use the same form for the clone
         let currentFormId = null;
         try {
-            const formContext = Xrm.Page.ui.formContext || Xrm.Page;
-            const formSelector = formContext.ui.formSelector;
-            if (formSelector && typeof formSelector.getCurrentItem === 'function') {
-                const currentItem = formSelector.getCurrentItem();
-                if (currentItem && typeof currentItem.getId === 'function') {
+            // Method 1: Try formSelector
+            if (Xrm.Page.ui.formSelector) {
+                const currentItem = Xrm.Page.ui.formSelector.getCurrentItem();
+                if (currentItem) {
                     currentFormId = currentItem.getId();
-                    console.log('Current form ID:', currentFormId);
+                    console.log('Form ID from formSelector:', currentFormId);
+                }
+            }
+            
+            // Method 2: Try getting from URL
+            if (!currentFormId) {
+                const urlParams = new URLSearchParams(window.location.search);
+                const formIdFromUrl = urlParams.get('formid');
+                if (formIdFromUrl) {
+                    currentFormId = formIdFromUrl;
+                    console.log('Form ID from URL:', currentFormId);
+                }
+            }
+            
+            // Method 3: Try context
+            if (!currentFormId && Xrm.Page.context) {
+                const queryString = Xrm.Page.context.getQueryStringParameters();
+                if (queryString && queryString.formid) {
+                    currentFormId = queryString.formid;
+                    console.log('Form ID from context:', currentFormId);
                 }
             }
         } catch (e) {
@@ -498,6 +516,8 @@ function handleCloneRecord(container, fieldAnalysis, entityName) {
         
         // If we found the current form ID, use it for the clone
         if (currentFormId) {
+            // Clean the form ID (remove curly braces if present)
+            currentFormId = currentFormId.replace(/[{}]/g, "").toLowerCase();
             formOptions.formId = currentFormId;
             console.log('Opening clone with same form ID:', currentFormId);
         } else {
