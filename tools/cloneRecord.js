@@ -1,5 +1,5 @@
 // Clone Record Tool - Clone current record to a new record (unsaved)
-async function setMinimumValues() {
+async function cloneRecord() {
     console.log('Clone Record: Tool initiated');
     
     try {
@@ -24,19 +24,18 @@ async function setMinimumValues() {
         const existingPopups = document.querySelectorAll('.commonPopup');
         existingPopups.forEach(popup => popup.remove());
         
-        // Get entity name and ID
+        // Get entity name
         const entityName = Xrm.Page.data.entity.getEntityName();
-        const cleanRecordId = entityId.replace(/[{}]/g, "").toLowerCase();
         
         // Analyze form fields
         const fieldAnalysis = analyzeFormFields();
         
         // Create and display the popup
-        const popupContainer = createCloneRecordPopup(entityName, cleanRecordId, fieldAnalysis);
+        const popupContainer = createCloneRecordPopup(fieldAnalysis);
         document.body.appendChild(popupContainer);
         
         // Setup event handlers
-        setupCloneRecordHandlers(popupContainer, fieldAnalysis, entityName, cleanRecordId);
+        setupCloneRecordHandlers(popupContainer, fieldAnalysis, entityName);
         
         // Make popup movable
         if (typeof makePopupMovable === 'function') {
@@ -170,7 +169,7 @@ function analyzeFormFields() {
     return fields;
 }
 
-function createCloneRecordPopup(entityName, recordId, fieldAnalysis) {
+function createCloneRecordPopup(fieldAnalysis) {
     const container = document.createElement('div');
     container.className = 'commonPopup';
     container.style.border = '3px solid #1a1a1a';
@@ -179,11 +178,6 @@ function createCloneRecordPopup(entityName, recordId, fieldAnalysis) {
     container.style.minWidth = '700px';
     container.style.maxWidth = '1000px';
     container.style.maxHeight = '90vh';
-    
-    // Count total fields that can be cloned (have values)
-    const fieldsWithValues = Object.values(fieldAnalysis).reduce((sum, arr) => 
-        sum + arr.filter(f => f.currentValue !== null && f.currentValue !== undefined).length, 0);
-    const totalFields = Object.values(fieldAnalysis).reduce((sum, arr) => sum + arr.length, 0);
     
     container.innerHTML = `
         <div class="commonPopup-header" style="background-color: #2b2b2b; position: relative; cursor: move; border-radius: 9px 9px 0 0; margin: 0; border-bottom: 2px solid #1a1a1a;">
@@ -360,7 +354,7 @@ function generateFieldsHTML(fieldAnalysis) {
     return html;
 }
 
-function setupCloneRecordHandlers(container, fieldAnalysis, entityName, recordId) {
+function setupCloneRecordHandlers(container, fieldAnalysis, entityName) {
     // Close button
     const closeButton = container.querySelector('.close-button');
     closeButton.addEventListener('click', () => {

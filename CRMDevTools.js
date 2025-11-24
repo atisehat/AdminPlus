@@ -46,7 +46,7 @@ function onUtilScriptLoaded() {
     loadScript('tools/securityOperations.js');
     loadScript('tools/dateCalculator.js');
     loadScript('tools/openRecord.js');
-    loadScript('tools/setMinimumValues.js');
+    loadScript('tools/cloneRecord.js');
   }
 }
 
@@ -118,7 +118,7 @@ function openPopup() {
 	    <button onclick="openRecord();" class="app-button" title="Open Record">
 	      <span class="app-icon">🔗</span>
 	    </button>
-	    <button onclick="setMinimumValues();" class="app-button" title="Clone Record">
+	    <button onclick="cloneRecord();" class="app-button" title="Clone Record">
 	      <span class="app-icon">🔄</span>
 	    </button>
 	  </div>
@@ -309,4 +309,4 @@ window.openUrl = openUrl;
 window.showDirtyFields = showDirtyFields;
 window.showToast = showToast;
 window.openRecord = openRecord;
-window.setMinimumValues = setMinimumValues;
+window.cloneRecord = cloneRecord;
