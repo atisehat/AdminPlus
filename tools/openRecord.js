@@ -89,20 +89,20 @@ function createOpenRecordPopup() {
                     </div>
                     
                     <!-- Quick Access Section -->
-                    <div style="background-color: #fef3c7; padding: 15px; border-radius: 8px; border-left: 4px solid #f59e0b;">
-                        <p style="margin: 0 0 10px 0; font-weight: 600; font-size: 14px; color: #92400e;">
+                    <div style="background-color: #d1fae5; padding: 15px; border-radius: 8px; border-left: 4px solid #10b981;">
+                        <p style="margin: 0 0 10px 0; font-weight: 600; font-size: 14px; color: #065f46;">
                             🚀 Quick Access - Current Record:
                         </p>
                         <div style="display: flex; gap: 10px; align-items: center;">
                             <button 
                                 id="useCurrentRecord" 
-                                style="padding: 8px 16px; background-color: #f59e0b; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; transition: background-color 0.2s;"
-                                onmouseover="this.style.backgroundColor='#d97706';"
-                                onmouseout="this.style.backgroundColor='#f59e0b';"
+                                style="padding: 8px 16px; background-color: #10b981; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; transition: background-color 0.2s;"
+                                onmouseover="this.style.backgroundColor='#059669';"
+                                onmouseout="this.style.backgroundColor='#10b981';"
                             >
                                 Use Current Record
                             </button>
-                            <span style="font-size: 12px; color: #92400e;">Populate fields with the currently open record</span>
+                            <span style="font-size: 12px; color: #065f46;">Populate fields with the currently open record</span>
                         </div>
                     </div>
                     
@@ -118,24 +118,6 @@ function createOpenRecordPopup() {
                     >
                         Open Record
                     </button>
-                </div>
-                
-                <!-- Examples Section -->
-                <div style="margin-top: 30px; padding: 20px; background-color: #f9fafb; border-radius: 8px; border: 1px solid #e5e7eb;">
-                    <p style="margin: 0 0 12px 0; font-weight: 600; font-size: 14px; color: #374151;">
-                        💡 Common Entity Logical Names:
-                    </p>
-                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; font-size: 13px; color: #6b7280;">
-                        <div><strong>account</strong> - Account</div>
-                        <div><strong>contact</strong> - Contact</div>
-                        <div><strong>lead</strong> - Lead</div>
-                        <div><strong>opportunity</strong> - Opportunity</div>
-                        <div><strong>quote</strong> - Quote</div>
-                        <div><strong>order</strong> - Order</div>
-                        <div><strong>invoice</strong> - Invoice</div>
-                        <div><strong>incident</strong> - Case</div>
-                        <div><strong>task</strong> - Task</div>
-                    </div>
                 </div>
                 
             </div>
