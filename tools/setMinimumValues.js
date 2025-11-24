@@ -509,55 +509,73 @@ function handleCloneRecord(container, fieldAnalysis, entityName) {
                             // This is the new form, set the values
                             let successCount = 0;
                             let errorCount = 0;
+                            let skippedCount = 0;
+                            const skippedFields = [];
+                            const errorFields = [];
                             
                             Object.keys(fieldsToClone).forEach(fieldName => {
                                 try {
                                     const attribute = Xrm.Page.data.entity.attributes.get(fieldName);
-                                    if (attribute) {
-                                        const attrType = attribute.getAttributeType();
-                                        let valueToSet = fieldsToClone[fieldName];
-                                        
-                                        // Special handling for lookup fields
-                                        if (attrType === 'lookup') {
-                                            // Ensure lookup value is in correct format
-                                            if (valueToSet && !Array.isArray(valueToSet)) {
-                                                // Single lookup - wrap in array if not already
-                                                if (valueToSet.id && valueToSet.name && valueToSet.entityType) {
-                                                    valueToSet = [valueToSet];
-                                                }
-                                            }
-                                            // Verify lookup array has required properties
-                                            if (Array.isArray(valueToSet) && valueToSet.length > 0) {
-                                                const lookup = valueToSet[0];
-                                                if (!lookup.id || !lookup.name || !lookup.entityType) {
-                                                    console.warn(`Invalid lookup format for ${fieldName}:`, valueToSet);
-                                                    errorCount++;
-                                                    return;
-                                                }
+                                    if (!attribute) {
+                                        // Field doesn't exist on create form - this is normal, not an error
+                                        skippedCount++;
+                                        skippedFields.push(fieldName);
+                                        console.log(`⊝ Skipped ${fieldName} - not on create form`);
+                                        return;
+                                    }
+                                    
+                                    const attrType = attribute.getAttributeType();
+                                    let valueToSet = fieldsToClone[fieldName];
+                                    
+                                    // Special handling for lookup fields
+                                    if (attrType === 'lookup') {
+                                        // Ensure lookup value is in correct format
+                                        if (valueToSet && !Array.isArray(valueToSet)) {
+                                            // Single lookup - wrap in array if not already
+                                            if (valueToSet.id && valueToSet.name && valueToSet.entityType) {
+                                                valueToSet = [valueToSet];
                                             }
                                         }
-                                        
-                                        attribute.setValue(valueToSet);
-                                        successCount++;
-                                        console.log(`✓ Set field ${fieldName} (${attrType}):`, valueToSet);
-                                    } else {
-                                        console.warn(`Field ${fieldName} not found on form`);
-                                        errorCount++;
+                                        // Verify lookup array has required properties
+                                        if (Array.isArray(valueToSet) && valueToSet.length > 0) {
+                                            const lookup = valueToSet[0];
+                                            if (!lookup.id || !lookup.name || !lookup.entityType) {
+                                                console.warn(`✗ Invalid lookup format for ${fieldName}:`, valueToSet);
+                                                errorCount++;
+                                                errorFields.push(`${fieldName} (invalid lookup format)`);
+                                                return;
+                                            }
+                                        }
                                     }
+                                    
+                                    // Try to set the value
+                                    attribute.setValue(valueToSet);
+                                    successCount++;
+                                    console.log(`✓ Set field ${fieldName} (${attrType}):`, valueToSet);
+                                    
                                 } catch (e) {
+                                    // Real error - permission, validation, etc.
                                     errorCount++;
+                                    errorFields.push(`${fieldName} (${e.message || 'unknown error'})`);
                                     console.error(`✗ Could not set field ${fieldName}:`, e);
                                 }
                             });
                             
-                            // Show results
-                            console.log(`Clone Results: ${successCount} succeeded, ${errorCount} failed`);
+                            // Show results with detailed breakdown
+                            console.log(`\n=== Clone Results ===`);
+                            console.log(`✓ Successfully set: ${successCount} field(s)`);
+                            console.log(`⊝ Skipped (not on create form): ${skippedCount} field(s)`, skippedFields);
+                            console.log(`✗ Failed (errors): ${errorCount} field(s)`, errorFields);
+                            console.log(`Total attempted: ${Object.keys(fieldsToClone).length} field(s)`);
+                            console.log(`====================\n`);
                             
                             if (typeof showToast === 'function') {
                                 if (errorCount > 0) {
-                                    showToast(`Cloned ${successCount} field(s), ${errorCount} failed. Check console.`, 'warning', 4000);
+                                    showToast(`Cloned ${successCount} field(s), ${errorCount} failed, ${skippedCount} not on form. Check console.`, 'warning', 5000);
+                                } else if (skippedCount > 0) {
+                                    showToast(`Cloned ${successCount} field(s). ${skippedCount} skipped (not on create form).`, 'success', 4000);
                                 } else {
-                                    showToast(`Successfully cloned ${successCount} field(s). Review and save.`, 'success', 3000);
+                                    showToast(`Successfully cloned all ${successCount} field(s)! Review and save.`, 'success', 3000);
                                 }
                             }
                             
