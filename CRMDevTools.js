@@ -45,6 +45,7 @@ function onUtilScriptLoaded() {
     loadScript('tools/assignSecurity.js');
     loadScript('tools/securityOperations.js');
     loadScript('tools/dateCalculator.js');
+    loadScript('tools/openRecord.js');
   }
 }
 
@@ -112,6 +113,9 @@ function openPopup() {
 	    </button>
 	    <button onclick="dateCalc();" class="app-button" title="Date Calculator">
 	      <span class="app-icon">📅</span>
+	    </button>
+	    <button onclick="openRecord();" class="app-button" title="Open Record">
+	      <span class="app-icon">🔗</span>
 	    </button>
 	  </div>
 	</div>
@@ -300,3 +304,4 @@ window.closePopup = closePopup;
 window.openUrl = openUrl;
 window.showDirtyFields = showDirtyFields;
 window.showToast = showToast;
+window.openRecord = openRecord;
