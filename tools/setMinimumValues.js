@@ -193,8 +193,15 @@ function createCloneRecordPopup(entityName, recordId, fieldAnalysis) {
         <div class="popup-body" style="padding: 20px;">
             <div class="commonSection content-section" style="padding: 0; border-right: 0; height: 100%;">
                 
+                <!-- Instructions -->
+                <div style="background-color: white; padding: 12px 15px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #3b82f6; border-right: 4px solid #3b82f6; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">
+                    <p style="margin: 0; font-size: 13px; color: #555; line-height: 1.5;">
+                        Select the fields you want to clone to a new record. Fields marked with <span style="color: #ef4444; font-weight: bold;">*</span> are required.
+                    </p>
+                </div>
+                
                 <!-- Fields by Type -->
-                <div class="scroll-section" style="overflow-y: auto; max-height: calc(90vh - 200px); padding-right: 10px;">
+                <div class="scroll-section" style="overflow-y: auto; max-height: calc(90vh - 240px); padding-right: 10px;">
                     ${generateFieldsHTML(fieldAnalysis)}
                 </div>
                 
@@ -248,26 +255,28 @@ function generateFieldsHTML(fieldAnalysis) {
         const fields = fieldAnalysis[type];
         if (fields.length === 0) continue;
         
+        // Filter to only show fields with values
+        const fieldsWithValues = fields.filter(f => f.currentValue !== null && f.currentValue !== undefined);
+        if (fieldsWithValues.length === 0) continue;
+        
         html += `
             <div style="margin-bottom: 25px;">
                 <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 2px solid ${config.color};">
                     <span style="font-size: 20px;">${config.icon}</span>
                     <h3 style="margin: 0; font-size: 16px; font-weight: 600; color: ${config.color};">
-                        ${config.label} (${fields.length})
+                        ${config.label} (${fieldsWithValues.length})
                     </h3>
                 </div>
                 <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-left: 15px;">
         `;
         
-        fields.forEach(field => {
+        fieldsWithValues.forEach(field => {
             const requiredMark = field.isRequired ? '<span style="color: #ef4444; font-weight: bold;"> *</span>' : '';
             const recommendedMark = field.isRecommended ? '<span style="color: #f59e0b; font-weight: bold;"> ⭐</span>' : '';
-            const hasValue = field.currentValue !== null && field.currentValue !== undefined;
-            const isEmpty = !hasValue;
             
             // Format current value for display
             let displayValue = '';
-            if (hasValue) {
+            if (field.currentValue !== null && field.currentValue !== undefined) {
                 if (type === 'boolean') {
                     displayValue = field.currentValue ? 'Yes' : 'No';
                 } else if (type === 'datetime' && field.currentValue instanceof Date) {
@@ -321,14 +330,14 @@ function generateFieldsHTML(fieldAnalysis) {
             }
             
             html += `
-                <div style="display: flex; flex-direction: column; padding: 8px; background-color: ${hasValue ? '#f0fdf4' : '#fef3c7'}; border-radius: 6px; border: 1px solid ${hasValue ? '#bbf7d0' : '#fde68a'};">
+                <div style="display: flex; flex-direction: column; padding: 8px; background-color: #f0fdf4; border-radius: 6px; border: 1px solid #bbf7d0;">
                     <div style="display: flex; align-items: center;">
-                        <input type="checkbox" class="field-checkbox" data-field-name="${field.name}" data-field-type="${type}" style="margin-right: 8px; width: 16px; height: 16px; cursor: pointer;" ${isEmpty ? 'disabled' : 'checked'}>
+                        <input type="checkbox" class="field-checkbox" data-field-name="${field.name}" data-field-type="${type}" style="margin-right: 8px; width: 16px; height: 16px; cursor: pointer;" checked>
                         <label style="font-size: 13px; color: #374151; cursor: pointer; flex: 1;">
                             ${field.displayName}${requiredMark}${recommendedMark}
                         </label>
                     </div>
-                    ${hasValue ? `<div style="font-size: 11px; color: #6b7280; margin-top: 4px; margin-left: 24px; font-style: italic;">Value: ${displayValue}</div>` : `<div style="font-size: 11px; color: #92400e; margin-top: 4px; margin-left: 24px;">⚠️ No value to clone</div>`}
+                    <div style="font-size: 11px; color: #6b7280; margin-top: 4px; margin-left: 24px; font-style: italic;">Value: ${displayValue}</div>
                 </div>
             `;
         });
@@ -342,7 +351,8 @@ function generateFieldsHTML(fieldAnalysis) {
     if (html === '') {
         html = `
             <div style="text-align: center; padding: 40px; color: #6b7280;">
-                <p style="font-size: 16px; margin: 0;">No supported fields found on this form.</p>
+                <p style="font-size: 16px; margin: 0;">No fields with values found to clone.</p>
+                <p style="font-size: 14px; margin: 10px 0 0 0;">All fields on this record are empty.</p>
             </div>
         `;
     }
@@ -592,8 +602,6 @@ function handleCloneRecord(container, fieldAnalysis, entityName) {
                             if (typeof showToast === 'function') {
                                 if (skippedCount > 0) {
                                     showToast(`Cloned ${successCount} field(s). ${skippedCount} remaining fields will apply after save.`, 'info', 4000);
-                                } else if (errorCount > 0) {
-                                    showToast(`Cloned ${successCount} field(s). ${errorCount} failed - check console for details.`, 'warning', 4000);
                                 } else {
                                     showToast(`Successfully cloned ${successCount} field(s)!`, 'success', 3000);
                                 }
