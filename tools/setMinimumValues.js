@@ -562,15 +562,17 @@ function handleCloneRecord(container, fieldAnalysis, entityName) {
                             if (skippedCount > 0) {
                                 console.log('Skipped fields to apply after save:', Object.keys(skippedFields));
                                 
-                                // Store skipped fields in sessionStorage
-                                sessionStorage.setItem('adminplus_skipped_fields', JSON.stringify(skippedFields));
-                                sessionStorage.setItem('adminplus_clone_timestamp', Date.now().toString());
+                                const entityName = Xrm.Page.data.entity.getEntityName();
                                 
-                                // Register onSave event handler
-                                if (Xrm.Page.data.entity.addOnSave) {
-                                    Xrm.Page.data.entity.addOnSave(applySkippedFieldsAfterSave);
-                                    console.log('✓ Registered onSave handler to apply skipped fields');
-                                }
+                                // Store skipped fields in sessionStorage with entity info
+                                sessionStorage.setItem('adminplus_skipped_fields', JSON.stringify(skippedFields));
+                                sessionStorage.setItem('adminplus_skipped_entity', entityName);
+                                sessionStorage.setItem('adminplus_clone_timestamp', Date.now().toString());
+                                sessionStorage.setItem('adminplus_waiting_for_save', 'true');
+                                
+                                // Start monitoring for save
+                                console.log('✓ Stored skipped fields, monitoring for save...');
+                                startSaveMonitoring();
                             }
                             
                             if (typeof showToast === 'function') {
@@ -616,13 +618,69 @@ function handleCloneRecord(container, fieldAnalysis, entityName) {
     }
 }
 
-// Function to apply skipped fields after the record is saved
-function applySkippedFieldsAfterSave(executionContext) {
+// Start monitoring for save and apply skipped fields
+function startSaveMonitoring() {
+    console.log('Starting save monitoring...');
+    
+    // Poll every second to check if record has been saved
+    const monitorInterval = setInterval(() => {
+        try {
+            // Check if we're still waiting
+            const waiting = sessionStorage.getItem('adminplus_waiting_for_save');
+            if (waiting !== 'true') {
+                clearInterval(monitorInterval);
+                return;
+            }
+            
+            // Check if we have Xrm context
+            if (typeof Xrm === 'undefined' || !Xrm.Page || !Xrm.Page.data || !Xrm.Page.data.entity) {
+                return; // Keep waiting
+            }
+            
+            // Check if record has been saved (has an ID now)
+            const recordId = Xrm.Page.data.entity.getId();
+            if (!recordId) {
+                return; // Still not saved, keep waiting
+            }
+            
+            // Record has been saved! Stop monitoring
+            clearInterval(monitorInterval);
+            sessionStorage.setItem('adminplus_waiting_for_save', 'false');
+            
+            console.log('✓ Record saved detected! Applying skipped fields...');
+            
+            // Apply skipped fields after a short delay
+            setTimeout(() => {
+                applySkippedFields();
+            }, 2000); // Wait 2 seconds for form to stabilize
+            
+        } catch (e) {
+            console.warn('Error in save monitoring:', e);
+        }
+    }, 1000); // Check every second
+    
+    // Stop monitoring after 10 minutes
+    setTimeout(() => {
+        clearInterval(monitorInterval);
+        const waiting = sessionStorage.getItem('adminplus_waiting_for_save');
+        if (waiting === 'true') {
+            console.warn('Save monitoring timeout - cleaning up');
+            sessionStorage.removeItem('adminplus_waiting_for_save');
+            sessionStorage.removeItem('adminplus_skipped_fields');
+            sessionStorage.removeItem('adminplus_skipped_entity');
+            sessionStorage.removeItem('adminplus_clone_timestamp');
+        }
+    }, 600000); // 10 minutes
+}
+
+// Function to apply skipped fields
+function applySkippedFields() {
     try {
-        console.log('onSave triggered - checking for skipped fields...');
+        console.log('Applying skipped fields...');
         
         // Get skipped fields from sessionStorage
         const skippedFieldsStr = sessionStorage.getItem('adminplus_skipped_fields');
+        const entityName = sessionStorage.getItem('adminplus_skipped_entity');
         const timestamp = sessionStorage.getItem('adminplus_clone_timestamp');
         
         if (!skippedFieldsStr) {
@@ -630,13 +688,19 @@ function applySkippedFieldsAfterSave(executionContext) {
             return;
         }
         
-        // Check if data is not too old (5 minutes max)
+        // Verify we're on the right entity
+        const currentEntity = Xrm.Page.data.entity.getEntityName();
+        if (currentEntity !== entityName) {
+            console.log('Different entity, skipping');
+            return;
+        }
+        
+        // Check if data is not too old (10 minutes max)
         if (timestamp) {
             const age = Date.now() - parseInt(timestamp);
-            if (age > 300000) { // 5 minutes
+            if (age > 600000) { // 10 minutes
                 console.log('Skipped fields data is too old, clearing');
-                sessionStorage.removeItem('adminplus_skipped_fields');
-                sessionStorage.removeItem('adminplus_clone_timestamp');
+                cleanupSkippedFieldsStorage();
                 return;
             }
         }
@@ -645,107 +709,97 @@ function applySkippedFieldsAfterSave(executionContext) {
         const fieldCount = Object.keys(skippedFields).length;
         
         if (fieldCount === 0) {
-            sessionStorage.removeItem('adminplus_skipped_fields');
-            sessionStorage.removeItem('adminplus_clone_timestamp');
+            cleanupSkippedFieldsStorage();
             return;
         }
         
         console.log(`Found ${fieldCount} skipped fields to apply`);
-        
-        // Clear the sessionStorage immediately to prevent re-applying
-        sessionStorage.removeItem('adminplus_skipped_fields');
-        sessionStorage.removeItem('adminplus_clone_timestamp');
-        
-        // Get the saved record context
-        const formContext = executionContext.getFormContext();
-        const savedRecordId = formContext.data.entity.getId();
-        
-        if (!savedRecordId) {
-            console.error('Could not get saved record ID');
-            return;
-        }
-        
-        console.log('Record saved, applying skipped fields...');
         
         // Show loading message
         if (typeof showToast === 'function') {
             showToast(`Applying ${fieldCount} additional field(s)...`, 'info', 2000);
         }
         
-        // Wait a bit for the form to refresh, then apply fields
-        setTimeout(() => {
-            let appliedCount = 0;
-            let errorCount = 0;
-            
-            Object.keys(skippedFields).forEach(fieldName => {
-                try {
-                    const attribute = Xrm.Page.data.entity.attributes.get(fieldName);
-                    if (attribute) {
-                        const attrType = attribute.getAttributeType();
-                        let valueToSet = skippedFields[fieldName];
-                        
-                        // Special handling for lookup fields
-                        if (attrType === 'lookup') {
-                            if (valueToSet && !Array.isArray(valueToSet)) {
-                                if (valueToSet.id && valueToSet.name && valueToSet.entityType) {
-                                    valueToSet = [valueToSet];
-                                }
-                            }
-                            if (Array.isArray(valueToSet) && valueToSet.length > 0) {
-                                const lookup = valueToSet[0];
-                                if (!lookup.id || !lookup.name || !lookup.entityType) {
-                                    console.warn(`Invalid lookup format for ${fieldName}`);
-                                    errorCount++;
-                                    return;
-                                }
+        let appliedCount = 0;
+        let errorCount = 0;
+        
+        Object.keys(skippedFields).forEach(fieldName => {
+            try {
+                const attribute = Xrm.Page.data.entity.attributes.get(fieldName);
+                if (attribute) {
+                    const attrType = attribute.getAttributeType();
+                    let valueToSet = skippedFields[fieldName];
+                    
+                    // Special handling for lookup fields
+                    if (attrType === 'lookup') {
+                        if (valueToSet && !Array.isArray(valueToSet)) {
+                            if (valueToSet.id && valueToSet.name && valueToSet.entityType) {
+                                valueToSet = [valueToSet];
                             }
                         }
-                        
-                        attribute.setValue(valueToSet);
-                        appliedCount++;
-                        console.log(`✓ Applied skipped field ${fieldName} (${attrType})`);
-                    } else {
-                        console.warn(`Field ${fieldName} still not on form`);
-                        errorCount++;
+                        if (Array.isArray(valueToSet) && valueToSet.length > 0) {
+                            const lookup = valueToSet[0];
+                            if (!lookup.id || !lookup.name || !lookup.entityType) {
+                                console.warn(`Invalid lookup format for ${fieldName}`);
+                                errorCount++;
+                                return;
+                            }
+                        }
                     }
-                } catch (e) {
+                    
+                    attribute.setValue(valueToSet);
+                    appliedCount++;
+                    console.log(`✓ Applied skipped field ${fieldName} (${attrType})`);
+                } else {
+                    console.warn(`Field ${fieldName} still not on form`);
                     errorCount++;
-                    console.error(`✗ Could not apply skipped field ${fieldName}:`, e);
                 }
-            });
-            
-            console.log(`Applied ${appliedCount} skipped field(s), ${errorCount} failed`);
-            
-            // Auto-save the record with the new fields
-            if (appliedCount > 0) {
-                console.log('Auto-saving record with applied fields...');
-                
-                Xrm.Page.data.entity.save().then(
-                    function() {
-                        console.log('✓ Record saved successfully with all fields');
-                        if (typeof showToast === 'function') {
-                            showToast(`Successfully applied and saved ${appliedCount} additional field(s)!`, 'success', 4000);
-                        }
-                    },
-                    function(error) {
-                        console.error('✗ Error saving record:', error);
-                        if (typeof showToast === 'function') {
-                            showToast(`Applied ${appliedCount} field(s) but save failed. Please save manually.`, 'warning', 5000);
-                        }
-                    }
-                );
-            } else if (errorCount > 0) {
-                if (typeof showToast === 'function') {
-                    showToast(`Could not apply ${errorCount} field(s). Check console.`, 'error', 4000);
-                }
+            } catch (e) {
+                errorCount++;
+                console.error(`✗ Could not apply skipped field ${fieldName}:`, e);
             }
-        }, 1500); // Wait 1.5 seconds for form to fully refresh
+        });
+        
+        console.log(`Applied ${appliedCount} skipped field(s), ${errorCount} failed`);
+        
+        // Clean up sessionStorage
+        cleanupSkippedFieldsStorage();
+        
+        // Auto-save the record with the new fields
+        if (appliedCount > 0) {
+            console.log('Auto-saving record with applied fields...');
+            
+            Xrm.Page.data.entity.save().then(
+                function() {
+                    console.log('✓ Record saved successfully with all fields');
+                    if (typeof showToast === 'function') {
+                        showToast(`Successfully applied and saved ${appliedCount} additional field(s)!`, 'success', 4000);
+                    }
+                },
+                function(error) {
+                    console.error('✗ Error saving record:', error);
+                    if (typeof showToast === 'function') {
+                        showToast(`Applied ${appliedCount} field(s) but save failed. Please save manually.`, 'warning', 5000);
+                    }
+                }
+            );
+        } else if (errorCount > 0) {
+            if (typeof showToast === 'function') {
+                showToast(`Could not apply ${errorCount} field(s). Check console.`, 'error', 4000);
+            }
+        }
         
     } catch (error) {
-        console.error('Error in applySkippedFieldsAfterSave:', error);
-        // Clean up sessionStorage on error
-        sessionStorage.removeItem('adminplus_skipped_fields');
-        sessionStorage.removeItem('adminplus_clone_timestamp');
+        console.error('Error in applySkippedFields:', error);
+        cleanupSkippedFieldsStorage();
     }
+}
+
+// Helper function to clean up sessionStorage
+function cleanupSkippedFieldsStorage() {
+    sessionStorage.removeItem('adminplus_skipped_fields');
+    sessionStorage.removeItem('adminplus_skipped_entity');
+    sessionStorage.removeItem('adminplus_clone_timestamp');
+    sessionStorage.removeItem('adminplus_waiting_for_save');
 }
 
