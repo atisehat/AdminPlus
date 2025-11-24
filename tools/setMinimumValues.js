@@ -187,32 +187,14 @@ function createCloneRecordPopup(entityName, recordId, fieldAnalysis) {
     
     container.innerHTML = `
         <div class="commonPopup-header" style="background-color: #2b2b2b; position: relative; cursor: move; border-radius: 9px 9px 0 0; margin: 0; border-bottom: 2px solid #1a1a1a;">
-            <span style="color: white;">Clone Record</span>
+            <span style="color: white;">Clone Record - Select Fields</span>
             <span class="close-button" style="position: absolute; right: 0; top: 0; bottom: 0; width: 45px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 20px; color: white; font-weight: bold; transition: background-color 0.2s ease; border-radius: 0 9px 0 0;">&times;</span>
         </div>
         <div class="popup-body" style="padding: 20px;">
             <div class="commonSection content-section" style="padding: 0; border-right: 0; height: 100%;">
                 
-                <!-- Info Section -->
-                <div style="background-color: white; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #3b82f6; border-right: 4px solid #3b82f6; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">
-                    <p style="margin: 0; font-size: 14px; color: #333; line-height: 1.6;">
-                        <strong style="color: #3b82f6;">📋 Entity:</strong> ${entityName} | 
-                        <strong style="color: #3b82f6;">🆔 Record ID:</strong> ${recordId} | 
-                        <strong style="color: #10b981;">✓ ${fieldsWithValues}/${totalFields}</strong> fields with values
-                    </p>
-                </div>
-                
-                <!-- Instructions -->
-                <div style="background-color: white; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #10b981; border-right: 4px solid #10b981; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">
-                    <p style="margin: 0; font-size: 13px; color: #333; line-height: 1.6;">
-                        <strong style="color: #10b981;">📝 Instructions:</strong> Select fields to clone, then click "Clone Record". 
-                        A new record will open with the selected field values. <strong>Review and modify</strong> before saving. 
-                        Fields marked with <span style="color: #ef4444; font-weight: bold;">*</span> are required.
-                    </p>
-                </div>
-                
                 <!-- Fields by Type -->
-                <div class="scroll-section" style="overflow-y: auto; max-height: calc(90vh - 320px); padding-right: 10px;">
+                <div class="scroll-section" style="overflow-y: auto; max-height: calc(90vh - 200px); padding-right: 10px;">
                     ${generateFieldsHTML(fieldAnalysis)}
                 </div>
                 
@@ -609,11 +591,11 @@ function handleCloneRecord(container, fieldAnalysis, entityName) {
                             
                             if (typeof showToast === 'function') {
                                 if (skippedCount > 0) {
-                                    showToast(`Cloned ${successCount} field(s). ${skippedCount} will apply after you save.`, 'info', 4000);
+                                    showToast(`Cloned ${successCount} field(s). ${skippedCount} remaining fields will apply after save.`, 'info', 4000);
                                 } else if (errorCount > 0) {
-                                    showToast(`Cloned ${successCount} field(s), ${errorCount} failed. Check console.`, 'warning', 4000);
+                                    showToast(`Cloned ${successCount} field(s). ${errorCount} failed - check console for details.`, 'warning', 4000);
                                 } else {
-                                    showToast(`Successfully cloned ${successCount} field(s). Review and save.`, 'success', 3000);
+                                    showToast(`Successfully cloned ${successCount} field(s)!`, 'success', 3000);
                                 }
                             }
                             
