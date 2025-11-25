@@ -362,8 +362,8 @@ function appendEntityInfoPopupToBody(entityName, recordId, pluralName, fieldList
                 <div style="white-space: nowrap; flex: 1;"><strong>Record ID:</strong> ${recordId}</div>
             </div>
         </div>
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding: 0 20px; gap: 15px; position: relative; z-index: 100;">
-            <div id="section-navigation" style="display: flex; flex: 1; min-width: 0;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding: 0 20px; gap: 15px; position: relative; z-index: 100; overflow: visible;">
+            <div id="section-navigation" style="display: flex; flex: 1; min-width: 0; overflow: visible;">
                 ${sectionNavHtml}
             </div>
             <div style="font-size: 13px; color: #666; font-style: italic; background-color: #f9f9f9; padding: 8px 12px; border-radius: 5px; border: 1px solid #ddd; white-space: nowrap; flex-shrink: 0;">
@@ -501,7 +501,7 @@ function generateSectionNavigationButtons() {
     // Only show buttons for sections that exist
     const availableSections = window.entityInfoAvailableSections || [];
     
-    let buttonsHtml = '<div class="nav-buttons-container" style="display: flex; gap: 8px; flex: 1; align-items: center; overflow: hidden;">';
+    let buttonsHtml = '<div class="nav-buttons-container" style="display: flex; gap: 8px; flex: 1; align-items: center; overflow: visible;">';
     
     availableSections.forEach(categoryKey => {
         if (categoryLabels[categoryKey]) {
