@@ -135,7 +135,7 @@ function openPopup() {
   `;	  
   
   // Sidebar configuration
-  var sidebarWidth = 80;
+  var sidebarWidth = 60;
   
   // Create sidebar container
   var newContainer = document.createElement('div');
