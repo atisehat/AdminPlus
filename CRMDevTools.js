@@ -147,32 +147,52 @@ function openPopup() {
   function findD365Containers() {
     var containers = [];
     var vw = window.innerWidth;
-    var vh = window.innerHeight;
     
-    // Priority selectors for D365 containers (navigation, header, content)
+    // Priority selectors for D365 containers (in order of specificity)
+    // We want to target the top-level containers only, not nested ones
     var prioritySelectors = [
-      'div[id*="app"]',
-      'div[id*="shell"]',
+      // Shell/App level containers (highest priority - typically contain everything)
+      'div[id*="shell-container"]',
       'div[data-id="AppLandingPage"]',
-      'div[role="main"]',
+      
+      // Main app container
+      'div[id*="ApplicationShell"]',
+      'div[id*="app-host"]',
+      
+      // Navigation/Header (should be adjusted independently)
       'header[role="banner"]',
-      'nav[role="navigation"]',
-      '#headerContainer',
-      '#navBar',
-      '#crmContentPanel',
-      '#mainContent',
-      '#pageContentContainer'
+      'div[id*="navbar"]',
+      'div[id*="navigation"]',
+      'nav[role="navigation"]'
     ];
+    
+    var processedAncestors = new Set();
     
     // Find containers using priority selectors
     prioritySelectors.forEach(function(selector) {
       try {
         var elements = document.querySelectorAll(selector);
         elements.forEach(function(el) {
-          if (el && !containers.includes(el)) {
-            var rect = el.getBoundingClientRect();
-            // Include if it spans most of the viewport width
-            if (rect.width >= vw * 0.5) {
+          if (!el || containers.includes(el)) return;
+          
+          var rect = el.getBoundingClientRect();
+          // Include if it spans most of the viewport width and isn't already included
+          if (rect.width >= vw * 0.8) {
+            // Check if this element is a child of an already selected container
+            var isNested = false;
+            for (var i = 0; i < containers.length; i++) {
+              if (containers[i].contains(el)) {
+                isNested = true;
+                break;
+              }
+            }
+            
+            // Only add if not nested in another container we're already targeting
+            if (!isNested) {
+              // Remove any containers that are children of this element
+              containers = containers.filter(function(existing) {
+                return !el.contains(existing);
+              });
               containers.push(el);
             }
           }
@@ -182,7 +202,7 @@ function openPopup() {
       }
     });
     
-    // Fallback: Find large positioned containers
+    // If no containers found, target body's direct children that are large enough
     if (containers.length === 0) {
       document.querySelectorAll('body > *').forEach(function(el) {
         if (!(el instanceof HTMLElement)) return;
@@ -192,7 +212,7 @@ function openPopup() {
         var style = getComputedStyle(el);
         
         // Look for containers that span most of viewport width
-        if (rect.width >= vw * 0.7 && 
+        if (rect.width >= vw * 0.8 && 
             ['fixed', 'absolute', 'relative'].includes(style.position)) {
           containers.push(el);
         }
@@ -221,33 +241,39 @@ function openPopup() {
       
       // Store original styles only once
       if (!container.getAttribute('data-adminplus-original-right')) {
+        var cs = getComputedStyle(container);
         container.setAttribute('data-adminplus-original-right', container.style.right || '');
         container.setAttribute('data-adminplus-original-left', container.style.left || '');
         container.setAttribute('data-adminplus-original-position', container.style.position || '');
         container.setAttribute('data-adminplus-original-boxsizing', container.style.boxSizing || '');
         container.setAttribute('data-adminplus-original-width', container.style.width || '');
+        container.setAttribute('data-adminplus-computed-position', cs.position);
         container.setAttribute('data-adminplus-target', 'true');
       }
       
-      var cs = getComputedStyle(container);
+      var computedPosition = container.getAttribute('data-adminplus-computed-position');
       
       // Apply positioning based on element type
       container.style.boxSizing = 'border-box';
       
-      if (cs.position === 'static') {
-        container.style.position = 'relative';
-      }
-      
-      // For fixed/absolute elements, use right property
-      if (cs.position === 'fixed' || cs.position === 'absolute') {
+      // For fixed/absolute positioned elements - adjust using right property
+      if (computedPosition === 'fixed' || computedPosition === 'absolute') {
+        // Keep original position type
+        if (computedPosition === 'static') {
+          container.style.position = 'relative';
+        }
+        
         container.style.right = sidebarWidth + 'px';
-        // Only set left if it wasn't already set
-        if (!container.style.left || container.style.left === '' || container.style.left === 'auto') {
+        
+        // Only set left if it wasn't explicitly set
+        var originalLeft = container.getAttribute('data-adminplus-original-left');
+        if (!originalLeft || originalLeft === '' || originalLeft === 'auto') {
           container.style.left = '0';
         }
       } else {
-        // For relative/static, reduce width
-        container.style.width = 'calc(100% - ' + sidebarWidth + 'px)';
+        // For relative/static elements - don't change position, just reduce effective width
+        // by adding a right margin instead of changing width directly
+        container.style.marginRight = sidebarWidth + 'px';
       }
     });
   }
@@ -331,7 +357,12 @@ function closePopup() {
             targetElement.removeAttribute('data-adminplus-original-width');
         }
         
+        // Remove margin-right if it was added
+        targetElement.style.removeProperty('margin-right');
+        
+        // Clean up attributes
         targetElement.removeAttribute('data-adminplus-target');
+        targetElement.removeAttribute('data-adminplus-computed-position');
         
         // Force reflow to ensure styles are updated
         void targetElement.offsetHeight;
