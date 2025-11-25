@@ -12,15 +12,12 @@ async function traceLogging() {
                 if (typeof showToast === 'function') {
                     showToast('Trace Logging disabled. Reload page to apply.', 'info', 4000);
                 }
-                console.log('Console trace logging disabled. Reload the page for changes to take effect.');
             } else {
                 // Enable verbose logging
                 window.localStorage.setItem('msdyn_consoleLogLevel', 'verbose');
                 if (typeof showToast === 'function') {
                     showToast('Trace Logging enabled. Reload page to apply.', 'success', 4000);
                 }
-                console.log('Console trace logging enabled. Reload the page for changes to take effect.');
-                console.log('Check browser console for detailed trace logs.');
             }
         } else {
             if (typeof showToast === 'function') {
@@ -35,4 +32,3 @@ async function traceLogging() {
         }
     }
 }
-
