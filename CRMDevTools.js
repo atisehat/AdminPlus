@@ -91,7 +91,7 @@ function openPopup() {
 	<div class="button-container">
 	  <div class="app-grid">
 	    <button onclick="closePopup(); openUrl('advanceFind');" class="app-button" title="Advanced Find">
-	      <span class="app-icon">🔍</span>
+	      <span class="app-icon">🕵️</span>
 	    </button>
 	    <button onclick="setTimeout(fetchEntityFields, 0);" class="app-button" title="Entity Info">
 	      <span class="app-icon">📋</span>
@@ -112,16 +112,16 @@ function openPopup() {
 	      <span class="app-icon">🔐</span>
 	    </button>
 	    <button onclick="copySecurity();" class="app-button" title="Copy Security">
-	      <span class="app-icon">📄</span>
+	      <span class="app-icon">🛡️</span>
 	    </button>
 	    <button onclick="dateCalc();" class="app-button" title="Date Calculator">
 	      <span class="app-icon">📅</span>
 	    </button>
 	    <button onclick="openRecord();" class="app-button" title="Open Record">
-	      <span class="app-icon">🔗</span>
+	      <span class="app-icon">🔍</span>
 	    </button>
 	    <button onclick="cloneRecord();" class="app-button" title="Clone Record">
-	      <span class="app-icon">🔄</span>
+	      <span class="app-icon">🧬</span>
 	    </button>
 	    <button onclick="commandChecker();" class="app-button" title="Command Checker">
 	      <span class="app-icon">🐛</span>
