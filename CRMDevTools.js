@@ -197,12 +197,12 @@ function openPopup() {
     
     var cs = getComputedStyle(mainContainer);
     if (cs.position === 'static') {
-      mainContainer.style.position = 'relative';
+      mainContainer.style.setProperty('position', 'relative', 'important');
     }
     
-    mainContainer.style.boxSizing = 'border-box';
-    mainContainer.style.left = '0';
-    mainContainer.style.right = sidebarWidth + 'px';
+    mainContainer.style.setProperty('box-sizing', 'border-box', 'important');
+    mainContainer.style.setProperty('left', '0', 'important');
+    mainContainer.style.setProperty('right', sidebarWidth + 'px', 'important');
   }
   
   document.body.classList.add('adminplus-sidebar-open');
