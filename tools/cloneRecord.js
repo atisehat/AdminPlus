@@ -253,8 +253,8 @@ function generateFieldsHTML(fieldAnalysis) {
         
         html += `
             <div style="margin-bottom: 25px;">
-                <h3 style="color: #2b2b2b; margin-bottom: 15px; font-size: 18px; font-weight: bold;">${config.label} (${fieldsWithValues.length})</h3>
-                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-left: 15px;">
+                <h3 style="color: #2b2b2b; margin-bottom: 15px; font-size: 18px; font-weight: bold;">${config.label}</h3>
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-left: 15px;">
         `;
         
         fieldsWithValues.forEach(field => {
@@ -320,7 +320,7 @@ function generateFieldsHTML(fieldAnalysis) {
                 <div style="display: flex; flex-direction: column; padding: 8px; background-color: #f5f5f5; border-radius: 5px; border-left: 3px solid #2b2b2b;">
                     <div style="display: flex; align-items: center;">
                         <input type="checkbox" class="field-checkbox" data-field-name="${field.name}" data-field-type="${type}" style="margin-right: 8px; width: 16px; height: 16px; cursor: pointer;" checked>
-                        <label style="font-size: 13px; color: #374151; cursor: pointer; flex: 1;">
+                        <label style="font-size: 13px; color: #374151; cursor: pointer; flex: 1; font-weight: bold;">
                             ${field.displayName}${requiredMark}${recommendedMark}
                         </label>
                     </div>
