@@ -1,10 +1,8 @@
 async function fetchEntityFields() {
-    console.log('Entity Info: fetchEntityFields called');
     const entityName = Xrm.Page.data.entity.getEntityName();
     const recordId = Xrm.Page.data.entity.getId();
     const cleanRecordId = recordId.replace(/[{}]/g, "").toLowerCase();
     const clientUrl = Xrm.Page.context.getClientUrl();
-    console.log('Entity Info: Entity Name =', entityName, 'Record ID =', cleanRecordId);
     
     try {
         // Fetch entity metadata and plural name in parallel
@@ -109,7 +107,6 @@ function formatFieldValueFromAPI(value, attributeType, recordData, logicalName) 
         // Default: convert to string
         return value.toString();
     } catch (error) {
-        console.error('Error formatting field value from API:', error);
         return '(empty)';
     }
 }
@@ -170,7 +167,6 @@ function formatFieldValue(attribute) {
         // Default: convert to string
         return value.toString();
     } catch (error) {
-        console.error('Error formatting field value:', error);
         return '(error)';
     }
 }
@@ -429,7 +425,6 @@ function appendEntityInfoPopupToBody(entityName, recordId, pluralName, fieldList
                 this.setAttribute('data-tooltip', 'Copied to clipboard! ✓');
                 setTimeout(() => this.setAttribute('data-tooltip', originalTooltip), 1500);
             }).catch(err => {
-                console.error('Failed to copy:', err);
                 alert('Failed to copy to clipboard');
             });
         });
