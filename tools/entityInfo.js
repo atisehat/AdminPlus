@@ -671,11 +671,20 @@ function setupSectionNavigation(popupContainer) {
             e.preventDefault();
             e.stopPropagation();
             console.log('Overflow menu button clicked');
+            console.log('Dropdown element:', overflowMenuDropdown);
+            console.log('Dropdown children count:', overflowMenuDropdown ? overflowMenuDropdown.children.length : 'N/A');
+            console.log('Dropdown innerHTML:', overflowMenuDropdown ? overflowMenuDropdown.innerHTML : 'N/A');
             
             if (overflowMenuDropdown) {
                 const isVisible = overflowMenuDropdown.style.display === 'block';
                 console.log('Dropdown current state:', isVisible ? 'visible' : 'hidden');
-                overflowMenuDropdown.style.display = isVisible ? 'none' : 'block';
+                
+                if (isVisible) {
+                    overflowMenuDropdown.style.display = 'none';
+                } else {
+                    overflowMenuDropdown.style.display = 'block';
+                    console.log('Dropdown computed styles:', window.getComputedStyle(overflowMenuDropdown));
+                }
                 console.log('Dropdown new state:', overflowMenuDropdown.style.display);
             } else {
                 console.log('Dropdown element not found');
@@ -713,12 +722,18 @@ function setupSectionNavigation(popupContainer) {
     
     // Function to check and manage overflow
     const manageOverflow = () => {
-        if (!navContainer || !overflowMenuContainer || !overflowMenuDropdown) return;
+        console.log('manageOverflow called');
+        if (!navContainer || !overflowMenuContainer || !overflowMenuDropdown) {
+            console.log('Missing elements:', { navContainer: !!navContainer, overflowMenuContainer: !!overflowMenuContainer, overflowMenuDropdown: !!overflowMenuDropdown });
+            return;
+        }
         
         const buttons = Array.from(navContainer.querySelectorAll('.section-nav-btn'));
+        console.log('Total buttons:', buttons.length);
         if (buttons.length === 0) return;
         
         const containerWidth = navContainer.offsetWidth;
+        console.log('Container width:', containerWidth);
         const overflowBtnWidth = 80; // Approximate width of "More" button
         let totalWidth = overflowBtnWidth; // Start with space for overflow button
         let visibleCount = 0;
@@ -740,12 +755,16 @@ function setupSectionNavigation(popupContainer) {
             }
         }
         
+        console.log('Visible count:', visibleCount, 'Total:', buttons.length);
+        
         // If not all buttons fit, show overflow menu
         if (visibleCount < buttons.length) {
+            console.log('Showing overflow menu');
             overflowMenuContainer.style.display = 'block';
             
             // Hide buttons that don't fit
             const hiddenButtons = buttons.slice(visibleCount);
+            console.log('Hidden buttons:', hiddenButtons.length);
             hiddenButtons.forEach(btn => btn.style.display = 'none');
             
             // Populate overflow menu
@@ -763,6 +782,7 @@ function setupSectionNavigation(popupContainer) {
             overflowMenuDropdown.innerHTML = '';
             hiddenButtons.forEach(btn => {
                 const sectionId = btn.getAttribute('data-section');
+                console.log('Adding menu item for:', sectionId);
                 const menuItem = document.createElement('div');
                 menuItem.className = 'overflow-menu-item';
                 menuItem.textContent = categoryLabels[sectionId] || sectionId;
@@ -791,6 +811,9 @@ function setupSectionNavigation(popupContainer) {
                 
                 overflowMenuDropdown.appendChild(menuItem);
             });
+            console.log('Dropdown populated with', overflowMenuDropdown.children.length, 'items');
+        } else {
+            console.log('All buttons fit, no overflow needed');
         }
     };
     
