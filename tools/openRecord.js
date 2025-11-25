@@ -1,7 +1,5 @@
 // Open Record Tool - Navigate to any record by Entity Logical Name and Record ID
 async function openRecord() {
-    console.log('Open Record: Tool initiated');
-    
     try {
         // Close any existing popups first
         const existingPopups = document.querySelectorAll('.commonPopup');
@@ -42,16 +40,8 @@ function createOpenRecordPopup() {
             <span style="color: white;">Open Record</span>
             <span class="close-button" style="position: absolute; right: 0; top: 0; bottom: 0; width: 45px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 20px; color: white; font-weight: bold; transition: background-color 0.2s ease; border-radius: 0 9px 0 0;">&times;</span>
         </div>
-        <div class="popup-body" style="padding: 30px 40px;">
+        <div class="popup-body" style="padding: 25px 40px;">
             <div class="commonSection content-section" style="padding: 0; border-right: 0;">
-                
-                <!-- Instructions -->
-                <div style="background-color: white; padding: 15px; border-radius: 8px; margin-bottom: 30px; border-left: 4px solid #3b82f6; border-right: 4px solid #3b82f6; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">
-                    <p style="margin: 0; font-size: 14px; color: #333; line-height: 1.6;">
-                        <strong style="color: #3b82f6;">📖 Instructions:</strong> Enter the entity logical name (e.g., "account", "contact", "opportunity") 
-                        and the record GUID to open that specific record in a new window.
-                    </p>
-                </div>
                 
                 <!-- Input Form -->
                 <div style="display: flex; flex-direction: column; gap: 25px;">
