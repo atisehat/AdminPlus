@@ -198,7 +198,7 @@ function createCloneRecordPopup(fieldAnalysis) {
                 </div>
                 
                 <!-- Action Buttons -->
-                <div style="display: flex; justify-content: center; gap: 15px; margin-top: 25px; padding-top: 20px; border-top: 2px solid #e5e7eb;">
+                <div style="display: flex; justify-content: center; gap: 15px; margin-top: 25px;">
                     <button 
                         id="selectAllButton"
                         style="padding: 10px 24px; font-size: 14px; font-weight: 600; background-color: #6b7280; color: white; border: none; cursor: pointer; border-radius: 8px; transition: all 0.2s ease; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);"
@@ -230,12 +230,11 @@ function generateFieldsHTML(fieldAnalysis) {
     // Group field types for consolidated display
     const fieldGroups = {
         'Text Fields': ['string', 'memo'],
-        'Choice Fields': ['boolean', 'optionset'],
+        'Choice Fields': ['boolean', 'optionset', 'multiselectoptionset'],
         'Number Fields': ['decimal', 'integer', 'double', 'bigint'],
         'Currency Fields': ['money'],
         'Date & Time Fields': ['datetime'],
         'Lookup Fields': ['lookup'],
-        'Choice Fields (Multi-Select)': ['multiselectoptionset'],
         'Other Fields (Owner, State, Status, etc.)': ['other']
     };
     
