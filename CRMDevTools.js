@@ -49,8 +49,6 @@ function onUtilScriptLoaded() {
     loadScript('tools/cloneRecord.js');
     loadScript('tools/commandChecker.js');
     loadScript('tools/performanceDiagnostics.js');
-    loadScript('tools/traceLogging.js');
-    loadScript('tools/liveMonitor.js');
   }
 }
 
@@ -130,12 +128,6 @@ function openPopup() {
 	    </button>
 	    <button onclick="performanceDiagnostics();" class="app-button" title="Performance Diagnostics">
 	      <span class="app-icon">⚡</span>
-	    </button>
-	    <button onclick="traceLogging();" class="app-button" title="Trace Logging">
-	      <span class="app-icon">📊</span>
-	    </button>
-	    <button onclick="liveMonitor();" class="app-button" title="Live Monitor">
-	      <span class="app-icon">📡</span>
 	    </button>
 	  </div>
 	</div>
@@ -328,5 +320,3 @@ window.openRecord = openRecord;
 window.cloneRecord = cloneRecord;
 window.commandChecker = commandChecker;
 window.performanceDiagnostics = performanceDiagnostics;
-window.traceLogging = traceLogging;
-window.liveMonitor = liveMonitor;
