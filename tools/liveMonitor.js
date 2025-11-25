@@ -14,23 +14,56 @@ async function liveMonitor() {
         const clientUrl = Xrm.Page.context.getClientUrl();
         console.log('Live Monitor - Client URL:', clientUrl);
         
-        // Get app ID
-        const appId = Xrm.Page.context.getAppId();
-        console.log('Live Monitor - App ID:', appId);
+        // Get app ID - try multiple methods
+        let appId = null;
+        
+        // Method 1: Try getAppId() if available
+        if (typeof Xrm.Page.context.getAppId === 'function') {
+            try {
+                appId = Xrm.Page.context.getAppId();
+                console.log('Live Monitor - App ID from getAppId():', appId);
+            } catch (e) {
+                console.warn('Live Monitor: getAppId() failed:', e);
+            }
+        }
+        
+        // Method 2: Extract from URL query parameters
+        if (!appId) {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.has('appid')) {
+                appId = urlParams.get('appid');
+                console.log('Live Monitor - App ID from URL:', appId);
+            }
+        }
+        
+        // Method 3: Try to get from global context (newer method)
+        if (!appId && typeof Xrm.Utility !== 'undefined' && typeof Xrm.Utility.getGlobalContext === 'function') {
+            try {
+                const globalContext = Xrm.Utility.getGlobalContext();
+                if (globalContext && typeof globalContext.getCurrentAppProperties === 'function') {
+                    const appProperties = globalContext.getCurrentAppProperties();
+                    if (appProperties && appProperties.appId) {
+                        appId = appProperties.appId;
+                        console.log('Live Monitor - App ID from global context:', appId);
+                    }
+                }
+            } catch (e) {
+                console.warn('Live Monitor: Global context method failed:', e);
+            }
+        }
         
         if (!appId) {
             if (typeof showToast === 'function') {
-                showToast('Could not detect app ID. Open this from a model-driven app.', 'warning');
+                showToast('Could not detect app ID. Make sure you are on a model-driven app.', 'warning');
             }
-            console.warn('Live Monitor: No app ID found');
+            console.warn('Live Monitor: No app ID found via any method');
             return;
         }
         
         // Extract environment ID from client URL
-        // URL format: https://{org}.crm.dynamics.com or https://{org}.{region}.dynamics.com
         let environmentId = null;
         
-        // Try to get environment ID from context (if available)
+        // Method 1: Try to get environment ID from context (if available)
         if (typeof Xrm.Page.context.getEnvironmentId === 'function') {
             try {
                 environmentId = Xrm.Page.context.getEnvironmentId();
@@ -40,9 +73,21 @@ async function liveMonitor() {
             }
         }
         
-        // If no environment ID, try to extract from URL
+        // Method 2: Try global context
+        if (!environmentId && typeof Xrm.Utility !== 'undefined' && typeof Xrm.Utility.getGlobalContext === 'function') {
+            try {
+                const globalContext = Xrm.Utility.getGlobalContext();
+                if (globalContext && typeof globalContext.getEnvironmentId === 'function') {
+                    environmentId = globalContext.getEnvironmentId();
+                    console.log('Live Monitor - Environment ID from global context:', environmentId);
+                }
+            } catch (e) {
+                console.warn('Live Monitor: Global context environment ID failed:', e);
+            }
+        }
+        
+        // Method 3: Try to extract from URL query parameters
         if (!environmentId) {
-            // Try to parse from the URL - format could be in query params or path
             const urlParams = new URLSearchParams(window.location.search);
             if (urlParams.has('orgid')) {
                 environmentId = urlParams.get('orgid');
