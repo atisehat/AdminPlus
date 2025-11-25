@@ -90,23 +90,26 @@ function openPopup() {
 	</div>
 	<div class="button-container">
 	  <div class="app-grid">
-	    <button onclick="closePopup(); openUrl('advanceFind');" class="app-button" title="Advanced Find">
+	    <button onclick="openUrl('advanceFind');" class="app-button" title="Advanced Find">
 	      <span class="app-icon">🕵️</span>
 	    </button>
 	    <button onclick="setTimeout(fetchEntityFields, 0);" class="app-button" title="Entity Info">
 	      <span class="app-icon">📋</span>
 	    </button>
-	    <button onclick="showAllTabsAndSections();" class="app-button" title="Show Hidden">
+	    <button onclick="openRecord();" class="app-button" title="Open Record">
+	      <span class="app-icon">🔍</span>
+	    </button>
+	    <button onclick="cloneRecord();" class="app-button" title="Clone Record">
+	      <span class="app-icon">🧬</span>
+	    </button>
+	    <button onclick="showDirtyFields();" class="app-button" title="Dirty Fields">
+	      <span class="app-icon">✏️</span>
+	    </button>
+	    <button onclick="showAllTabsAndSections();" class="app-button" title="Show Hidden Items">
 	      <span class="app-icon">👁️</span>
 	    </button>
 	    <button onclick="renameTabsSectionsFields();" class="app-button" title="Logical Names">
 	      <span class="app-icon">🏷️</span>
-	    </button>
-	    <button onclick="unlockAllFields();" class="app-button" title="Unlock Fields">
-	      <span class="app-icon">🔓</span>
-	    </button>
-	    <button onclick="showDirtyFields();" class="app-button" title="Dirty Fields">
-	      <span class="app-icon">✏️</span>
 	    </button>
 	    <button onclick="editSecurity();" class="app-button" title="Assign Security">
 	      <span class="app-icon">🔐</span>
@@ -116,12 +119,6 @@ function openPopup() {
 	    </button>
 	    <button onclick="dateCalc();" class="app-button" title="Date Calculator">
 	      <span class="app-icon">📅</span>
-	    </button>
-	    <button onclick="openRecord();" class="app-button" title="Open Record">
-	      <span class="app-icon">🔍</span>
-	    </button>
-	    <button onclick="cloneRecord();" class="app-button" title="Clone Record">
-	      <span class="app-icon">🧬</span>
 	    </button>
 	    <button onclick="commandChecker();" class="app-button" title="Command Checker">
 	      <span class="app-icon">🐛</span>
