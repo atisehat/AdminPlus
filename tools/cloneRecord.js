@@ -227,39 +227,39 @@ function createCloneRecordPopup(fieldAnalysis) {
 function generateFieldsHTML(fieldAnalysis) {
     let html = '';
     
-    const typeConfigs = {
-        lookup: { label: 'Lookup Fields', icon: '🔗', color: '#8b5cf6' },
-        string: { label: 'Text Fields (Single Line)', icon: '📝', color: '#3b82f6' },
-        memo: { label: 'Text Fields (Multiple Lines)', icon: '📄', color: '#6366f1' },
-        boolean: { label: 'Yes/No Fields', icon: '☑️', color: '#10b981' },
-        datetime: { label: 'Date & Time Fields', icon: '📅', color: '#f59e0b' },
-        decimal: { label: 'Decimal Number Fields', icon: '🔢', color: '#ec4899' },
-        double: { label: 'Floating Point Fields', icon: '➗', color: '#06b6d4' },
-        integer: { label: 'Whole Number Fields', icon: '#️⃣', color: '#14b8a6' },
-        money: { label: 'Currency Fields', icon: '💰', color: '#22c55e' },
-        bigint: { label: 'Big Integer Fields', icon: '🔟', color: '#0891b2' },
-        optionset: { label: 'Choice Fields (Single)', icon: '🎯', color: '#ef4444' },
-        multiselectoptionset: { label: 'Choice Fields (Multi-Select)', icon: '🎲', color: '#dc2626' },
-        other: { label: 'Other Fields (Owner, State, Status, etc.)', icon: '⚙️', color: '#6b7280' }
+    // Group field types for consolidated display
+    const fieldGroups = {
+        'Text Fields': ['string', 'memo'],
+        'Choice Fields': ['boolean', 'optionset'],
+        'Number Fields': ['decimal', 'integer', 'double', 'bigint'],
+        'Currency Fields': ['money'],
+        'Date & Time Fields': ['datetime'],
+        'Lookup Fields': ['lookup'],
+        'Choice Fields (Multi-Select)': ['multiselectoptionset'],
+        'Other Fields (Owner, State, Status, etc.)': ['other']
     };
     
-    for (const [type, config] of Object.entries(typeConfigs)) {
-        const fields = fieldAnalysis[type];
-        if (fields.length === 0) continue;
+    for (const [groupLabel, types] of Object.entries(fieldGroups)) {
+        // Collect all fields from the types in this group
+        let fieldsWithValues = [];
+        types.forEach(type => {
+            const fields = fieldAnalysis[type] || [];
+            const validFields = fields.filter(f => f.currentValue !== null && f.currentValue !== undefined);
+            fieldsWithValues = fieldsWithValues.concat(validFields);
+        });
         
-        // Filter to only show fields with values
-        const fieldsWithValues = fields.filter(f => f.currentValue !== null && f.currentValue !== undefined);
         if (fieldsWithValues.length === 0) continue;
         
         html += `
             <div style="margin-bottom: 25px;">
-                <h3 style="color: #2b2b2b; margin-bottom: 15px; font-size: 18px; font-weight: bold;">${config.label}</h3>
+                <h3 style="color: #2b2b2b; margin-bottom: 15px; font-size: 18px; font-weight: bold;">${groupLabel}</h3>
                 <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-left: 15px;">
         `;
         
         fieldsWithValues.forEach(field => {
             const requiredMark = field.isRequired ? '<span style="color: #ef4444; font-weight: bold;"> *</span>' : '';
             const recommendedMark = field.isRecommended ? '<span style="color: #f59e0b; font-weight: bold;"> ⭐</span>' : '';
+            const type = field.type;
             
             // Format current value for display
             let displayValue = '';
