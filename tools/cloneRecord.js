@@ -186,7 +186,7 @@ function createCloneRecordPopup(fieldAnalysis) {
             <div class="commonSection content-section" style="padding: 0; border-right: 0; height: 100%;">
                 
                 <!-- Instructions -->
-                <div style="background-color: white; padding: 12px 15px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #3b82f6; border-right: 4px solid #3b82f6; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">
+                <div style="background-color: white; padding: 12px 15px; border-radius: 8px; margin-bottom: 25px; border-left: 4px solid #3b82f6; border-right: 4px solid #3b82f6; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">
                     <p style="margin: 0; font-size: 13px; color: #555; line-height: 1.6;">
                         <strong>Note:</strong> Selected field(s) will be cloned to a new record. Fields marked with <span style="color: #ef4444; font-weight: bold;">*</span> are required and could require a manual save if left unchecked.
                     </p>
@@ -317,14 +317,16 @@ function generateFieldsHTML(fieldAnalysis) {
             }
             
             html += `
-                <div style="display: flex; flex-direction: column; padding: 8px; background-color: #f5f5f5; border-radius: 5px; border-left: 3px solid #2b2b2b;">
-                    <div style="display: flex; align-items: center;">
-                        <input type="checkbox" class="field-checkbox" data-field-name="${field.name}" data-field-type="${type}" style="margin-right: 8px; width: 16px; height: 16px; cursor: pointer;" checked>
-                        <label style="font-size: 13px; color: #374151; cursor: pointer; flex: 1; font-weight: bold;">
+                <div style="padding: 8px; background-color: #f5f5f5; border-radius: 5px; border-left: 3px solid #2b2b2b; cursor: pointer; transition: background-color 0.2s;">
+                    <div style="display: flex; align-items: center; margin-bottom: 5px;">
+                        <input type="checkbox" class="field-checkbox" data-field-name="${field.name}" data-field-type="${type}" style="margin-right: 8px; width: 16px; height: 16px; cursor: pointer; flex-shrink: 0;" checked>
+                        <div style="font-weight: bold; color: #333; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
                             ${field.displayName}${requiredMark}${recommendedMark}
-                        </label>
+                        </div>
                     </div>
-                    <div style="font-size: 11px; color: #6b7280; margin-top: 4px; margin-left: 24px; font-style: italic;">Value: ${displayValue}</div>
+                    <div style="margin-top: 5px; padding-top: 5px; border-top: 1px solid #ddd; font-size: 12px; color: #555; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-left: 24px;">
+                        <strong>Value:</strong> <span style="font-style: italic;">${displayValue}</span>
+                    </div>
                 </div>
             `;
         });
