@@ -174,9 +174,7 @@ function createCloneRecordPopup(fieldAnalysis) {
     container.className = 'commonPopup';
     container.style.border = '3px solid #1a1a1a';
     container.style.borderRadius = '12px';
-    container.style.width = '70%';
-    container.style.minWidth = '700px';
-    container.style.maxWidth = '1000px';
+    container.style.width = '75%';
     container.style.maxHeight = '90vh';
     
     container.innerHTML = `
@@ -255,10 +253,8 @@ function generateFieldsHTML(fieldAnalysis) {
         
         html += `
             <div style="margin-bottom: 25px;">
-                <h3 style="color: #2b2b2b; margin-bottom: 15px; font-size: 18px; font-weight: bold;">
-                    ${config.label} (${fieldsWithValues.length})
-                </h3>
-                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-left: 15px;">
+                <h3 style="color: #2b2b2b; margin-bottom: 15px; font-size: 18px; font-weight: bold;">${config.label} (${fieldsWithValues.length})</h3>
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-left: 15px;">
         `;
         
         fieldsWithValues.forEach(field => {
@@ -321,7 +317,7 @@ function generateFieldsHTML(fieldAnalysis) {
             }
             
             html += `
-                <div style="display: flex; flex-direction: column; padding: 8px; background-color: #f5f5f5; border-radius: 6px; border: 1px solid #ddd;">
+                <div style="display: flex; flex-direction: column; padding: 8px; background-color: #f5f5f5; border-radius: 5px; border-left: 3px solid #2b2b2b;">
                     <div style="display: flex; align-items: center;">
                         <input type="checkbox" class="field-checkbox" data-field-name="${field.name}" data-field-type="${type}" style="margin-right: 8px; width: 16px; height: 16px; cursor: pointer;" checked>
                         <label style="font-size: 13px; color: #374151; cursor: pointer; flex: 1;">
@@ -335,6 +331,7 @@ function generateFieldsHTML(fieldAnalysis) {
         
         html += `
                 </div>
+                <hr style="border: none; border-top: 2px solid #ddd; margin-top: 20px;">
             </div>
         `;
     }
