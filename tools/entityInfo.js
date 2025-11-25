@@ -280,7 +280,7 @@ function generateFieldListHtml(fields, fieldValues, fieldMetadata) {
         );
         
         html += `
-            <div style="margin-bottom: 25px;">
+            <div id="section-${categoryKey}" style="margin-bottom: 25px;">
                 <h3 style="color: #2b2b2b; margin-bottom: 15px; font-size: 18px; font-weight: bold;">${categoryLabels[categoryKey]}</h3>
                 <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-left: 15px;">
         `;
@@ -346,6 +346,9 @@ function appendEntityInfoPopupToBody(entityName, recordId, pluralName, fieldList
     popupContainer.style.width = '75%';
     popupContainer.style.maxHeight = '90vh';
     
+    // Generate section navigation buttons
+    const sectionNavHtml = generateSectionNavigationButtons();
+    
     // Build content HTML
     const contentHtml = `
         <div style="background-color: #f9f9f9; padding: 15px 20px; border-radius: 5px; margin-bottom: 15px;">
@@ -355,8 +358,11 @@ function appendEntityInfoPopupToBody(entityName, recordId, pluralName, fieldList
                 <div style="white-space: nowrap; flex: 1;"><strong>Record ID:</strong> ${recordId}</div>
             </div>
         </div>
-        <div style="display: flex; justify-content: flex-end; margin-bottom: 10px; padding-right: 20px;">
-            <div style="font-size: 13px; color: #666; font-style: italic; background-color: #f9f9f9; padding: 8px 12px; border-radius: 5px; border: 1px solid #ddd;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding: 0 20px; gap: 15px; flex-wrap: wrap;">
+            <div id="section-navigation" style="display: flex; gap: 8px; flex-wrap: wrap; flex: 1;">
+                ${sectionNavHtml}
+            </div>
+            <div style="font-size: 13px; color: #666; font-style: italic; background-color: #f9f9f9; padding: 8px 12px; border-radius: 5px; border: 1px solid #ddd; white-space: nowrap;">
                 <strong>Note:</strong> Click on any field to copy its information
             </div>
         </div>
@@ -399,6 +405,9 @@ function appendEntityInfoPopupToBody(entityName, recordId, pluralName, fieldList
     if (typeof makePopupMovable === 'function') {
         makePopupMovable(popupContainer);
     }
+    
+    // Setup section navigation buttons
+    setupSectionNavigation(popupContainer);
     
     // Add click-to-copy functionality for field cards
     popupContainer.querySelectorAll('.entityinfo-field-card').forEach(card => {
@@ -471,4 +480,99 @@ function decodeHtmlEntities(text) {
     const textarea = document.createElement('textarea');
     textarea.innerHTML = text;
     return textarea.value;
+}
+
+function generateSectionNavigationButtons() {
+    const categoryLabels = {
+        'TextFields': 'Text Fields',
+        'ChoiceFields': 'Choice Fields',
+        'NumberFields': 'Number Fields',
+        'DateTimeFields': 'Date & Time',
+        'LookupFields': 'Lookup Fields',
+        'FileMediaFields': 'File & Media',
+        'ComputedFields': 'Computed',
+        'OtherFields': 'Other'
+    };
+    
+    let buttonsHtml = '';
+    
+    Object.keys(categoryLabels).forEach(categoryKey => {
+        buttonsHtml += `
+            <button 
+                class="section-nav-btn" 
+                data-section="${categoryKey}"
+                style="
+                    padding: 6px 12px;
+                    background-color: #2b2b2b;
+                    color: white;
+                    border: none;
+                    border-radius: 5px;
+                    font-size: 12px;
+                    font-weight: 500;
+                    cursor: pointer;
+                    transition: all 0.2s ease;
+                    white-space: nowrap;
+                    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+                "
+            >
+                ${categoryLabels[categoryKey]}
+            </button>
+        `;
+    });
+    
+    return buttonsHtml;
+}
+
+function setupSectionNavigation(popupContainer) {
+    const scrollSection = popupContainer.querySelector('.scroll-section');
+    const navButtons = popupContainer.querySelectorAll('.section-nav-btn');
+    
+    navButtons.forEach(button => {
+        // Add hover effects
+        button.addEventListener('mouseenter', function() {
+            this.style.backgroundColor = '#0078d4';
+            this.style.transform = 'translateY(-2px)';
+            this.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.2)';
+        });
+        
+        button.addEventListener('mouseleave', function() {
+            this.style.backgroundColor = '#2b2b2b';
+            this.style.transform = 'translateY(0)';
+            this.style.boxShadow = '0 2px 4px rgba(0, 0, 0, 0.1)';
+        });
+        
+        button.addEventListener('mousedown', function() {
+            this.style.transform = 'translateY(0)';
+        });
+        
+        // Add click handler for scrolling
+        button.addEventListener('click', function() {
+            const sectionId = this.getAttribute('data-section');
+            const targetSection = popupContainer.querySelector(`#section-${sectionId}`);
+            
+            if (targetSection) {
+                // Calculate the position relative to the scroll container
+                const scrollContainer = scrollSection;
+                const targetPosition = targetSection.offsetTop - scrollContainer.offsetTop - 10; // 10px offset for better visibility
+                
+                // Smooth scroll to the section
+                scrollContainer.scrollTo({
+                    top: targetPosition,
+                    behavior: 'smooth'
+                });
+                
+                // Visual feedback - highlight the section briefly
+                const originalBg = targetSection.style.backgroundColor;
+                targetSection.style.backgroundColor = '#e6f3ff';
+                targetSection.style.transition = 'background-color 0.3s ease';
+                
+                setTimeout(() => {
+                    targetSection.style.backgroundColor = originalBg;
+                    setTimeout(() => {
+                        targetSection.style.transition = '';
+                    }, 300);
+                }, 600);
+            }
+        });
+    });
 }
