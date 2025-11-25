@@ -592,7 +592,7 @@ function setupSectionNavigation(popupContainer) {
             // Calculate the position relative to the scroll container
             const scrollContainer = scrollSection;
             // Use positive offset to scroll the section header to the top, away from previous content
-            const targetPosition = targetSection.offsetTop - scrollContainer.offsetTop + 60; // Positive offset to hide previous section
+            const targetPosition = targetSection.offsetTop - scrollContainer.offsetTop + 120; // Positive offset to hide previous section
             
             // Smooth scroll to the section
             scrollContainer.scrollTo({
