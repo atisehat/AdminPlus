@@ -362,7 +362,7 @@ function appendEntityInfoPopupToBody(entityName, recordId, pluralName, fieldList
                 <div style="white-space: nowrap; flex: 1;"><strong>Record ID:</strong> ${recordId}</div>
             </div>
         </div>
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding: 0 20px; gap: 15px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding: 0 20px; gap: 15px;">
             <div id="section-navigation" style="display: flex; flex: 1; min-width: 0;">
                 ${sectionNavHtml}
             </div>
@@ -530,30 +530,31 @@ function generateSectionNavigationButtons() {
         }
     });
     
-    // Add overflow menu button
+    // Add overflow menu button with different styling
     buttonsHtml += `
         <div class="overflow-menu-container" style="position: relative; flex-shrink: 0; display: none;">
             <button 
                 class="overflow-menu-btn"
+                type="button"
                 style="
-                    padding: 6px 12px;
-                    background-color: #2b2b2b;
+                    padding: 6px 14px;
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
                     color: white;
                     border: none;
                     border-radius: 5px;
-                    font-size: 12px;
-                    font-weight: 500;
+                    font-size: 13px;
+                    font-weight: 600;
                     cursor: pointer;
                     transition: all 0.2s ease;
                     white-space: nowrap;
-                    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+                    box-shadow: 0 3px 6px rgba(102, 126, 234, 0.3);
                     display: flex;
                     align-items: center;
-                    gap: 4px;
+                    gap: 5px;
                 "
             >
                 <span>More</span>
-                <span style="font-size: 16px;">⋯</span>
+                <span style="font-size: 16px; font-weight: bold;">▼</span>
             </button>
             <div class="overflow-menu-dropdown" style="
                 display: none;
@@ -562,7 +563,7 @@ function generateSectionNavigationButtons() {
                 right: 0;
                 margin-top: 5px;
                 background-color: white;
-                border: 2px solid #2b2b2b;
+                border: 2px solid #667eea;
                 border-radius: 5px;
                 box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
                 z-index: 10000;
@@ -646,25 +647,40 @@ function setupSectionNavigation(popupContainer) {
     const navButtons = popupContainer.querySelectorAll('.section-nav-btn');
     navButtons.forEach(setupButton);
     
-    // Setup overflow menu button
+    // Setup overflow menu button with different hover effect
     if (overflowMenuBtn && overflowMenuDropdown) {
         overflowMenuBtn.addEventListener('mouseenter', function() {
-            this.style.backgroundColor = '#0078d4';
+            this.style.background = 'linear-gradient(135deg, #764ba2 0%, #667eea 100%)';
             this.style.transform = 'translateY(-2px)';
-            this.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.2)';
+            this.style.boxShadow = '0 5px 10px rgba(102, 126, 234, 0.4)';
         });
         
         overflowMenuBtn.addEventListener('mouseleave', function() {
-            this.style.backgroundColor = '#2b2b2b';
+            this.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
             this.style.transform = 'translateY(0)';
-            this.style.boxShadow = '0 2px 4px rgba(0, 0, 0, 0.1)';
+            this.style.boxShadow = '0 3px 6px rgba(102, 126, 234, 0.3)';
+        });
+        
+        overflowMenuBtn.addEventListener('mousedown', function() {
+            this.style.transform = 'scale(0.95)';
+        });
+        
+        overflowMenuBtn.addEventListener('mouseup', function() {
+            this.style.transform = 'translateY(-2px)';
         });
         
         overflowMenuBtn.addEventListener('click', function(e) {
+            e.preventDefault();
             e.stopPropagation();
+            console.log('Overflow menu button clicked');
+            
             if (overflowMenuDropdown) {
                 const isVisible = overflowMenuDropdown.style.display === 'block';
+                console.log('Dropdown current state:', isVisible ? 'visible' : 'hidden');
                 overflowMenuDropdown.style.display = isVisible ? 'none' : 'block';
+                console.log('Dropdown new state:', overflowMenuDropdown.style.display);
+            } else {
+                console.log('Dropdown element not found');
             }
         });
         
@@ -675,7 +691,10 @@ function setupSectionNavigation(popupContainer) {
             }
         };
         
-        document.addEventListener('click', closeDropdown);
+        // Use setTimeout to add the listener after current event completes
+        setTimeout(() => {
+            document.addEventListener('click', closeDropdown);
+        }, 100);
         
         // Clean up event listener when popup is removed
         const observer = new MutationObserver(function(mutations) {
@@ -690,6 +709,8 @@ function setupSectionNavigation(popupContainer) {
         });
         
         observer.observe(document.body, { childList: true });
+    } else {
+        console.log('Overflow menu elements not found:', { btn: !!overflowMenuBtn, dropdown: !!overflowMenuDropdown });
     }
     
     // Function to check and manage overflow
