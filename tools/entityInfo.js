@@ -356,10 +356,10 @@ function appendEntityInfoPopupToBody(entityName, recordId, pluralName, fieldList
     // Build content HTML
     const contentHtml = `
         <div style="background-color: #f9f9f9; padding: 12px 20px; border-radius: 5px; margin-bottom: 8px;">
-            <div style="display: flex; gap: 50px; align-items: center; flex-wrap: wrap; font-size: 15px;">
+            <div style="display: flex; gap: 20px; align-items: center; flex-wrap: wrap; font-size: 15px;">
                 <div style="white-space: nowrap;"><strong>Entity Name:</strong> ${entityName}</div>
                 <div style="white-space: nowrap;"><strong>Plural Name:</strong> ${pluralName}</div>
-                <div style="white-space: nowrap; flex: 1;"><strong>Record ID:</strong> ${recordId}</div>
+                <div style="white-space: nowrap; min-width: 200px;"><strong>Record ID:</strong> ${recordId}</div>
             </div>
         </div>
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding: 0 20px; gap: 15px; position: relative; z-index: 100; overflow: visible;">
@@ -538,7 +538,7 @@ function generateSectionNavigationButtons() {
                 type="button"
                 style="
                     padding: 6px 14px;
-                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    background: linear-gradient(135deg, #0078d4 0%, #106ebe 100%);
                     color: white;
                     border: none;
                     border-radius: 5px;
@@ -547,7 +547,7 @@ function generateSectionNavigationButtons() {
                     cursor: pointer;
                     transition: background 0.2s ease, box-shadow 0.2s ease;
                     white-space: nowrap;
-                    box-shadow: 0 3px 6px rgba(102, 126, 234, 0.3);
+                    box-shadow: 0 3px 6px rgba(0, 120, 212, 0.3);
                     display: flex;
                     align-items: center;
                     gap: 5px;
@@ -563,7 +563,7 @@ function generateSectionNavigationButtons() {
                 right: 0;
                 margin-top: 5px;
                 background-color: white;
-                border: 2px solid #667eea;
+                border: 2px solid #0078d4;
                 border-radius: 5px;
                 box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
                 z-index: 999999;
@@ -650,13 +650,13 @@ function setupSectionNavigation(popupContainer) {
     // Setup overflow menu button with different hover effect
     if (overflowMenuBtn && overflowMenuDropdown) {
         overflowMenuBtn.addEventListener('mouseenter', function() {
-            this.style.background = 'linear-gradient(135deg, #764ba2 0%, #667eea 100%)';
-            this.style.boxShadow = '0 5px 10px rgba(102, 126, 234, 0.4)';
+            this.style.background = 'linear-gradient(135deg, #106ebe 0%, #005a9e 100%)';
+            this.style.boxShadow = '0 5px 10px rgba(0, 120, 212, 0.4)';
         });
         
         overflowMenuBtn.addEventListener('mouseleave', function() {
-            this.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
-            this.style.boxShadow = '0 3px 6px rgba(102, 126, 234, 0.3)';
+            this.style.background = 'linear-gradient(135deg, #0078d4 0%, #106ebe 100%)';
+            this.style.boxShadow = '0 3px 6px rgba(0, 120, 212, 0.3)';
         });
         
         overflowMenuBtn.addEventListener('mousedown', function() {
