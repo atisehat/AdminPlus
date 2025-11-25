@@ -281,7 +281,7 @@ function generateFieldListHtml(fields, fieldValues, fieldMetadata) {
         
         html += `
             <div style="margin-bottom: 25px;">
-                <h3 style="color: #2b2b2b; margin-bottom: 15px; font-size: 18px; font-weight: bold;">${categoryLabels[categoryKey]}:</h3>
+                <h3 style="color: #2b2b2b; margin-bottom: 15px; font-size: 18px; font-weight: bold;">${categoryLabels[categoryKey]}</h3>
                 <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-left: 15px;">
         `;
         
