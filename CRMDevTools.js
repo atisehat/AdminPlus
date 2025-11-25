@@ -145,6 +145,24 @@ function openPopup() {
   
   // Find the main D365 container automatically
   function findMainContainer() {
+    // Try common D365 container selectors first
+    var selectors = [
+      '#AppContainer',
+      '[data-id="AppContainer"]',
+      '#appContainer',
+      'div[role="main"]',
+      'div[data-id="mainContent"]',
+      '#crmContentPanel',
+      '#mainContent',
+      'div[data-lp-id="MscrmControls.Grid.ReadOnlyGrid"]'
+    ];
+    
+    for (var i = 0; i < selectors.length; i++) {
+      var el = document.querySelector(selectors[i]);
+      if (el) return el;
+    }
+    
+    // Fallback: find largest positioned element
     var vw = window.innerWidth;
     var vh = window.innerHeight;
     var best = null;
@@ -172,6 +190,31 @@ function openPopup() {
   
   // Adjust content positioning for sidebar
   function adjustContentPosition() {
+    // Function to apply positioning styles
+    function applyPositioning(element) {
+      if (!element || !document.body.contains(element)) return false;
+      
+      // Store original styles only once
+      if (!element.getAttribute('data-adminplus-original-right')) {
+        element.setAttribute('data-adminplus-original-right', element.style.right || '');
+        element.setAttribute('data-adminplus-original-left', element.style.left || '');
+        element.setAttribute('data-adminplus-original-position', element.style.position || '');
+        element.setAttribute('data-adminplus-original-boxsizing', element.style.boxSizing || '');
+        element.setAttribute('data-adminplus-target', 'true');
+      }
+      
+      var cs = getComputedStyle(element);
+      if (cs.position === 'static') {
+        element.style.setProperty('position', 'relative', 'important');
+      }
+      
+      element.style.setProperty('box-sizing', 'border-box', 'important');
+      element.style.setProperty('left', '0', 'important');
+      element.style.setProperty('right', sidebarWidth + 'px', 'important');
+      
+      return true;
+    }
+    
     // Try to get existing target first
     var mainContainer = window.adminPlusTargetElement;
     
@@ -187,22 +230,13 @@ function openPopup() {
       window.adminPlusTargetElement = mainContainer;
     }
     
-    if (!mainContainer.getAttribute('data-adminplus-original-right')) {
-      mainContainer.setAttribute('data-adminplus-original-right', mainContainer.style.right || '');
-      mainContainer.setAttribute('data-adminplus-original-left', mainContainer.style.left || '');
-      mainContainer.setAttribute('data-adminplus-original-position', mainContainer.style.position || '');
-      mainContainer.setAttribute('data-adminplus-original-boxsizing', mainContainer.style.boxSizing || '');
-      mainContainer.setAttribute('data-adminplus-target', 'true');
-    }
+    // Apply to main container
+    applyPositioning(mainContainer);
     
-    var cs = getComputedStyle(mainContainer);
-    if (cs.position === 'static') {
-      mainContainer.style.setProperty('position', 'relative', 'important');
+    // Also apply to body as a fallback (helps with different D365 configurations)
+    if (mainContainer !== document.body) {
+      applyPositioning(document.body);
     }
-    
-    mainContainer.style.setProperty('box-sizing', 'border-box', 'important');
-    mainContainer.style.setProperty('left', '0', 'important');
-    mainContainer.style.setProperty('right', sidebarWidth + 'px', 'important');
   }
   
   document.body.classList.add('adminplus-sidebar-open');
@@ -219,63 +253,64 @@ function openPopup() {
 function closePopup() {
     document.body.classList.remove('adminplus-sidebar-open');
     
-    // Try to get target element from stored reference first
-    var targetElement = window.adminPlusTargetElement;
-    
-    // Fallback to query if reference doesn't exist or element was removed from DOM
-    if (!targetElement || !document.body.contains(targetElement)) {
-        targetElement = document.querySelector('[data-adminplus-target="true"]');
-    }
-    
-    if (targetElement && document.body.contains(targetElement)) {
+    // Function to restore element styles
+    function restoreElement(element) {
+        if (!element || !document.body.contains(element)) return;
+        
         // Get original styles
-        var originalRight = targetElement.getAttribute('data-adminplus-original-right');
-        var originalLeft = targetElement.getAttribute('data-adminplus-original-left');
-        var originalPosition = targetElement.getAttribute('data-adminplus-original-position');
-        var originalBoxSizing = targetElement.getAttribute('data-adminplus-original-boxsizing');
+        var originalRight = element.getAttribute('data-adminplus-original-right');
+        var originalLeft = element.getAttribute('data-adminplus-original-left');
+        var originalPosition = element.getAttribute('data-adminplus-original-position');
+        var originalBoxSizing = element.getAttribute('data-adminplus-original-boxsizing');
         
         // Restore or remove properties
         if (originalRight !== null) {
             if (originalRight === '') {
-                targetElement.style.removeProperty('right');
+                element.style.removeProperty('right');
             } else {
-                targetElement.style.right = originalRight;
+                element.style.right = originalRight;
             }
-            targetElement.removeAttribute('data-adminplus-original-right');
+            element.removeAttribute('data-adminplus-original-right');
         }
         
         if (originalLeft !== null) {
             if (originalLeft === '') {
-                targetElement.style.removeProperty('left');
+                element.style.removeProperty('left');
             } else {
-                targetElement.style.left = originalLeft;
+                element.style.left = originalLeft;
             }
-            targetElement.removeAttribute('data-adminplus-original-left');
+            element.removeAttribute('data-adminplus-original-left');
         }
         
         if (originalPosition !== null) {
             if (originalPosition === '') {
-                targetElement.style.removeProperty('position');
+                element.style.removeProperty('position');
             } else {
-                targetElement.style.position = originalPosition;
+                element.style.position = originalPosition;
             }
-            targetElement.removeAttribute('data-adminplus-original-position');
+            element.removeAttribute('data-adminplus-original-position');
         }
         
         if (originalBoxSizing !== null) {
             if (originalBoxSizing === '') {
-                targetElement.style.removeProperty('box-sizing');
+                element.style.removeProperty('box-sizing');
             } else {
-                targetElement.style.boxSizing = originalBoxSizing;
+                element.style.boxSizing = originalBoxSizing;
             }
-            targetElement.removeAttribute('data-adminplus-original-boxsizing');
+            element.removeAttribute('data-adminplus-original-boxsizing');
         }
         
-        targetElement.removeAttribute('data-adminplus-target');
+        element.removeAttribute('data-adminplus-target');
         
         // Force reflow to ensure styles are updated
-        void targetElement.offsetHeight;
+        void element.offsetHeight;
     }
+    
+    // Restore all elements that were modified
+    var targetElements = document.querySelectorAll('[data-adminplus-target="true"]');
+    targetElements.forEach(function(el) {
+        restoreElement(el);
+    });
     
     // Clean up global reference
     window.adminPlusTargetElement = null;
