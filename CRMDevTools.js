@@ -145,40 +145,43 @@ function openPopup() {
   
   // Find the main D365 container automatically
   function findMainContainer() {
-    // Try common D365 container selectors first
+    // Common D365 container selectors (in priority order)
     var selectors = [
-      '#AppContainer',
-      '[data-id="AppContainer"]',
-      '#appContainer',
-      'div[role="main"]',
-      'div[data-id="mainContent"]',
       '#crmContentPanel',
       '#mainContent',
-      'div[data-lp-id="MscrmControls.Grid.ReadOnlyGrid"]'
+      '#pageContentContainer',
+      '[role="main"]',
+      'div[data-id="form-container"]',
+      '#ContentPanel'
     ];
     
+    // Try known D365 selectors first
     for (var i = 0; i < selectors.length; i++) {
       var el = document.querySelector(selectors[i]);
-      if (el) return el;
+      if (el) {
+        return el;
+      }
     }
     
-    // Fallback: find largest positioned element
+    // Fallback: Find the largest positioned element
     var vw = window.innerWidth;
     var vh = window.innerHeight;
     var best = null;
     var bestArea = 0;
     
-    document.querySelectorAll('body *').forEach(function(el) {
+    document.querySelectorAll('body > *').forEach(function(el) {
       if (!(el instanceof HTMLElement)) return;
+      if (el.id === 'MenuPopup') return; // Skip our own sidebar
       
       var rect = el.getBoundingClientRect();
       var area = rect.width * rect.height;
       
-      if (rect.width < vw * 0.7 || rect.height < vh * 0.7) return;
+      // More lenient criteria - at least 50% of viewport
+      if (rect.width < vw * 0.5 || rect.height < vh * 0.5) return;
       
       var style = getComputedStyle(el);
-      if (!['fixed', 'absolute', 'relative'].includes(style.position)) return;
       
+      // Accept any element that's positioned or is a direct body child
       if (area > bestArea) {
         bestArea = area;
         best = el;
@@ -190,31 +193,6 @@ function openPopup() {
   
   // Adjust content positioning for sidebar
   function adjustContentPosition() {
-    // Function to apply positioning styles
-    function applyPositioning(element) {
-      if (!element || !document.body.contains(element)) return false;
-      
-      // Store original styles only once
-      if (!element.getAttribute('data-adminplus-original-right')) {
-        element.setAttribute('data-adminplus-original-right', element.style.right || '');
-        element.setAttribute('data-adminplus-original-left', element.style.left || '');
-        element.setAttribute('data-adminplus-original-position', element.style.position || '');
-        element.setAttribute('data-adminplus-original-boxsizing', element.style.boxSizing || '');
-        element.setAttribute('data-adminplus-target', 'true');
-      }
-      
-      var cs = getComputedStyle(element);
-      if (cs.position === 'static') {
-        element.style.setProperty('position', 'relative', 'important');
-      }
-      
-      element.style.setProperty('box-sizing', 'border-box', 'important');
-      element.style.setProperty('left', '0', 'important');
-      element.style.setProperty('right', sidebarWidth + 'px', 'important');
-      
-      return true;
-    }
-    
     // Try to get existing target first
     var mainContainer = window.adminPlusTargetElement;
     
@@ -230,12 +208,40 @@ function openPopup() {
       window.adminPlusTargetElement = mainContainer;
     }
     
-    // Apply to main container
-    applyPositioning(mainContainer);
+    // Store original styles only once
+    if (!mainContainer.getAttribute('data-adminplus-original-right')) {
+      var cs = getComputedStyle(mainContainer);
+      mainContainer.setAttribute('data-adminplus-original-right', mainContainer.style.right || '');
+      mainContainer.setAttribute('data-adminplus-original-left', mainContainer.style.left || '');
+      mainContainer.setAttribute('data-adminplus-original-position', mainContainer.style.position || '');
+      mainContainer.setAttribute('data-adminplus-original-boxsizing', mainContainer.style.boxSizing || '');
+      mainContainer.setAttribute('data-adminplus-original-width', mainContainer.style.width || '');
+      mainContainer.setAttribute('data-adminplus-original-marginright', mainContainer.style.marginRight || '');
+      mainContainer.setAttribute('data-adminplus-computed-position', cs.position);
+      mainContainer.setAttribute('data-adminplus-target', 'true');
+    }
     
-    // Also apply to body as a fallback (helps with different D365 configurations)
-    if (mainContainer !== document.body) {
-      applyPositioning(document.body);
+    // Apply positioning styles
+    var computedPosition = mainContainer.getAttribute('data-adminplus-computed-position');
+    
+    // If element was static, make it relative
+    if (computedPosition === 'static') {
+      mainContainer.style.position = 'relative';
+    }
+    
+    mainContainer.style.boxSizing = 'border-box';
+    
+    // For fixed/absolute positioned elements, use right property
+    if (computedPosition === 'fixed' || computedPosition === 'absolute') {
+      mainContainer.style.right = sidebarWidth + 'px';
+      mainContainer.style.left = '0';
+    } else {
+      // For relative/static, use margin or width reduction
+      var currentWidth = mainContainer.offsetWidth;
+      if (currentWidth > sidebarWidth) {
+        mainContainer.style.marginRight = sidebarWidth + 'px';
+        mainContainer.style.width = 'calc(100% - ' + sidebarWidth + 'px)';
+      }
     }
   }
   
@@ -253,64 +259,84 @@ function openPopup() {
 function closePopup() {
     document.body.classList.remove('adminplus-sidebar-open');
     
-    // Function to restore element styles
-    function restoreElement(element) {
-        if (!element || !document.body.contains(element)) return;
-        
+    // Try to get target element from stored reference first
+    var targetElement = window.adminPlusTargetElement;
+    
+    // Fallback to query if reference doesn't exist or element was removed from DOM
+    if (!targetElement || !document.body.contains(targetElement)) {
+        targetElement = document.querySelector('[data-adminplus-target="true"]');
+    }
+    
+    if (targetElement && document.body.contains(targetElement)) {
         // Get original styles
-        var originalRight = element.getAttribute('data-adminplus-original-right');
-        var originalLeft = element.getAttribute('data-adminplus-original-left');
-        var originalPosition = element.getAttribute('data-adminplus-original-position');
-        var originalBoxSizing = element.getAttribute('data-adminplus-original-boxsizing');
+        var originalRight = targetElement.getAttribute('data-adminplus-original-right');
+        var originalLeft = targetElement.getAttribute('data-adminplus-original-left');
+        var originalPosition = targetElement.getAttribute('data-adminplus-original-position');
+        var originalBoxSizing = targetElement.getAttribute('data-adminplus-original-boxsizing');
+        var originalWidth = targetElement.getAttribute('data-adminplus-original-width');
+        var originalMarginRight = targetElement.getAttribute('data-adminplus-original-marginright');
         
         // Restore or remove properties
         if (originalRight !== null) {
             if (originalRight === '') {
-                element.style.removeProperty('right');
+                targetElement.style.removeProperty('right');
             } else {
-                element.style.right = originalRight;
+                targetElement.style.right = originalRight;
             }
-            element.removeAttribute('data-adminplus-original-right');
+            targetElement.removeAttribute('data-adminplus-original-right');
         }
         
         if (originalLeft !== null) {
             if (originalLeft === '') {
-                element.style.removeProperty('left');
+                targetElement.style.removeProperty('left');
             } else {
-                element.style.left = originalLeft;
+                targetElement.style.left = originalLeft;
             }
-            element.removeAttribute('data-adminplus-original-left');
+            targetElement.removeAttribute('data-adminplus-original-left');
         }
         
         if (originalPosition !== null) {
             if (originalPosition === '') {
-                element.style.removeProperty('position');
+                targetElement.style.removeProperty('position');
             } else {
-                element.style.position = originalPosition;
+                targetElement.style.position = originalPosition;
             }
-            element.removeAttribute('data-adminplus-original-position');
+            targetElement.removeAttribute('data-adminplus-original-position');
         }
         
         if (originalBoxSizing !== null) {
             if (originalBoxSizing === '') {
-                element.style.removeProperty('box-sizing');
+                targetElement.style.removeProperty('box-sizing');
             } else {
-                element.style.boxSizing = originalBoxSizing;
+                targetElement.style.boxSizing = originalBoxSizing;
             }
-            element.removeAttribute('data-adminplus-original-boxsizing');
+            targetElement.removeAttribute('data-adminplus-original-boxsizing');
         }
         
-        element.removeAttribute('data-adminplus-target');
+        if (originalWidth !== null) {
+            if (originalWidth === '') {
+                targetElement.style.removeProperty('width');
+            } else {
+                targetElement.style.width = originalWidth;
+            }
+            targetElement.removeAttribute('data-adminplus-original-width');
+        }
+        
+        if (originalMarginRight !== null) {
+            if (originalMarginRight === '') {
+                targetElement.style.removeProperty('margin-right');
+            } else {
+                targetElement.style.marginRight = originalMarginRight;
+            }
+            targetElement.removeAttribute('data-adminplus-original-marginright');
+        }
+        
+        targetElement.removeAttribute('data-adminplus-target');
+        targetElement.removeAttribute('data-adminplus-computed-position');
         
         // Force reflow to ensure styles are updated
-        void element.offsetHeight;
+        void targetElement.offsetHeight;
     }
-    
-    // Restore all elements that were modified
-    var targetElements = document.querySelectorAll('[data-adminplus-target="true"]');
-    targetElements.forEach(function(el) {
-        restoreElement(el);
-    });
     
     // Clean up global reference
     window.adminPlusTargetElement = null;
