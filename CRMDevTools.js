@@ -59,6 +59,22 @@ loadScript('utils/ui.js', onUtilScriptLoaded);
 // Sidebar Management
 // ============================================================================
 
+// Helper function to check if user has System Administrator role
+function checkSystemAdministratorRole() {
+  try {
+    var roles = Xrm.Utility.getGlobalContext().userSettings.roles;
+    for (var i = 0; i < roles.getLength(); i++) {
+      var role = roles.get(i);
+      if (role.name === "System Administrator") {
+        return true;
+      }
+    }
+    return false;
+  } catch (error) {
+    return false;
+  }
+}
+
 function openPopup() {
   // Toggle: Close sidebar if already open
   if (document.getElementById('MenuPopup')) {
@@ -67,20 +83,6 @@ function openPopup() {
   }
   
   closeSubPopups();
-  var isAdmin = false;
-  var userName = Xrm.Utility.getGlobalContext().userSettings.userName;
-  var roles = Xrm.Utility.getGlobalContext().userSettings.roles;  
-  for (var i = 0; i< roles.getLength(); i++) {
-    var role = roles.get(i);
-    if (role.name == "System Administrator") {
-        isAdmin = true;
-        break;
-    }
-  }  
-  if (!isAdmin && userName !== "Adrian Solis") {
-    Xrm.Navigation.openAlertDialog({ text: "You do not have permission to execute this action."});
-    return;    
-  }	 
   
   var popupHtml = `
     <div class="popup">
@@ -396,6 +398,7 @@ function closeSubPopups() {
 // ============================================================================
 // Global Exports
 // ============================================================================
+window.checkSystemAdministratorRole = checkSystemAdministratorRole;
 window.fetchEntityFields = fetchEntityFields;
 window.unlockAllFields = unlockAllFields;
 window.showAllTabsAndSections = showAllTabsAndSections;

@@ -1,4 +1,10 @@
-function copySecurity() {	
+function copySecurity() {
+	// Check if user has System Administrator role
+	if (!checkSystemAdministratorRole()) {
+		Xrm.Navigation.openAlertDialog({ text: "You do not have permission to execute this action. System Administrator role required." });
+		return;
+	}
+	
 	let selectedUserId2 = null; 
 	let selectedUserName2 = '';
 	let selectedUserId = null;

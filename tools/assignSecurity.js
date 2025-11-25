@@ -1,4 +1,10 @@
-function editSecurity() {        	
+function editSecurity() {
+	// Check if user has System Administrator role
+	if (!checkSystemAdministratorRole()) {
+		Xrm.Navigation.openAlertDialog({ text: "You do not have permission to execute this action. System Administrator role required." });
+		return;
+	}
+	
 	let businessUnits = null;
 	let selectedUserId = null;
 	let selectedUserFullName = null;	
