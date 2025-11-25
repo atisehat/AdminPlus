@@ -1,29 +1,46 @@
-// Live Monitor Tool - Enable Microsoft's Live Monitor for comprehensive app debugging
+// Live Monitor Tool - Open Microsoft's Live Monitor for comprehensive app debugging
 async function liveMonitor() {
     try {
-        // Check if monitor parameter is already present
-        const urlParams = new URLSearchParams(window.location.search);
-        const monitorEnabled = urlParams.get('monitor') === 'true';
-        
-        if (monitorEnabled) {
+        // Check if we're on a model-driven app
+        if (typeof Xrm === 'undefined' || !Xrm.Page || !Xrm.Page.context) {
             if (typeof showToast === 'function') {
-                showToast('Live Monitor already enabled', 'info', 3000);
+                showToast('Please open a model-driven app first', 'warning');
             }
             return;
         }
         
-        // Add monitor parameter to URL and reload
-        const currentUrl = window.location.href;
-        const newUrl = currentUrl.includes('?') 
-            ? currentUrl + '&monitor=true' 
-            : currentUrl + '?monitor=true';
+        // Get app info
+        const clientUrl = Xrm.Page.context.getClientUrl();
+        const appId = Xrm.Page.context.getAppId();
         
-        window.location.href = newUrl;
+        if (!appId) {
+            if (typeof showToast === 'function') {
+                showToast('Could not detect app ID. Open this from a model-driven app.', 'warning');
+            }
+            return;
+        }
+        
+        // Construct the Monitor URL
+        // Format: https://make.powerapps.com/environments/{environmentId}/monitor?target=/main.aspx?appid={appId}
+        const environmentId = Xrm.Page.context.getEnvironmentId();
+        
+        // Build the target URL (the app we want to monitor)
+        const targetUrl = encodeURIComponent(`/main.aspx?appid=${appId}`);
+        
+        // Build the full monitor URL
+        const monitorUrl = `https://make.powerapps.com/environments/${environmentId}/monitor?target=${targetUrl}`;
+        
+        // Open Live Monitor in a new tab
+        window.open(monitorUrl, '_blank', 'noopener,noreferrer');
+        
+        if (typeof showToast === 'function') {
+            showToast('Opening Live Monitor in new tab...', 'success', 3000);
+        }
         
     } catch (error) {
-        console.error('Error enabling Live Monitor:', error);
+        console.error('Error opening Live Monitor:', error);
         if (typeof showToast === 'function') {
-            showToast('Error enabling Live Monitor', 'error');
+            showToast('Error opening Live Monitor', 'error');
         }
     }
 }
