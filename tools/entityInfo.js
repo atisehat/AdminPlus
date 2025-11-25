@@ -355,7 +355,7 @@ function appendEntityInfoPopupToBody(entityName, recordId, pluralName, fieldList
     
     // Build content HTML
     const contentHtml = `
-        <div style="background-color: #f9f9f9; padding: 15px 20px; border-radius: 5px; margin-bottom: 15px;">
+        <div style="background-color: #f9f9f9; padding: 12px 20px; border-radius: 5px; margin-bottom: 8px;">
             <div style="display: flex; gap: 50px; align-items: center; flex-wrap: wrap; font-size: 15px;">
                 <div style="white-space: nowrap;"><strong>Entity Name:</strong> ${entityName}</div>
                 <div style="white-space: nowrap;"><strong>Plural Name:</strong> ${pluralName}</div>
@@ -647,7 +647,7 @@ function setupSectionNavigation(popupContainer) {
     navButtons.forEach(setupButton);
     
     // Setup overflow menu button
-    if (overflowMenuBtn) {
+    if (overflowMenuBtn && overflowMenuDropdown) {
         overflowMenuBtn.addEventListener('mouseenter', function() {
             this.style.backgroundColor = '#0078d4';
             this.style.transform = 'translateY(-2px)';
@@ -662,21 +662,39 @@ function setupSectionNavigation(popupContainer) {
         
         overflowMenuBtn.addEventListener('click', function(e) {
             e.stopPropagation();
-            const isVisible = overflowMenuDropdown.style.display === 'block';
-            overflowMenuDropdown.style.display = isVisible ? 'none' : 'block';
+            if (overflowMenuDropdown) {
+                const isVisible = overflowMenuDropdown.style.display === 'block';
+                overflowMenuDropdown.style.display = isVisible ? 'none' : 'block';
+            }
         });
+        
+        // Close dropdown when clicking outside
+        const closeDropdown = function(e) {
+            if (overflowMenuDropdown && overflowMenuContainer && !overflowMenuContainer.contains(e.target)) {
+                overflowMenuDropdown.style.display = 'none';
+            }
+        };
+        
+        document.addEventListener('click', closeDropdown);
+        
+        // Clean up event listener when popup is removed
+        const observer = new MutationObserver(function(mutations) {
+            mutations.forEach(function(mutation) {
+                mutation.removedNodes.forEach(function(node) {
+                    if (node === popupContainer) {
+                        document.removeEventListener('click', closeDropdown);
+                        observer.disconnect();
+                    }
+                });
+            });
+        });
+        
+        observer.observe(document.body, { childList: true });
     }
-    
-    // Close dropdown when clicking outside
-    document.addEventListener('click', function(e) {
-        if (overflowMenuDropdown && !overflowMenuContainer.contains(e.target)) {
-            overflowMenuDropdown.style.display = 'none';
-        }
-    });
     
     // Function to check and manage overflow
     const manageOverflow = () => {
-        if (!navContainer || !overflowMenuContainer) return;
+        if (!navContainer || !overflowMenuContainer || !overflowMenuDropdown) return;
         
         const buttons = Array.from(navContainer.querySelectorAll('.section-nav-btn'));
         if (buttons.length === 0) return;
@@ -691,6 +709,7 @@ function setupSectionNavigation(popupContainer) {
             btn.style.display = '';
         });
         overflowMenuContainer.style.display = 'none';
+        overflowMenuDropdown.style.display = 'none';
         
         // Calculate how many buttons fit
         for (let i = 0; i < buttons.length; i++) {
@@ -735,6 +754,7 @@ function setupSectionNavigation(popupContainer) {
                     font-size: 12px;
                     font-weight: 500;
                     color: #2b2b2b;
+                    user-select: none;
                 `;
                 
                 menuItem.addEventListener('mouseenter', function() {
@@ -745,7 +765,8 @@ function setupSectionNavigation(popupContainer) {
                     this.style.backgroundColor = 'transparent';
                 });
                 
-                menuItem.addEventListener('click', function() {
+                menuItem.addEventListener('click', function(e) {
+                    e.stopPropagation();
                     handleSectionClick(sectionId);
                 });
                 
@@ -754,13 +775,31 @@ function setupSectionNavigation(popupContainer) {
         }
     };
     
-    // Initial check
-    setTimeout(manageOverflow, 100);
+    // Initial check with multiple attempts to ensure DOM is ready
+    setTimeout(manageOverflow, 50);
+    setTimeout(manageOverflow, 200);
+    setTimeout(manageOverflow, 500);
     
     // Re-check on window resize
     let resizeTimeout;
-    window.addEventListener('resize', function() {
+    const handleResize = function() {
         clearTimeout(resizeTimeout);
         resizeTimeout = setTimeout(manageOverflow, 100);
+    };
+    
+    window.addEventListener('resize', handleResize);
+    
+    // Clean up resize listener when popup is removed
+    const observer = new MutationObserver(function(mutations) {
+        mutations.forEach(function(mutation) {
+            mutation.removedNodes.forEach(function(node) {
+                if (node === popupContainer) {
+                    window.removeEventListener('resize', handleResize);
+                    observer.disconnect();
+                }
+            });
+        });
     });
+    
+    observer.observe(document.body, { childList: true });
 }
