@@ -225,6 +225,10 @@ function categorizeFields(fields) {
 
 function generateFieldListHtml(fields, fieldValues, fieldMetadata) {
     const categories = categorizeFields(fields);
+    
+    // Store available sections globally for navigation buttons
+    window.entityInfoAvailableSections = Object.keys(categories).filter(key => categories[key].length > 0);
+    
     const categoryLabels = {
         'TextFields': 'Text Fields',
         'ChoiceFields': 'Choice Fields',
@@ -358,11 +362,11 @@ function appendEntityInfoPopupToBody(entityName, recordId, pluralName, fieldList
                 <div style="white-space: nowrap; flex: 1;"><strong>Record ID:</strong> ${recordId}</div>
             </div>
         </div>
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding: 0 20px; gap: 15px; flex-wrap: wrap;">
-            <div id="section-navigation" style="display: flex; gap: 8px; flex-wrap: wrap; flex: 1;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding: 0 20px; gap: 15px;">
+            <div id="section-navigation" style="display: flex; flex: 1; min-width: 0;">
                 ${sectionNavHtml}
             </div>
-            <div style="font-size: 13px; color: #666; font-style: italic; background-color: #f9f9f9; padding: 8px 12px; border-radius: 5px; border: 1px solid #ddd; white-space: nowrap;">
+            <div style="font-size: 13px; color: #666; font-style: italic; background-color: #f9f9f9; padding: 8px 12px; border-radius: 5px; border: 1px solid #ddd; white-space: nowrap; flex-shrink: 0;">
                 <strong>Note:</strong> Click on any field to copy its information
             </div>
         </div>
@@ -494,13 +498,43 @@ function generateSectionNavigationButtons() {
         'OtherFields': 'Other'
     };
     
-    let buttonsHtml = '';
+    // Only show buttons for sections that exist
+    const availableSections = window.entityInfoAvailableSections || [];
     
-    Object.keys(categoryLabels).forEach(categoryKey => {
-        buttonsHtml += `
+    let buttonsHtml = '<div class="nav-buttons-container" style="display: flex; gap: 8px; flex: 1; align-items: center; overflow: hidden;">';
+    
+    availableSections.forEach(categoryKey => {
+        if (categoryLabels[categoryKey]) {
+            buttonsHtml += `
+                <button 
+                    class="section-nav-btn" 
+                    data-section="${categoryKey}"
+                    style="
+                        padding: 6px 12px;
+                        background-color: #2b2b2b;
+                        color: white;
+                        border: none;
+                        border-radius: 5px;
+                        font-size: 12px;
+                        font-weight: 500;
+                        cursor: pointer;
+                        transition: all 0.2s ease;
+                        white-space: nowrap;
+                        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+                        flex-shrink: 0;
+                    "
+                >
+                    ${categoryLabels[categoryKey]}
+                </button>
+            `;
+        }
+    });
+    
+    // Add overflow menu button
+    buttonsHtml += `
+        <div class="overflow-menu-container" style="position: relative; flex-shrink: 0; display: none;">
             <button 
-                class="section-nav-btn" 
-                data-section="${categoryKey}"
+                class="overflow-menu-btn"
                 style="
                     padding: 6px 12px;
                     background-color: #2b2b2b;
@@ -513,21 +547,78 @@ function generateSectionNavigationButtons() {
                     transition: all 0.2s ease;
                     white-space: nowrap;
                     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+                    display: flex;
+                    align-items: center;
+                    gap: 4px;
                 "
             >
-                ${categoryLabels[categoryKey]}
+                <span>More</span>
+                <span style="font-size: 16px;">⋯</span>
             </button>
-        `;
-    });
+            <div class="overflow-menu-dropdown" style="
+                display: none;
+                position: absolute;
+                top: 100%;
+                right: 0;
+                margin-top: 5px;
+                background-color: white;
+                border: 2px solid #2b2b2b;
+                border-radius: 5px;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+                z-index: 10000;
+                min-width: 150px;
+            "></div>
+        </div>
+    `;
+    
+    buttonsHtml += '</div>';
     
     return buttonsHtml;
 }
 
 function setupSectionNavigation(popupContainer) {
     const scrollSection = popupContainer.querySelector('.scroll-section');
-    const navButtons = popupContainer.querySelectorAll('.section-nav-btn');
+    const navContainer = popupContainer.querySelector('.nav-buttons-container');
+    const overflowMenuContainer = popupContainer.querySelector('.overflow-menu-container');
+    const overflowMenuBtn = popupContainer.querySelector('.overflow-menu-btn');
+    const overflowMenuDropdown = popupContainer.querySelector('.overflow-menu-dropdown');
     
-    navButtons.forEach(button => {
+    // Function to handle button click and scroll to section
+    const handleSectionClick = (sectionId) => {
+        const targetSection = popupContainer.querySelector(`#section-${sectionId}`);
+        
+        if (targetSection) {
+            // Calculate the position relative to the scroll container
+            const scrollContainer = scrollSection;
+            const targetPosition = targetSection.offsetTop - scrollContainer.offsetTop - 10; // 10px offset for better visibility
+            
+            // Smooth scroll to the section
+            scrollContainer.scrollTo({
+                top: targetPosition,
+                behavior: 'smooth'
+            });
+            
+            // Visual feedback - highlight the section briefly
+            const originalBg = targetSection.style.backgroundColor;
+            targetSection.style.backgroundColor = '#e6f3ff';
+            targetSection.style.transition = 'background-color 0.3s ease';
+            
+            setTimeout(() => {
+                targetSection.style.backgroundColor = originalBg;
+                setTimeout(() => {
+                    targetSection.style.transition = '';
+                }, 300);
+            }, 600);
+            
+            // Close overflow menu if open
+            if (overflowMenuDropdown) {
+                overflowMenuDropdown.style.display = 'none';
+            }
+        }
+    };
+    
+    // Setup navigation buttons
+    const setupButton = (button) => {
         // Add hover effects
         button.addEventListener('mouseenter', function() {
             this.style.backgroundColor = '#0078d4';
@@ -548,31 +639,128 @@ function setupSectionNavigation(popupContainer) {
         // Add click handler for scrolling
         button.addEventListener('click', function() {
             const sectionId = this.getAttribute('data-section');
-            const targetSection = popupContainer.querySelector(`#section-${sectionId}`);
+            handleSectionClick(sectionId);
+        });
+    };
+    
+    const navButtons = popupContainer.querySelectorAll('.section-nav-btn');
+    navButtons.forEach(setupButton);
+    
+    // Setup overflow menu button
+    if (overflowMenuBtn) {
+        overflowMenuBtn.addEventListener('mouseenter', function() {
+            this.style.backgroundColor = '#0078d4';
+            this.style.transform = 'translateY(-2px)';
+            this.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.2)';
+        });
+        
+        overflowMenuBtn.addEventListener('mouseleave', function() {
+            this.style.backgroundColor = '#2b2b2b';
+            this.style.transform = 'translateY(0)';
+            this.style.boxShadow = '0 2px 4px rgba(0, 0, 0, 0.1)';
+        });
+        
+        overflowMenuBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const isVisible = overflowMenuDropdown.style.display === 'block';
+            overflowMenuDropdown.style.display = isVisible ? 'none' : 'block';
+        });
+    }
+    
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function(e) {
+        if (overflowMenuDropdown && !overflowMenuContainer.contains(e.target)) {
+            overflowMenuDropdown.style.display = 'none';
+        }
+    });
+    
+    // Function to check and manage overflow
+    const manageOverflow = () => {
+        if (!navContainer || !overflowMenuContainer) return;
+        
+        const buttons = Array.from(navContainer.querySelectorAll('.section-nav-btn'));
+        if (buttons.length === 0) return;
+        
+        const containerWidth = navContainer.offsetWidth;
+        const overflowBtnWidth = 80; // Approximate width of "More" button
+        let totalWidth = overflowBtnWidth; // Start with space for overflow button
+        let visibleCount = 0;
+        
+        // Reset all buttons to visible first
+        buttons.forEach(btn => {
+            btn.style.display = '';
+        });
+        overflowMenuContainer.style.display = 'none';
+        
+        // Calculate how many buttons fit
+        for (let i = 0; i < buttons.length; i++) {
+            totalWidth += buttons[i].offsetWidth + 8; // 8px gap
+            if (totalWidth <= containerWidth) {
+                visibleCount++;
+            } else {
+                break;
+            }
+        }
+        
+        // If not all buttons fit, show overflow menu
+        if (visibleCount < buttons.length) {
+            overflowMenuContainer.style.display = 'block';
             
-            if (targetSection) {
-                // Calculate the position relative to the scroll container
-                const scrollContainer = scrollSection;
-                const targetPosition = targetSection.offsetTop - scrollContainer.offsetTop - 10; // 10px offset for better visibility
+            // Hide buttons that don't fit
+            const hiddenButtons = buttons.slice(visibleCount);
+            hiddenButtons.forEach(btn => btn.style.display = 'none');
+            
+            // Populate overflow menu
+            const categoryLabels = {
+                'TextFields': 'Text Fields',
+                'ChoiceFields': 'Choice Fields',
+                'NumberFields': 'Number Fields',
+                'DateTimeFields': 'Date & Time',
+                'LookupFields': 'Lookup Fields',
+                'FileMediaFields': 'File & Media',
+                'ComputedFields': 'Computed',
+                'OtherFields': 'Other'
+            };
+            
+            overflowMenuDropdown.innerHTML = '';
+            hiddenButtons.forEach(btn => {
+                const sectionId = btn.getAttribute('data-section');
+                const menuItem = document.createElement('div');
+                menuItem.className = 'overflow-menu-item';
+                menuItem.textContent = categoryLabels[sectionId] || sectionId;
+                menuItem.style.cssText = `
+                    padding: 10px 15px;
+                    cursor: pointer;
+                    transition: background-color 0.2s ease;
+                    font-size: 12px;
+                    font-weight: 500;
+                    color: #2b2b2b;
+                `;
                 
-                // Smooth scroll to the section
-                scrollContainer.scrollTo({
-                    top: targetPosition,
-                    behavior: 'smooth'
+                menuItem.addEventListener('mouseenter', function() {
+                    this.style.backgroundColor = '#e8e8e8';
                 });
                 
-                // Visual feedback - highlight the section briefly
-                const originalBg = targetSection.style.backgroundColor;
-                targetSection.style.backgroundColor = '#e6f3ff';
-                targetSection.style.transition = 'background-color 0.3s ease';
+                menuItem.addEventListener('mouseleave', function() {
+                    this.style.backgroundColor = 'transparent';
+                });
                 
-                setTimeout(() => {
-                    targetSection.style.backgroundColor = originalBg;
-                    setTimeout(() => {
-                        targetSection.style.transition = '';
-                    }, 300);
-                }, 600);
-            }
-        });
+                menuItem.addEventListener('click', function() {
+                    handleSectionClick(sectionId);
+                });
+                
+                overflowMenuDropdown.appendChild(menuItem);
+            });
+        }
+    };
+    
+    // Initial check
+    setTimeout(manageOverflow, 100);
+    
+    // Re-check on window resize
+    let resizeTimeout;
+    window.addEventListener('resize', function() {
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(manageOverflow, 100);
     });
 }
