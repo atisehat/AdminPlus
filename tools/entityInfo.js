@@ -591,7 +591,7 @@ function setupSectionNavigation(popupContainer) {
         if (targetSection) {
             // Calculate the position relative to the scroll container
             const scrollContainer = scrollSection;
-            const targetPosition = targetSection.offsetTop - scrollContainer.offsetTop - 10; // 10px offset for better visibility
+            const targetPosition = targetSection.offsetTop - scrollContainer.offsetTop - 80; // 80px offset for better visibility
             
             // Smooth scroll to the section
             scrollContainer.scrollTo({
