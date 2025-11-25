@@ -362,7 +362,7 @@ function appendEntityInfoPopupToBody(entityName, recordId, pluralName, fieldList
                 <div style="white-space: nowrap; flex: 1;"><strong>Record ID:</strong> ${recordId}</div>
             </div>
         </div>
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding: 0 20px; gap: 15px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding: 0 20px; gap: 15px; position: relative; z-index: 100;">
             <div id="section-navigation" style="display: flex; flex: 1; min-width: 0;">
                 ${sectionNavHtml}
             </div>
@@ -370,7 +370,7 @@ function appendEntityInfoPopupToBody(entityName, recordId, pluralName, fieldList
                 <strong>Note:</strong> Click on any field to copy its information
             </div>
         </div>
-        <div class="scroll-section" style="padding: 0 2px 20px 20px; overflow-y: auto; max-height: calc(90vh - 235px);">
+        <div class="scroll-section" style="padding: 0 2px 20px 20px; overflow-y: auto; max-height: calc(90vh - 235px); position: relative; z-index: 1;">
             ${fieldListHtml}
         </div>
     `;
@@ -532,7 +532,7 @@ function generateSectionNavigationButtons() {
     
     // Add overflow menu button with different styling
     buttonsHtml += `
-        <div class="overflow-menu-container" style="position: relative; flex-shrink: 0; display: none;">
+        <div class="overflow-menu-container" style="position: relative; flex-shrink: 0; display: none; z-index: 10001;">
             <button 
                 class="overflow-menu-btn"
                 type="button"
@@ -545,7 +545,7 @@ function generateSectionNavigationButtons() {
                     font-size: 13px;
                     font-weight: 600;
                     cursor: pointer;
-                    transition: all 0.2s ease;
+                    transition: background 0.2s ease, box-shadow 0.2s ease;
                     white-space: nowrap;
                     box-shadow: 0 3px 6px rgba(102, 126, 234, 0.3);
                     display: flex;
@@ -565,8 +565,8 @@ function generateSectionNavigationButtons() {
                 background-color: white;
                 border: 2px solid #667eea;
                 border-radius: 5px;
-                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-                z-index: 10000;
+                box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+                z-index: 999999;
                 min-width: 150px;
             "></div>
         </div>
@@ -651,22 +651,20 @@ function setupSectionNavigation(popupContainer) {
     if (overflowMenuBtn && overflowMenuDropdown) {
         overflowMenuBtn.addEventListener('mouseenter', function() {
             this.style.background = 'linear-gradient(135deg, #764ba2 0%, #667eea 100%)';
-            this.style.transform = 'translateY(-2px)';
             this.style.boxShadow = '0 5px 10px rgba(102, 126, 234, 0.4)';
         });
         
         overflowMenuBtn.addEventListener('mouseleave', function() {
             this.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
-            this.style.transform = 'translateY(0)';
             this.style.boxShadow = '0 3px 6px rgba(102, 126, 234, 0.3)';
         });
         
         overflowMenuBtn.addEventListener('mousedown', function() {
-            this.style.transform = 'scale(0.95)';
+            this.style.transform = 'scale(0.98)';
         });
         
         overflowMenuBtn.addEventListener('mouseup', function() {
-            this.style.transform = 'translateY(-2px)';
+            this.style.transform = 'scale(1)';
         });
         
         overflowMenuBtn.addEventListener('click', function(e) {
