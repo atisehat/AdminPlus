@@ -59,7 +59,6 @@ async function fetchEntityFields() {
         appendEntityInfoPopupToBody(entityName, cleanRecordId, pluralName, fieldListHtml);
         
     } catch (error) {
-        console.error('Error fetching entity fields:', error);
         alert(`Error: ${error.message}`);
     }
 }
@@ -386,24 +385,6 @@ function appendEntityInfoPopupToBody(entityName, recordId, pluralName, fieldList
     
     // Append to body
     document.body.appendChild(popupContainer);
-    
-    // Fix positioning to ensure consistency across different D365 systems
-    // Remove transform-based centering and use explicit pixel positioning
-    popupContainer.style.position = 'fixed';
-    popupContainer.style.transform = 'none';
-    
-    // Calculate center position based on viewport
-    const viewportWidth = window.innerWidth;
-    const viewportHeight = window.innerHeight;
-    const popupWidth = popupContainer.offsetWidth;
-    const popupHeight = popupContainer.offsetHeight;
-    
-    // Center the popup
-    const leftPosition = (viewportWidth - popupWidth) / 2;
-    const topPosition = (viewportHeight - popupHeight) / 2;
-    
-    popupContainer.style.left = Math.max(0, leftPosition) + 'px';
-    popupContainer.style.top = Math.max(0, topPosition) + 'px';
     
     // Setup close button functionality
     const closeButton = popupContainer.querySelector('.close-button');
