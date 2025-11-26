@@ -11,7 +11,7 @@ async function showEntityAutomations() {
         
         // Show loading dialog
         if (typeof showLoadingDialog === 'function') {
-            showLoadingDialog('Loading entity automations...');
+            showLoadingDialog('Loading table automations...');
         }
         
         // Fetch all automation data in parallel
@@ -45,7 +45,7 @@ async function showEntityAutomations() {
             hideLoadingDialog();
         }
         if (typeof showToast === 'function') {
-            showToast('Error loading entity automations: ' + error.message, 'error');
+            showToast('Error loading table automations: ' + error.message, 'error');
         }
     }
 }
@@ -334,7 +334,7 @@ function createAutomationsPopup(entityName, workflows, dialogs, businessRules, b
     
     popupContainer.innerHTML = `
         <div class="commonPopup-header" style="background-color: #2b2b2b; position: relative; cursor: move; border-radius: 9px 9px 0 0; margin: 0; border-bottom: 2px solid #1a1a1a;">
-            <span style="color: white;">Entity Automations & Customizations</span>
+            <span style="color: white;">Table Automations & Customizations</span>
             <span class="close-button" style="position: absolute; right: 0; top: 0; bottom: 0; width: 45px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 20px; color: white; font-weight: bold; transition: background-color 0.2s ease; border-radius: 0 9px 0 0;">&times;</span>
         </div>
         <div class="popup-body" style="padding: 20px;">
@@ -373,11 +373,14 @@ function createAutomationsPopup(entityName, workflows, dialogs, businessRules, b
 function generateAutomationsHtml(workflows, dialogs, businessRules, businessProcessFlows, flows, customApis, customActions) {
     let html = '';
     
-    // Workflows Section
-    html += generateSectionHtml('Workflows (Classic)', workflows, 'workflow', '⚙️');
+    // Combine Workflows, Dialogs, and Custom Actions into one section
+    const workflowItems = [
+        ...workflows.map(w => ({ ...w, itemType: 'Workflow' })),
+        ...dialogs.map(d => ({ ...d, itemType: 'Dialog' })),
+        ...customActions.map(a => ({ ...a, itemType: 'Custom Action' }))
+    ].sort((a, b) => (a.name || '').localeCompare(b.name || ''));
     
-    // Dialogs Section
-    html += generateSectionHtml('Dialogs', dialogs, 'dialog', '💬');
+    html += generateSectionHtml('Workflows (Classic) / Dialogs / Custom Actions', workflowItems, 'workflow', '⚙️');
     
     // Business Rules Section
     html += generateSectionHtml('Business Rules', businessRules, 'businessrule', '📋');
@@ -390,9 +393,6 @@ function generateAutomationsHtml(workflows, dialogs, businessRules, businessProc
     
     // Custom APIs Section
     html += generateSectionHtml('Custom APIs', customApis, 'customapi', '🔌');
-    
-    // Custom Actions Section
-    html += generateSectionHtml('Custom Actions', customActions, 'action', '🎯');
     
     if (html === '') {
         html = '<div style="text-align: center; padding: 40px; color: #666;">No automations or customizations found for this table.</div>';
@@ -418,7 +418,11 @@ function generateSectionHtml(title, items, type, icon) {
     `;
     
     items.forEach(item => {
-        const name = item.name || item.displayname || item.uniquename || 'Unnamed';
+        const baseName = item.name || item.displayname || item.uniquename || 'Unnamed';
+        // Add item type label for combined workflow section
+        const itemTypeLabel = item.itemType ? ` (${item.itemType})` : '';
+        const name = baseName + itemTypeLabel;
+        
         const owner = getOwnerName(item);
         // Don't show solutions for Business Rules
         const solutionDropdown = type === 'businessrule' ? '' : getSolutionDropdown(item);
@@ -608,12 +612,8 @@ function getTypeInfo(item, type) {
 function getAdditionalInfo(item, type) {
     let html = '';
     
-    // Show unique name for custom APIs and actions
+    // Show unique name for custom APIs only (not for custom actions)
     if (type === 'customapi' && item.uniquename) {
-        html += `<div style="margin-top: 8px; font-size: 12px; color: #666;"><strong>Unique Name:</strong> ${item.uniquename}</div>`;
-    }
-    
-    if (type === 'action' && item.uniquename) {
         html += `<div style="margin-top: 8px; font-size: 12px; color: #666;"><strong>Unique Name:</strong> ${item.uniquename}</div>`;
     }
     
