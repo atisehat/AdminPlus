@@ -24,7 +24,11 @@ async function showEntityAutomations() {
         ]);
         
         // Enrich all items with owner information if missing
-        await enrichWithOwnerNames([...workflows, ...businessRules, ...flows, ...customApis, ...customActions], clientUrl);
+        const allItems = [...workflows, ...businessRules, ...flows, ...customApis, ...customActions];
+        await enrichWithOwnerNames(allItems, clientUrl);
+        
+        // Enrich all items with solution information
+        await enrichWithSolutionInfo(allItems, clientUrl);
         
         // Hide loading dialog
         if (typeof hideLoadingDialog === 'function') {
@@ -186,6 +190,66 @@ async function enrichWithOwnerNames(items, clientUrl) {
         }
         item.ownerid.fullname = ownerMap[item._ownerid_value] || 'Unknown Owner';
     });
+}
+
+// Enrich items with solution information
+async function enrichWithSolutionInfo(items, clientUrl) {
+    // Map of component types for different item types
+    const componentTypeMap = {
+        workflow: 29,      // Workflow
+        businessrule: 29,  // Business Rule (also type 29)
+        flow: 29,          // Flow (also type 29)
+        customapi: 10380,  // Custom API
+        action: 29         // Custom Action (also type 29)
+    };
+    
+    const solutionPromises = items.map(async item => {
+        try {
+            let objectId;
+            let componentType;
+            
+            // Determine the object ID and component type based on item type
+            if (item.workflowid) {
+                objectId = item.workflowid;
+                componentType = 29; // Workflow/Business Rule/Flow/Action
+            } else if (item.customapiid) {
+                objectId = item.customapiid;
+                componentType = 10380; // Custom API
+            } else {
+                return;
+            }
+            
+            // Fetch solution components for this item
+            const response = await fetch(
+                `${clientUrl}/api/data/v9.2/solutioncomponents?$select=solutioncomponentid&$expand=solutionid($select=friendlyname,uniquename,ismanaged)&$filter=objectid eq ${objectId} and componenttype eq ${componentType}`
+            );
+            
+            if (!response.ok) return;
+            
+            const data = await response.json();
+            
+            if (data.value && data.value.length > 0) {
+                // Filter out "Default Solution" and "Common Data Services Default Solution"
+                const solutions = data.value
+                    .filter(sc => sc.solutionid && 
+                           sc.solutionid.uniquename !== 'Default' && 
+                           sc.solutionid.uniquename !== 'Active')
+                    .map(sc => ({
+                        name: sc.solutionid.friendlyname || sc.solutionid.uniquename,
+                        uniquename: sc.solutionid.uniquename,
+                        isManaged: sc.solutionid.ismanaged
+                    }));
+                
+                item.solutions = solutions;
+            } else {
+                item.solutions = [];
+            }
+        } catch (error) {
+            item.solutions = [];
+        }
+    });
+    
+    await Promise.all(solutionPromises);
 }
 
 // Fetch Custom Actions
@@ -435,14 +499,34 @@ function getTypeInfo(item, type) {
 
 // Get additional information
 function getAdditionalInfo(item, type) {
+    let html = '';
+    
+    // Show unique name for custom APIs and actions
     if (type === 'customapi' && item.uniquename) {
-        return `<div style="margin-top: 8px; font-size: 12px; color: #666;"><strong>Unique Name:</strong> ${item.uniquename}</div>`;
+        html += `<div style="margin-top: 8px; font-size: 12px; color: #666;"><strong>Unique Name:</strong> ${item.uniquename}</div>`;
     }
     
     if (type === 'action' && item.uniquename) {
-        return `<div style="margin-top: 8px; font-size: 12px; color: #666;"><strong>Unique Name:</strong> ${item.uniquename}</div>`;
+        html += `<div style="margin-top: 8px; font-size: 12px; color: #666;"><strong>Unique Name:</strong> ${item.uniquename}</div>`;
     }
     
-    return '';
+    // Show solution information
+    if (item.solutions && item.solutions.length > 0) {
+        const solutionBadges = item.solutions.map(sol => {
+            const managedBadge = sol.isManaged 
+                ? '<span style="background-color: #3b82f6; color: white; padding: 2px 6px; border-radius: 3px; font-size: 10px; margin-left: 4px;">Managed</span>'
+                : '<span style="background-color: #10b981; color: white; padding: 2px 6px; border-radius: 3px; font-size: 10px; margin-left: 4px;">Unmanaged</span>';
+            return `<span style="display: inline-block; background-color: #f3f4f6; padding: 4px 8px; border-radius: 4px; margin-right: 6px; margin-bottom: 4px; font-size: 11px;">${sol.name}${managedBadge}</span>`;
+        }).join('');
+        
+        html += `<div style="margin-top: 8px; font-size: 12px; color: #666;">
+            <strong>Solutions:</strong><br/>
+            <div style="margin-top: 4px;">${solutionBadges}</div>
+        </div>`;
+    } else if (item.solutions && item.solutions.length === 0) {
+        html += `<div style="margin-top: 8px; font-size: 12px; color: #999; font-style: italic;">Not in any custom solution</div>`;
+    }
+    
+    return html;
 }
 
