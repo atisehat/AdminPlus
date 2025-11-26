@@ -419,60 +419,37 @@ function getSolutionDropdown(item) {
         return '';
     }
     
-    if (item.solutions.length === 0) {
-        return `<div style="font-size: 12px; color: #666; display: flex; align-items: center; gap: 6px; min-width: 200px;">
-            <strong>Solution:</strong> 
-            <div style="padding: 3px 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 11px; background-color: #f9f9f9; color: #999; font-style: italic; flex: 1; min-width: 130px;">
-                None
-            </div>
-        </div>`;
-    }
-    
-    if (item.solutions.length === 1) {
-        // Single solution - show in styled box
-        const sol = item.solutions[0];
-        const managedLabel = sol.isManaged ? ' 🔒' : ' 🔓';
-        const bgColor = sol.isManaged ? '#e3f2fd' : '#e8f5e9';
-        const borderColor = sol.isManaged ? '#90caf9' : '#81c784';
-        
-        return `<div style="font-size: 12px; color: #666; display: flex; align-items: center; gap: 6px; min-width: 200px;">
-            <strong>Solution:</strong>
-            <div style="padding: 3px 8px; border: 1px solid ${borderColor}; border-radius: 4px; font-size: 11px; background-color: ${bgColor}; color: #333; flex: 1; min-width: 130px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${sol.name}${managedLabel}">
-                ${sol.name}${managedLabel}
-            </div>
-        </div>`;
-    }
-    
-    // Multiple solutions - show as styled dropdown list
     const itemId = item.workflowid || item.customapiid || Math.random().toString(36).substr(2, 9);
-    const firstSolution = item.solutions[0];
-    const managedIcon = firstSolution.isManaged ? ' 🔒' : ' 🔓';
-    const bgColor = firstSolution.isManaged ? '#e3f2fd' : '#e8f5e9';
-    const borderColor = firstSolution.isManaged ? '#90caf9' : '#81c784';
+    const solutionCount = item.solutions.length;
     
-    const optionsList = item.solutions.map(sol => {
+    if (solutionCount === 0) {
+        return `<div style="font-size: 12px; color: #666;">
+            <div style="display: flex; align-items: center; cursor: pointer; padding: 4px 0;" onclick="event.stopPropagation(); toggleSolutionList('${itemId}')">
+                <span id="arrow-${itemId}" style="display: inline-block; margin-right: 6px; transition: transform 0.2s; font-size: 10px;">▶</span>
+                <strong>Solutions (0)</strong>
+            </div>
+            <div id="solutions-${itemId}" style="display: none; margin-top: 4px; padding-left: 16px; color: #999; font-style: italic; font-size: 11px;">
+                Not in any solution
+            </div>
+        </div>`;
+    }
+    
+    // Create solution list (vertical list format)
+    const solutionList = item.solutions.map(sol => {
         const icon = sol.isManaged ? '🔒' : '🔓';
-        return `<div style="padding: 4px 8px; cursor: pointer; font-size: 11px;" 
-                     onmouseover="this.style.backgroundColor='#f0f0f0'" 
-                     onmouseout="this.style.backgroundColor='white'"
-                     onclick="event.stopPropagation(); selectSolution('${itemId}', '${sol.name}', ${sol.isManaged})">
+        const bgColor = sol.isManaged ? '#e3f2fd' : '#e8f5e9';
+        return `<div style="padding: 4px 8px; margin-bottom: 4px; background-color: ${bgColor}; border-radius: 3px; font-size: 11px;">
             ${sol.name} ${icon}
         </div>`;
     }).join('');
     
-    return `<div style="font-size: 12px; color: #666; display: flex; align-items: center; gap: 6px; min-width: 200px; position: relative;">
-        <strong>Solution:</strong>
-        <div style="flex: 1; min-width: 130px; position: relative;">
-            <div id="solution-display-${itemId}" 
-                 onclick="event.stopPropagation(); toggleSolutionDropdown('${itemId}')" 
-                 style="padding: 3px 8px; border: 1px solid ${borderColor}; border-radius: 4px; font-size: 11px; background-color: ${bgColor}; color: #333; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; justify-content: space-between; align-items: center;">
-                <span id="solution-text-${itemId}">${firstSolution.name}${managedIcon}</span>
-                <span style="margin-left: 4px; font-size: 9px;">▼</span>
-            </div>
-            <div id="solution-options-${itemId}" 
-                 style="display: none; position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid #ccc; border-radius: 4px; margin-top: 2px; box-shadow: 0 2px 8px rgba(0,0,0,0.15); z-index: 1000; max-height: 200px; overflow-y: auto;">
-                ${optionsList}
-            </div>
+    return `<div style="font-size: 12px; color: #666;">
+        <div style="display: flex; align-items: center; cursor: pointer; padding: 4px 0;" onclick="event.stopPropagation(); toggleSolutionList('${itemId}')">
+            <span id="arrow-${itemId}" style="display: inline-block; margin-right: 6px; transition: transform 0.2s; font-size: 10px;">▶</span>
+            <strong>Solutions (${solutionCount})</strong>
+        </div>
+        <div id="solutions-${itemId}" style="display: none; margin-top: 4px; padding-left: 16px;">
+            ${solutionList}
         </div>
     </div>`;
 }
@@ -579,50 +556,17 @@ function getAdditionalInfo(item, type) {
     return html;
 }
 
-// Toggle custom solution dropdown
-function toggleSolutionDropdown(itemId) {
-    const dropdown = document.getElementById(`solution-options-${itemId}`);
+// Toggle solution list visibility
+function toggleSolutionList(itemId) {
+    const solutionsDiv = document.getElementById(`solutions-${itemId}`);
+    const arrow = document.getElementById(`arrow-${itemId}`);
     
-    // Close all other dropdowns first
-    document.querySelectorAll('[id^="solution-options-"]').forEach(el => {
-        if (el.id !== `solution-options-${itemId}`) {
-            el.style.display = 'none';
-        }
-    });
-    
-    if (dropdown.style.display === 'none') {
-        dropdown.style.display = 'block';
+    if (solutionsDiv.style.display === 'none') {
+        solutionsDiv.style.display = 'block';
+        arrow.style.transform = 'rotate(90deg)';
     } else {
-        dropdown.style.display = 'none';
+        solutionsDiv.style.display = 'none';
+        arrow.style.transform = 'rotate(0deg)';
     }
 }
-
-// Select a solution from the dropdown
-function selectSolution(itemId, solutionName, isManaged) {
-    const managedIcon = isManaged ? ' 🔒' : ' 🔓';
-    const textElement = document.getElementById(`solution-text-${itemId}`);
-    const displayElement = document.getElementById(`solution-display-${itemId}`);
-    const dropdown = document.getElementById(`solution-options-${itemId}`);
-    
-    // Update the displayed text
-    textElement.textContent = solutionName + managedIcon;
-    
-    // Update colors based on managed status
-    const bgColor = isManaged ? '#e3f2fd' : '#e8f5e9';
-    const borderColor = isManaged ? '#90caf9' : '#81c784';
-    displayElement.style.backgroundColor = bgColor;
-    displayElement.style.borderColor = borderColor;
-    
-    // Close the dropdown
-    dropdown.style.display = 'none';
-}
-
-// Close dropdowns when clicking outside
-document.addEventListener('click', function(event) {
-    if (!event.target.closest('[id^="solution-display-"]')) {
-        document.querySelectorAll('[id^="solution-options-"]').forEach(el => {
-            el.style.display = 'none';
-        });
-    }
-});
 
