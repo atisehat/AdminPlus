@@ -44,9 +44,17 @@ async function showEntityAutomations() {
 // Fetch Workflows (Classic Workflows)
 async function fetchWorkflows(entityName, clientUrl) {
     try {
-        const response = await fetch(
+        // Try with expand first
+        let response = await fetch(
             `${clientUrl}/api/data/v9.2/workflows?$select=name,category,statecode,statuscode,primaryentity,type,workflowid,parentworkflowid,_ownerid_value&$expand=ownerid($select=fullname)&$filter=primaryentity eq '${entityName}' and category eq 0&$orderby=name asc`
         );
+        
+        // If expand fails, try without it
+        if (!response.ok) {
+            response = await fetch(
+                `${clientUrl}/api/data/v9.2/workflows?$select=name,category,statecode,statuscode,primaryentity,type,workflowid,parentworkflowid,_ownerid_value&$filter=primaryentity eq '${entityName}' and category eq 0&$orderby=name asc`
+            );
+        }
         
         if (!response.ok) return [];
         const data = await response.json();
@@ -67,9 +75,15 @@ async function fetchWorkflows(entityName, clientUrl) {
 // Fetch Business Rules
 async function fetchBusinessRules(entityName, clientUrl) {
     try {
-        const response = await fetch(
+        let response = await fetch(
             `${clientUrl}/api/data/v9.2/workflows?$select=name,statecode,statuscode,primaryentity,workflowid,_ownerid_value&$expand=ownerid($select=fullname)&$filter=primaryentity eq '${entityName}' and category eq 2&$orderby=name asc`
         );
+        
+        if (!response.ok) {
+            response = await fetch(
+                `${clientUrl}/api/data/v9.2/workflows?$select=name,statecode,statuscode,primaryentity,workflowid,_ownerid_value&$filter=primaryentity eq '${entityName}' and category eq 2&$orderby=name asc`
+            );
+        }
         
         if (!response.ok) return [];
         const data = await response.json();
@@ -82,9 +96,15 @@ async function fetchBusinessRules(entityName, clientUrl) {
 // Fetch Flows (Modern Cloud Flows / Power Automate)
 async function fetchFlows(entityName, clientUrl) {
     try {
-        const response = await fetch(
+        let response = await fetch(
             `${clientUrl}/api/data/v9.2/workflows?$select=name,category,statecode,statuscode,primaryentity,type,workflowid,_ownerid_value&$expand=ownerid($select=fullname)&$filter=primaryentity eq '${entityName}' and category eq 5&$orderby=name asc`
         );
+        
+        if (!response.ok) {
+            response = await fetch(
+                `${clientUrl}/api/data/v9.2/workflows?$select=name,category,statecode,statuscode,primaryentity,type,workflowid,_ownerid_value&$filter=primaryentity eq '${entityName}' and category eq 5&$orderby=name asc`
+            );
+        }
         
         if (!response.ok) return [];
         const data = await response.json();
@@ -97,9 +117,15 @@ async function fetchFlows(entityName, clientUrl) {
 // Fetch Custom APIs
 async function fetchCustomApis(entityName, clientUrl) {
     try {
-        const response = await fetch(
+        let response = await fetch(
             `${clientUrl}/api/data/v9.2/customapis?$select=uniquename,displayname,bindingtype,boundentitylogicalname,isfunction,customapiid,_ownerid_value&$expand=ownerid($select=fullname)&$filter=boundentitylogicalname eq '${entityName}'&$orderby=uniquename asc`
         );
+        
+        if (!response.ok) {
+            response = await fetch(
+                `${clientUrl}/api/data/v9.2/customapis?$select=uniquename,displayname,bindingtype,boundentitylogicalname,isfunction,customapiid,_ownerid_value&$filter=boundentitylogicalname eq '${entityName}'&$orderby=uniquename asc`
+            );
+        }
         
         if (!response.ok) return [];
         const data = await response.json();
@@ -112,9 +138,15 @@ async function fetchCustomApis(entityName, clientUrl) {
 // Fetch Custom Actions
 async function fetchCustomActions(entityName, clientUrl) {
     try {
-        const response = await fetch(
+        let response = await fetch(
             `${clientUrl}/api/data/v9.2/workflows?$select=name,uniquename,statecode,statuscode,primaryentity,workflowid,_ownerid_value&$expand=ownerid($select=fullname)&$filter=primaryentity eq '${entityName}' and category eq 3&$orderby=name asc`
         );
+        
+        if (!response.ok) {
+            response = await fetch(
+                `${clientUrl}/api/data/v9.2/workflows?$select=name,uniquename,statecode,statuscode,primaryentity,workflowid,_ownerid_value&$filter=primaryentity eq '${entityName}' and category eq 3&$orderby=name asc`
+            );
+        }
         
         if (!response.ok) return [];
         const data = await response.json();
