@@ -115,12 +115,12 @@ function openPopup() {
   if (!isD365Context()) {
     // Wait a moment for showToast to be available, then show message
     if (typeof showToast === 'function') {
-      showToast('AdminPlus can only be used within Dynamics 365. Please open this tool from within your D365 environment.', 'warning', 4000);
+      showToast('AdminPlus can only run inside Dynamics 365. Please open this tool from within your D365 environment.', 'warning', 4000);
     } else {
       // If showToast not loaded yet, wait and try again
       setTimeout(function() {
         if (typeof showToast === 'function') {
-          showToast('AdminPlus can only be used within Dynamics 365. Please open this tool from within your D365 environment.', 'warning', 4000);
+          showToast('AdminPlus can only run inside Dynamics 365. Please open this tool from within your D365 environment.', 'warning', 4000);
         }
       }, 100);
     }
