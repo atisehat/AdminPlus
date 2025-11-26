@@ -17,7 +17,12 @@ window.adminPlusLogicalNamesActive = window.adminPlusLogicalNamesActive || false
 window.adminPlusOriginalOptionSets = window.adminPlusOriginalOptionSets || {};
 
 // Toggle between logical names and display names
-function renameTabsSectionsFields() {      
+function renameTabsSectionsFields() {
+    // Check if we're on a form page
+    if (!requireFormContext()) {
+        return;
+    }
+    
     try {
         if (!isXrmPageAvailable() || !Xrm.Page.ui || !Xrm.Page.ui.tabs) {
             return;
@@ -724,6 +729,11 @@ function processAndRenameFieldsInFormComponents() {
 
 // Unlock all fields on the form (comprehensive)
 function unlockAllFields() {
+    // Check if we're on a form page
+    if (!requireFormContext()) {
+        return;
+    }
+    
     try {
         if (!isXrmPageAvailable() || !Xrm.Page.ui || !Xrm.Page.ui.controls) {
             return;
@@ -1053,6 +1063,11 @@ function unlockSubgrids() {
 
 // Show all hidden tabs, sections, and controls (including subgrids, quick views, iframes, etc.)
 function showAllTabsAndSections() {
+    // Check if we're on a form page
+    if (!requireFormContext()) {
+        return;
+    }
+    
     try {
         if (!isXrmPageAvailable() || !Xrm.Page.ui) {
             return;

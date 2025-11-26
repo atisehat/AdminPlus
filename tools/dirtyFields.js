@@ -1,5 +1,9 @@
 async function showDirtyFields() {
-    console.log('Dirty Fields: showDirtyFields called');
+    // Check if we're on a form page
+    if (!requireFormContext()) {
+        return;
+    }
+    
     try {
         const entity = Xrm.Page.data.entity;
         const attributes = entity.attributes.get();

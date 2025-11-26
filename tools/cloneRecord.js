@@ -1,16 +1,11 @@
 // Clone Record Tool - Clone current record to a new record (unsaved)
 async function cloneRecord() {
-    console.log('Clone Record: Tool initiated');
+    // Check if we're on a form page
+    if (!requireFormContext()) {
+        return;
+    }
     
     try {
-        // Check if we're on a form
-        if (typeof Xrm === 'undefined' || !Xrm.Page || !Xrm.Page.data || !Xrm.Page.data.entity) {
-            if (typeof showToast === 'function') {
-                showToast('Please open a form to use this tool', 'warning');
-            }
-            return;
-        }
-        
         // Check if this is an existing record (must be saved to clone)
         const entityId = Xrm.Page.data.entity.getId();
         if (!entityId) {
