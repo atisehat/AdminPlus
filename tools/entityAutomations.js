@@ -210,10 +210,11 @@ async function enrichWithSolutionInfo(items, clientUrl) {
             
             // Determine the object ID and component type based on item type
             if (item.workflowid) {
-                objectId = item.workflowid;
+                // Remove braces and convert to lowercase for GUID format
+                objectId = item.workflowid.replace(/[{}]/g, '').toLowerCase();
                 componentType = 29; // Workflow/Business Rule/Flow/Action
             } else if (item.customapiid) {
-                objectId = item.customapiid;
+                objectId = item.customapiid.replace(/[{}]/g, '').toLowerCase();
                 componentType = 10380; // Custom API
             } else {
                 return;
@@ -419,31 +420,60 @@ function getSolutionDropdown(item) {
     }
     
     if (item.solutions.length === 0) {
-        return `<div style="font-size: 12px; color: #666; flex-shrink: 0;">
-            <strong>Solution:</strong> <span style="color: #999; font-style: italic;">None</span>
+        return `<div style="font-size: 12px; color: #666; display: flex; align-items: center; gap: 6px; min-width: 200px;">
+            <strong>Solution:</strong> 
+            <div style="padding: 3px 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 11px; background-color: #f9f9f9; color: #999; font-style: italic; flex: 1; min-width: 130px;">
+                None
+            </div>
         </div>`;
     }
     
     if (item.solutions.length === 1) {
-        // Just show the single solution name, no dropdown needed
+        // Single solution - show in styled box
         const sol = item.solutions[0];
-        const managedLabel = sol.isManaged ? ' (Managed)' : ' (Unmanaged)';
-        return `<div style="font-size: 12px; color: #666; flex-shrink: 0;">
-            <strong>Solution:</strong> ${sol.name}${managedLabel}
+        const managedLabel = sol.isManaged ? ' 🔒' : ' 🔓';
+        const bgColor = sol.isManaged ? '#e3f2fd' : '#e8f5e9';
+        const borderColor = sol.isManaged ? '#90caf9' : '#81c784';
+        
+        return `<div style="font-size: 12px; color: #666; display: flex; align-items: center; gap: 6px; min-width: 200px;">
+            <strong>Solution:</strong>
+            <div style="padding: 3px 8px; border: 1px solid ${borderColor}; border-radius: 4px; font-size: 11px; background-color: ${bgColor}; color: #333; flex: 1; min-width: 130px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${sol.name}${managedLabel}">
+                ${sol.name}${managedLabel}
+            </div>
         </div>`;
     }
     
-    // Multiple solutions - show dropdown
-    const options = item.solutions.map(sol => {
-        const managedLabel = sol.isManaged ? ' (Managed)' : ' (Unmanaged)';
-        return `<option value="${sol.uniquename}">${sol.name}${managedLabel}</option>`;
+    // Multiple solutions - show as styled dropdown list
+    const itemId = item.workflowid || item.customapiid || Math.random().toString(36).substr(2, 9);
+    const firstSolution = item.solutions[0];
+    const managedIcon = firstSolution.isManaged ? ' 🔒' : ' 🔓';
+    const bgColor = firstSolution.isManaged ? '#e3f2fd' : '#e8f5e9';
+    const borderColor = firstSolution.isManaged ? '#90caf9' : '#81c784';
+    
+    const optionsList = item.solutions.map(sol => {
+        const icon = sol.isManaged ? '🔒' : '🔓';
+        return `<div style="padding: 4px 8px; cursor: pointer; font-size: 11px;" 
+                     onmouseover="this.style.backgroundColor='#f0f0f0'" 
+                     onmouseout="this.style.backgroundColor='white'"
+                     onclick="event.stopPropagation(); selectSolution('${itemId}', '${sol.name}', ${sol.isManaged})">
+            ${sol.name} ${icon}
+        </div>`;
     }).join('');
     
-    return `<div style="font-size: 12px; color: #666; display: flex; align-items: center; gap: 6px; flex-shrink: 0;">
+    return `<div style="font-size: 12px; color: #666; display: flex; align-items: center; gap: 6px; min-width: 200px; position: relative;">
         <strong>Solution:</strong>
-        <select onclick="event.stopPropagation();" style="padding: 2px 6px; border: 1px solid #ccc; border-radius: 4px; font-size: 11px; background-color: white; cursor: pointer;">
-            ${options}
-        </select>
+        <div style="flex: 1; min-width: 130px; position: relative;">
+            <div id="solution-display-${itemId}" 
+                 onclick="event.stopPropagation(); toggleSolutionDropdown('${itemId}')" 
+                 style="padding: 3px 8px; border: 1px solid ${borderColor}; border-radius: 4px; font-size: 11px; background-color: ${bgColor}; color: #333; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; justify-content: space-between; align-items: center;">
+                <span id="solution-text-${itemId}">${firstSolution.name}${managedIcon}</span>
+                <span style="margin-left: 4px; font-size: 9px;">▼</span>
+            </div>
+            <div id="solution-options-${itemId}" 
+                 style="display: none; position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid #ccc; border-radius: 4px; margin-top: 2px; box-shadow: 0 2px 8px rgba(0,0,0,0.15); z-index: 1000; max-height: 200px; overflow-y: auto;">
+                ${optionsList}
+            </div>
+        </div>
     </div>`;
 }
 
@@ -548,3 +578,51 @@ function getAdditionalInfo(item, type) {
     
     return html;
 }
+
+// Toggle custom solution dropdown
+function toggleSolutionDropdown(itemId) {
+    const dropdown = document.getElementById(`solution-options-${itemId}`);
+    
+    // Close all other dropdowns first
+    document.querySelectorAll('[id^="solution-options-"]').forEach(el => {
+        if (el.id !== `solution-options-${itemId}`) {
+            el.style.display = 'none';
+        }
+    });
+    
+    if (dropdown.style.display === 'none') {
+        dropdown.style.display = 'block';
+    } else {
+        dropdown.style.display = 'none';
+    }
+}
+
+// Select a solution from the dropdown
+function selectSolution(itemId, solutionName, isManaged) {
+    const managedIcon = isManaged ? ' 🔒' : ' 🔓';
+    const textElement = document.getElementById(`solution-text-${itemId}`);
+    const displayElement = document.getElementById(`solution-display-${itemId}`);
+    const dropdown = document.getElementById(`solution-options-${itemId}`);
+    
+    // Update the displayed text
+    textElement.textContent = solutionName + managedIcon;
+    
+    // Update colors based on managed status
+    const bgColor = isManaged ? '#e3f2fd' : '#e8f5e9';
+    const borderColor = isManaged ? '#90caf9' : '#81c784';
+    displayElement.style.backgroundColor = bgColor;
+    displayElement.style.borderColor = borderColor;
+    
+    // Close the dropdown
+    dropdown.style.display = 'none';
+}
+
+// Close dropdowns when clicking outside
+document.addEventListener('click', function(event) {
+    if (!event.target.closest('[id^="solution-display-"]')) {
+        document.querySelectorAll('[id^="solution-options-"]').forEach(el => {
+            el.style.display = 'none';
+        });
+    }
+});
+
