@@ -30,10 +30,13 @@ async function showEntityAutomations() {
         // Enrich all items with solution information
         await enrichWithSolutionInfo(allItems, clientUrl);
         
-        // Hide loading dialog
+        // Hide loading dialog first
         if (typeof hideLoadingDialog === 'function') {
             hideLoadingDialog();
         }
+        
+        // Small delay to ensure loading dialog is fully removed before showing popup
+        await new Promise(resolve => setTimeout(resolve, 100));
         
         // Create and display popup
         createAutomationsPopup(entityName, workflows, businessRules, flows, customApis, customActions);
@@ -386,10 +389,10 @@ function generateSectionHtml(title, items, type, icon) {
                     </div>
                 </div>
                 <div style="display: flex; justify-content: space-between; align-items: center; gap: 15px; margin-top: 8px; padding-top: 8px; border-top: 1px solid #ddd; flex-wrap: wrap;">
+                    ${solutionDropdown}
                     <div style="font-size: 12px; color: #666; flex-shrink: 0;">
                         <strong>Owner:</strong> ${owner}
                     </div>
-                    ${solutionDropdown}
                     ${getTypeInfo(item, type)}
                 </div>
                 ${getAdditionalInfo(item, type)}
