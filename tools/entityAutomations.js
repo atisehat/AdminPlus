@@ -1,4 +1,4 @@
-// Entity Automations Tool - Show workflows, business rules, flows, custom APIs, and actions for current entity
+// Table Automations Tool - Show workflows, business rules, business process flows, custom APIs, and actions for current table
 async function showEntityAutomations() {
     // Check if we're on a form page
     if (!requireFormContext()) {
@@ -15,18 +15,17 @@ async function showEntityAutomations() {
         }
         
         // Fetch all automation data in parallel
-        const [workflows, dialogs, businessRules, businessProcessFlows, flows, customApis, customActions] = await Promise.all([
+        const [workflows, dialogs, businessRules, businessProcessFlows, customApis, customActions] = await Promise.all([
             fetchWorkflows(entityName, clientUrl),
             fetchDialogs(entityName, clientUrl),
             fetchBusinessRules(entityName, clientUrl),
             fetchBusinessProcessFlows(entityName, clientUrl),
-            fetchFlows(entityName, clientUrl),
             fetchCustomApis(entityName, clientUrl),
             fetchCustomActions(entityName, clientUrl)
         ]);
         
         // Enrich all items with owner information if missing
-        const allItems = [...workflows, ...dialogs, ...businessRules, ...businessProcessFlows, ...flows, ...customApis, ...customActions];
+        const allItems = [...workflows, ...dialogs, ...businessRules, ...businessProcessFlows, ...customApis, ...customActions];
         await enrichWithOwnerNames(allItems, clientUrl);
         
         // Enrich all items with solution information
@@ -38,7 +37,7 @@ async function showEntityAutomations() {
         }
         
         // Create and display popup after loading is complete
-        createAutomationsPopup(entityName, workflows, dialogs, businessRules, businessProcessFlows, flows, customApis, customActions);
+        createAutomationsPopup(entityName, workflows, dialogs, businessRules, businessProcessFlows, customApis, customActions);
         
     } catch (error) {
         if (typeof hideLoadingDialog === 'function') {
@@ -141,15 +140,6 @@ async function fetchBusinessProcessFlows(entityName, clientUrl) {
     } catch (error) {
         return [];
     }
-}
-
-// Fetch Flows (Modern Cloud Flows / Power Automate)
-async function fetchFlows(entityName, clientUrl) {
-    // Note: Modern Cloud Flows might not be stored in the workflow entity
-    // Category 5 was intended for flows, but they may be in a different system
-    // For now, return empty array as Cloud Flows are managed in Power Automate
-    // and not typically queryable through the D365 Web API like classic workflows
-    return [];
 }
 
 // Fetch Custom APIs
@@ -306,7 +296,7 @@ async function fetchCustomActions(entityName, clientUrl) {
 }
 
 // Create the automations popup
-function createAutomationsPopup(entityName, workflows, dialogs, businessRules, businessProcessFlows, flows, customApis, customActions) {
+function createAutomationsPopup(entityName, workflows, dialogs, businessRules, businessProcessFlows, customApis, customActions) {
     // Close any existing popups
     const existingPopups = document.querySelectorAll('.commonPopup');
     existingPopups.forEach(popup => popup.remove());
@@ -318,7 +308,7 @@ function createAutomationsPopup(entityName, workflows, dialogs, businessRules, b
     popupContainer.style.width = '75%';
     popupContainer.style.maxHeight = '90vh';
     
-    const totalCount = workflows.length + dialogs.length + businessRules.length + businessProcessFlows.length + flows.length + customApis.length + customActions.length;
+    const totalCount = workflows.length + dialogs.length + businessRules.length + businessProcessFlows.length + customApis.length + customActions.length;
     
     popupContainer.innerHTML = `
         <div class="commonPopup-header" style="background-color: #2b2b2b; position: relative; cursor: move; border-radius: 9px 9px 0 0; margin: 0; border-bottom: 2px solid #1a1a1a;">
@@ -329,12 +319,15 @@ function createAutomationsPopup(entityName, workflows, dialogs, businessRules, b
             <div style="background-color: #f9f9f9; padding: 12px 20px; border-radius: 5px; margin-bottom: 20px;">
                 <div style="display: flex; justify-content: space-between; align-items: center;">
                     <div><strong>Table:</strong> ${entityName}</div>
-                    <div><strong>Total Items:</strong> ${totalCount}</div>
+                    <div style="display: flex; align-items: center; gap: 20px;">
+                        <div style="font-size: 11px; color: #666; font-style: italic;">Note: Cloud Flows are not included</div>
+                        <div><strong>Total Items:</strong> ${totalCount}</div>
+                    </div>
                 </div>
             </div>
             
             <div class="scroll-section" style="overflow-y: auto; max-height: calc(90vh - 200px);">
-                ${generateAutomationsHtml(workflows, dialogs, businessRules, businessProcessFlows, flows, customApis, customActions)}
+                ${generateAutomationsHtml(workflows, dialogs, businessRules, businessProcessFlows, customApis, customActions)}
             </div>
         </div>
     `;
@@ -358,7 +351,7 @@ function createAutomationsPopup(entityName, workflows, dialogs, businessRules, b
 }
 
 // Generate HTML for all automations
-function generateAutomationsHtml(workflows, dialogs, businessRules, businessProcessFlows, flows, customApis, customActions) {
+function generateAutomationsHtml(workflows, dialogs, businessRules, businessProcessFlows, customApis, customActions) {
     let html = '';
     
     // Combine Workflows, Dialogs, and Custom Actions into one section
@@ -375,9 +368,6 @@ function generateAutomationsHtml(workflows, dialogs, businessRules, businessProc
     
     // Business Process Flows Section
     html += generateSectionHtml('Business Process Flows', businessProcessFlows, 'businessprocessflow');
-    
-    // Flows Section
-    html += generateSectionHtml('Cloud Flows (Power Automate)', flows, 'flow');
     
     // Custom APIs Section
     html += generateSectionHtml('Custom APIs', customApis, 'customapi');
@@ -522,13 +512,6 @@ function getItemUrl(item, type, clientUrl) {
         // Open business process flow in classic editor
         if (item.workflowid) {
             return `${clientUrl}/sfa/workflow/edit.aspx?id=${item.workflowid}`;
-        }
-    }
-    
-    if (type === 'flow') {
-        // Cloud flows open in Power Automate (no classic version)
-        if (item.workflowid) {
-            return `${clientUrl}/main.aspx?pagetype=entityrecord&etn=workflow&id=${item.workflowid}`;
         }
     }
     
