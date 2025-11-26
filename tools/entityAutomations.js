@@ -229,10 +229,9 @@ async function enrichWithSolutionInfo(items, clientUrl) {
             const data = await response.json();
             
             if (data.value && data.value.length > 0) {
-                // Filter out "Default Solution" and "Common Data Services Default Solution"
+                // Filter out "Active" solution but keep "Default" solution
                 const solutions = data.value
                     .filter(sc => sc.solutionid && 
-                           sc.solutionid.uniquename !== 'Default' && 
                            sc.solutionid.uniquename !== 'Active')
                     .map(sc => ({
                         name: sc.solutionid.friendlyname || sc.solutionid.uniquename,
@@ -370,6 +369,7 @@ function generateSectionHtml(title, items, type, icon) {
     items.forEach(item => {
         const name = item.name || item.displayname || item.uniquename || 'Unnamed';
         const owner = getOwnerName(item);
+        const solutionDropdown = getSolutionDropdown(item);
         const status = getStatusInfo(item, type);
         const url = getItemUrl(item, type, clientUrl);
         const cursorStyle = url ? 'cursor: pointer; transition: background-color 0.2s;' : '';
@@ -384,10 +384,11 @@ function generateSectionHtml(title, items, type, icon) {
                         ${status.badge}
                     </div>
                 </div>
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px; padding-top: 8px; border-top: 1px solid #ddd;">
-                    <div style="font-size: 12px; color: #666;">
+                <div style="display: flex; justify-content: space-between; align-items: center; gap: 15px; margin-top: 8px; padding-top: 8px; border-top: 1px solid #ddd; flex-wrap: wrap;">
+                    <div style="font-size: 12px; color: #666; flex-shrink: 0;">
                         <strong>Owner:</strong> ${owner}
                     </div>
+                    ${solutionDropdown}
                     ${getTypeInfo(item, type)}
                 </div>
                 ${getAdditionalInfo(item, type)}
@@ -409,6 +410,41 @@ function getOwnerName(item) {
         return item.ownerid.fullname;
     }
     return 'Unknown Owner';
+}
+
+// Get solution dropdown for item
+function getSolutionDropdown(item) {
+    if (!item.solutions) {
+        return '';
+    }
+    
+    if (item.solutions.length === 0) {
+        return `<div style="font-size: 12px; color: #666; flex-shrink: 0;">
+            <strong>Solution:</strong> <span style="color: #999; font-style: italic;">None</span>
+        </div>`;
+    }
+    
+    if (item.solutions.length === 1) {
+        // Just show the single solution name, no dropdown needed
+        const sol = item.solutions[0];
+        const managedLabel = sol.isManaged ? ' (Managed)' : ' (Unmanaged)';
+        return `<div style="font-size: 12px; color: #666; flex-shrink: 0;">
+            <strong>Solution:</strong> ${sol.name}${managedLabel}
+        </div>`;
+    }
+    
+    // Multiple solutions - show dropdown
+    const options = item.solutions.map(sol => {
+        const managedLabel = sol.isManaged ? ' (Managed)' : ' (Unmanaged)';
+        return `<option value="${sol.uniquename}">${sol.name}${managedLabel}</option>`;
+    }).join('');
+    
+    return `<div style="font-size: 12px; color: #666; display: flex; align-items: center; gap: 6px; flex-shrink: 0;">
+        <strong>Solution:</strong>
+        <select onclick="event.stopPropagation();" style="padding: 2px 6px; border: 1px solid #ccc; border-radius: 4px; font-size: 11px; background-color: white; cursor: pointer;">
+            ${options}
+        </select>
+    </div>`;
 }
 
 // Get URL to open item in D365 Classic interface
@@ -510,57 +546,5 @@ function getAdditionalInfo(item, type) {
         html += `<div style="margin-top: 8px; font-size: 12px; color: #666;"><strong>Unique Name:</strong> ${item.uniquename}</div>`;
     }
     
-    // Show solution information as collapsible dropdown
-    if (item.solutions !== undefined) {
-        const itemId = item.workflowid || item.customapiid || Math.random().toString(36).substr(2, 9);
-        const solutionCount = item.solutions.length;
-        
-        if (solutionCount > 0) {
-            const solutionBadges = item.solutions.map(sol => {
-                const managedBadge = sol.isManaged 
-                    ? '<span style="background-color: #3b82f6; color: white; padding: 2px 6px; border-radius: 3px; font-size: 10px; margin-left: 4px;">Managed</span>'
-                    : '<span style="background-color: #10b981; color: white; padding: 2px 6px; border-radius: 3px; font-size: 10px; margin-left: 4px;">Unmanaged</span>';
-                return `<span style="display: inline-block; background-color: #f3f4f6; padding: 4px 8px; border-radius: 4px; margin-right: 6px; margin-bottom: 4px; font-size: 11px;">${sol.name}${managedBadge}</span>`;
-            }).join('');
-            
-            html += `
-                <div style="margin-top: 8px; font-size: 12px; color: #666;">
-                    <div style="display: flex; align-items: center; cursor: pointer; padding: 4px 0;" onclick="toggleSolutions('${itemId}')">
-                        <span id="arrow-${itemId}" style="display: inline-block; margin-right: 6px; transition: transform 0.2s; font-size: 10px;">▶</span>
-                        <strong>Solutions (${solutionCount})</strong>
-                    </div>
-                    <div id="solutions-${itemId}" style="display: none; margin-top: 4px; padding-left: 16px;">
-                        ${solutionBadges}
-                    </div>
-                </div>`;
-        } else {
-            html += `
-                <div style="margin-top: 8px; font-size: 12px; color: #666;">
-                    <div style="display: flex; align-items: center; cursor: pointer; padding: 4px 0;" onclick="toggleSolutions('${itemId}')">
-                        <span id="arrow-${itemId}" style="display: inline-block; margin-right: 6px; transition: transform 0.2s; font-size: 10px;">▶</span>
-                        <strong>Solutions (0)</strong>
-                    </div>
-                    <div id="solutions-${itemId}" style="display: none; margin-top: 4px; padding-left: 16px; color: #999; font-style: italic;">
-                        Not in any custom solution
-                    </div>
-                </div>`;
-        }
-    }
-    
     return html;
 }
-
-// Toggle solution dropdown visibility
-function toggleSolutions(itemId) {
-    const solutionsDiv = document.getElementById(`solutions-${itemId}`);
-    const arrow = document.getElementById(`arrow-${itemId}`);
-    
-    if (solutionsDiv.style.display === 'none') {
-        solutionsDiv.style.display = 'block';
-        arrow.style.transform = 'rotate(90deg)';
-    } else {
-        solutionsDiv.style.display = 'none';
-        arrow.style.transform = 'rotate(0deg)';
-    }
-}
-
