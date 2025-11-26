@@ -1,37 +1,13 @@
 async function fetchEntityFields() {
     // Check if we're on a form page with an entity context
-    try {
-        if (typeof Xrm === 'undefined' || !Xrm.Page || !Xrm.Page.data || !Xrm.Page.data.entity) {
-            if (typeof showToast === 'function') {
-                showToast('Form actions can only be used in the context of a form. You are currently on different page type.', 'warning', 3000);
-            } else {
-                alert('Form actions can only be used in the context of a form. You are currently on different page type.');
-            }
-            return;
-        }
-        
-        const entityName = Xrm.Page.data.entity.getEntityName();
-        const recordId = Xrm.Page.data.entity.getId();
-        
-        if (!entityName || !recordId) {
-            if (typeof showToast === 'function') {
-                showToast('Form actions can only be used in the context of a form. You are currently on different page type.', 'warning', 3000);
-            } else {
-                alert('Form actions can only be used in the context of a form. You are currently on different page type.');
-            }
-            return;
-        }
-        
-        const cleanRecordId = recordId.replace(/[{}]/g, "").toLowerCase();
-        const clientUrl = Xrm.Page.context.getClientUrl();
-    } catch (checkError) {
-        if (typeof showToast === 'function') {
-            showToast('Form actions can only be used in the context of a form. You are currently on different page type.', 'warning', 3000);
-        } else {
-            alert('Form actions can only be used in the context of a form. You are currently on different page type.');
-        }
+    if (!requireFormContext('Table & Fields Info')) {
         return;
     }
+    
+    const entityName = Xrm.Page.data.entity.getEntityName();
+    const recordId = Xrm.Page.data.entity.getId();
+    const cleanRecordId = recordId.replace(/[{}]/g, "").toLowerCase();
+    const clientUrl = Xrm.Page.context.getClientUrl();
     
     try {
         // Fetch entity metadata and plural name in parallel

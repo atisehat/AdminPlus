@@ -1,5 +1,45 @@
 //UI Helper Functions
 
+/**
+ * Check if the current page is a form with a valid record context
+ * @returns {boolean} True if on a form page, false otherwise
+ */
+function isFormContext() {
+    try {
+        if (typeof Xrm === 'undefined' || !Xrm.Page || !Xrm.Page.data || !Xrm.Page.data.entity) {
+            return false;
+        }
+        
+        const entityName = Xrm.Page.data.entity.getEntityName();
+        const recordId = Xrm.Page.data.entity.getId();
+        
+        return !!(entityName && recordId);
+    } catch (error) {
+        return false;
+    }
+}
+
+/**
+ * Validate form context and show error message if not on a form
+ * @param {string} toolName - Optional name of the tool for more specific error message
+ * @returns {boolean} True if valid form context, false otherwise
+ */
+function requireFormContext(toolName) {
+    if (!isFormContext()) {
+        const message = toolName 
+            ? `"${toolName}" can only be used on a record form. Please open a record and try again.`
+            : 'This tool requires an open record form. Please open a record and try again.';
+        
+        if (typeof showToast === 'function') {
+            showToast(message, 'warning', 3000);
+        } else {
+            alert(message);
+        }
+        return false;
+    }
+    return true;
+}
+
 //Make window movable
 function makePopupMovable(newContainer) {   
    var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;   
@@ -346,3 +386,10 @@ function showToast(message, type, duration) {
     }, duration);
 }
 
+// Export functions globally
+window.isFormContext = isFormContext;
+window.requireFormContext = requireFormContext;
+window.makePopupMovable = makePopupMovable;
+window.showLoadingDialog = showLoadingDialog;
+window.hideLoadingDialog = hideLoadingDialog;
+window.showToast = showToast;
