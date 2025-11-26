@@ -385,22 +385,34 @@ function createAutomationsPopup(entityName, workflows, dialogs, businessRules, b
 function generateAutomationsHtml(workflows, dialogs, businessRules, businessProcessFlows, customApis, customActions) {
     let html = '';
     
-    // Section 1: Workflows Classic
-    html += generateSectionHtml('Workflows Classic', workflows.map(w => ({ ...w, itemType: 'Workflow Classic' })), 'workflow');
+    // Combine Workflows, Dialogs, Business Process Flows, and Custom Actions into one section
+    // Define sort order for item types
+    const typeOrder = {
+        'Workflow Classic': 1,
+        'Dialog': 2,
+        'Custom Action': 3,
+        'Business Process': 4
+    };
     
-    // Section 2: Dialogs
-    html += generateSectionHtml('Dialogs', dialogs.map(d => ({ ...d, itemType: 'Dialog' })), 'workflow');
+    const workflowItems = [
+        ...workflows.map(w => ({ ...w, itemType: 'Workflow Classic' })),
+        ...dialogs.map(d => ({ ...d, itemType: 'Dialog' })),
+        ...customActions.map(a => ({ ...a, itemType: 'Custom Action' })),
+        ...businessProcessFlows.map(b => ({ ...b, itemType: 'Business Process' }))
+    ].sort((a, b) => {
+        // First sort by type order
+        const typeComparison = (typeOrder[a.itemType] || 999) - (typeOrder[b.itemType] || 999);
+        if (typeComparison !== 0) return typeComparison;
+        // Then sort alphabetically by name within the same type
+        return (a.name || '').localeCompare(b.name || '');
+    });
     
-    // Section 3: Custom Actions
-    html += generateSectionHtml('Custom Actions', customActions.map(a => ({ ...a, itemType: 'Custom Action' })), 'workflow');
+    html += generateSectionHtml('Processes', workflowItems, 'workflow');
     
-    // Section 4: Business Process Flows
-    html += generateSectionHtml('Business Process Flows', businessProcessFlows.map(b => ({ ...b, itemType: 'Business Process' })), 'workflow');
-    
-    // Section 5: Business Rules
+    // Business Rules Section
     html += generateSectionHtml('Business Rules', businessRules, 'businessrule');
     
-    // Section 6: Custom APIs
+    // Custom APIs Section
     html += generateSectionHtml('Custom APIs', customApis, 'customapi');
     
     if (html === '') {
