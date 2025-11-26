@@ -163,11 +163,11 @@ function openPopup() {
 	    <button onclick="showAllTabsAndSections();" class="app-button" title="Show Hidden Items">
 	      <span class="app-icon">👁️</span>
 	    </button>
-	    <button onclick="renameTabsSectionsFields();" class="app-button" title="Logical Names">
-	      <span class="app-icon">🏷️</span>
-	    </button>
 	    <button onclick="unlockAllFields();" class="app-button" title="Unlock Fields">
 	      <span class="app-icon">🔓</span>
+	    </button>
+	    <button onclick="renameTabsSectionsFields();" class="app-button" title="Logical Names">
+	      <span class="app-icon">🏷️</span>
 	    </button>
 	    <button onclick="showEntityAutomations();" class="app-button" title="Table Automations">
 	      <span class="app-icon">🤖</span>
@@ -176,7 +176,7 @@ function openPopup() {
 	      <span class="app-icon">🌐</span>
 	    </button>
 	    <button onclick="editSecurity();" class="app-button" title="Assign Security">
-	      <span class="app-icon">🔐</span>
+	      <span class="app-icon">👤</span>
 	    </button>
 	    <button onclick="copySecurity();" class="app-button" title="Copy Security">
 	      <span class="app-icon">🛡️</span>
