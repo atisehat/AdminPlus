@@ -26,9 +26,7 @@ function isFormContext() {
  */
 function requireFormContext(toolName) {
     if (!isFormContext()) {
-        const message = toolName 
-            ? `"${toolName}" can only be used on a record form. Please open a record and try again.`
-            : 'This tool requires an open record form. Please open a record and try again.';
+        const message = 'This action can only be used on a form. Please navigate to a form and try again.';
         
         if (typeof showToast === 'function') {
             showToast(message, 'warning', 3000);
