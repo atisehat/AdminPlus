@@ -385,20 +385,22 @@ function createAutomationsPopup(entityName, workflows, dialogs, businessRules, b
 function generateAutomationsHtml(workflows, dialogs, businessRules, businessProcessFlows, customApis, customActions) {
     let html = '';
     
-    // Combine Workflows, Dialogs, Business Process Flows, and Custom Actions into one section
-    const workflowItems = [
-        ...workflows.map(w => ({ ...w, itemType: 'Workflow Classic' })),
-        ...dialogs.map(d => ({ ...d, itemType: 'Dialog' })),
-        ...businessProcessFlows.map(b => ({ ...b, itemType: 'Business Process' })),
-        ...customActions.map(a => ({ ...a, itemType: 'Custom Action' }))
-    ].sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+    // Section 1: Workflows Classic
+    html += generateSectionHtml('Workflows Classic', workflows.map(w => ({ ...w, itemType: 'Workflow Classic' })), 'workflow');
     
-    html += generateSectionHtml('Processes', workflowItems, 'workflow');
+    // Section 2: Dialogs
+    html += generateSectionHtml('Dialogs', dialogs.map(d => ({ ...d, itemType: 'Dialog' })), 'workflow');
     
-    // Business Rules Section
+    // Section 3: Custom Actions
+    html += generateSectionHtml('Custom Actions', customActions.map(a => ({ ...a, itemType: 'Custom Action' })), 'workflow');
+    
+    // Section 4: Business Process Flows
+    html += generateSectionHtml('Business Process Flows', businessProcessFlows.map(b => ({ ...b, itemType: 'Business Process' })), 'workflow');
+    
+    // Section 5: Business Rules
     html += generateSectionHtml('Business Rules', businessRules, 'businessrule');
     
-    // Custom APIs Section
+    // Section 6: Custom APIs
     html += generateSectionHtml('Custom APIs', customApis, 'customapi');
     
     if (html === '') {
