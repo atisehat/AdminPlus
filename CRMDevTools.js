@@ -166,7 +166,7 @@ function openPopup() {
 	    <button onclick="renameTabsSectionsFields();" class="app-button" title="Logical Names">
 	      <span class="app-icon">🏷️</span>
 	    </button>
-	    <button onclick="showEntityAutomations();" class="app-button" title="Entity Automations">
+	    <button onclick="showEntityAutomations();" class="app-button" title="Table Automations">
 	      <span class="app-icon">🤖</span>
 	    </button>
 	    <button onclick="openWebApi();" class="app-button" title="Open Web API Endpoint">
