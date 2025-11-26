@@ -45,7 +45,7 @@ async function showEntityAutomations() {
 async function fetchWorkflows(entityName, clientUrl) {
     try {
         const response = await fetch(
-            `${clientUrl}/api/data/v9.2/workflows?$select=name,category,statecode,statuscode,primaryentity,type&$filter=primaryentity eq '${entityName}' and category eq 0&$orderby=name asc`
+            `${clientUrl}/api/data/v9.2/workflows?$select=name,category,statecode,statuscode,primaryentity,type,workflowid&$filter=primaryentity eq '${entityName}' and category eq 0&$orderby=name asc`
         );
         
         if (!response.ok) return [];
@@ -60,7 +60,7 @@ async function fetchWorkflows(entityName, clientUrl) {
 async function fetchBusinessRules(entityName, clientUrl) {
     try {
         const response = await fetch(
-            `${clientUrl}/api/data/v9.2/workflows?$select=name,statecode,statuscode,primaryentity&$filter=primaryentity eq '${entityName}' and category eq 2&$orderby=name asc`
+            `${clientUrl}/api/data/v9.2/workflows?$select=name,statecode,statuscode,primaryentity,workflowid&$filter=primaryentity eq '${entityName}' and category eq 2&$orderby=name asc`
         );
         
         if (!response.ok) return [];
@@ -75,7 +75,7 @@ async function fetchBusinessRules(entityName, clientUrl) {
 async function fetchFlows(entityName, clientUrl) {
     try {
         const response = await fetch(
-            `${clientUrl}/api/data/v9.2/workflows?$select=name,category,statecode,statuscode,primaryentity,type&$filter=primaryentity eq '${entityName}' and category eq 5&$orderby=name asc`
+            `${clientUrl}/api/data/v9.2/workflows?$select=name,category,statecode,statuscode,primaryentity,type,workflowid&$filter=primaryentity eq '${entityName}' and category eq 5&$orderby=name asc`
         );
         
         if (!response.ok) return [];
@@ -90,7 +90,7 @@ async function fetchFlows(entityName, clientUrl) {
 async function fetchCustomApis(entityName, clientUrl) {
     try {
         const response = await fetch(
-            `${clientUrl}/api/data/v9.2/customapis?$select=uniquename,displayname,bindingtype,boundentitylogicalname,isfunction&$filter=boundentitylogicalname eq '${entityName}'&$orderby=uniquename asc`
+            `${clientUrl}/api/data/v9.2/customapis?$select=uniquename,displayname,bindingtype,boundentitylogicalname,isfunction,customapiid&$filter=boundentitylogicalname eq '${entityName}'&$orderby=uniquename asc`
         );
         
         if (!response.ok) return [];
@@ -105,7 +105,7 @@ async function fetchCustomApis(entityName, clientUrl) {
 async function fetchCustomActions(entityName, clientUrl) {
     try {
         const response = await fetch(
-            `${clientUrl}/api/data/v9.2/workflows?$select=name,uniquename,statecode,statuscode,primaryentity&$filter=primaryentity eq '${entityName}' and category eq 3&$orderby=name asc`
+            `${clientUrl}/api/data/v9.2/workflows?$select=name,uniquename,statecode,statuscode,primaryentity,workflowid&$filter=primaryentity eq '${entityName}' and category eq 3&$orderby=name asc`
         );
         
         if (!response.ok) return [];
@@ -198,6 +198,8 @@ function generateAutomationsHtml(workflows, businessRules, flows, customApis, cu
 function generateSectionHtml(title, items, type, icon) {
     if (!items || items.length === 0) return '';
     
+    const clientUrl = Xrm.Page.context.getClientUrl();
+    
     let html = `
         <div style="margin-bottom: 30px;">
             <h3 style="color: #2b2b2b; margin-bottom: 15px; font-size: 18px; font-weight: bold; display: flex; align-items: center; gap: 8px;">
@@ -211,9 +213,13 @@ function generateSectionHtml(title, items, type, icon) {
     items.forEach(item => {
         const name = item.name || item.displayname || item.uniquename || 'Unnamed';
         const status = getStatusInfo(item, type);
+        const url = getItemUrl(item, type, clientUrl);
+        const cursorStyle = url ? 'cursor: pointer; transition: background-color 0.2s;' : '';
+        const hoverAttribute = url ? 'onmouseenter="this.style.backgroundColor=\'#e8e8e8\';" onmouseleave="this.style.backgroundColor=\'#f5f5f5\';"' : '';
+        const clickAttribute = url ? `onclick="window.open('${url}', '_blank');"` : '';
         
         html += `
-            <div style="padding: 12px; background-color: #f5f5f5; border-radius: 6px; border-left: 3px solid ${status.color};">
+            <div style="padding: 12px; background-color: #f5f5f5; border-radius: 6px; border-left: 3px solid ${status.color}; ${cursorStyle}" ${hoverAttribute} ${clickAttribute}>
                 <div style="display: flex; justify-content: space-between; align-items: center;">
                     <div style="font-weight: 600; color: #333;">${name}</div>
                     <div style="display: flex; gap: 10px; align-items: center;">
@@ -234,6 +240,21 @@ function generateSectionHtml(title, items, type, icon) {
     return html;
 }
 
+// Get URL to open item in D365
+function getItemUrl(item, type, clientUrl) {
+    if (type === 'workflow' || type === 'businessrule' || type === 'flow' || type === 'action') {
+        if (item.workflowid) {
+            return `${clientUrl}/main.aspx?pagetype=entityrecord&etn=workflow&id=${item.workflowid}`;
+        }
+    }
+    
+    if (type === 'customapi' && item.customapiid) {
+        return `${clientUrl}/main.aspx?pagetype=entityrecord&etn=customapi&id=${item.customapiid}`;
+    }
+    
+    return null;
+}
+
 // Get status information
 function getStatusInfo(item, type) {
     if (type === 'customapi') {
@@ -244,19 +265,23 @@ function getStatusInfo(item, type) {
     }
     
     const stateCode = item.statecode;
-    const statusCode = item.statuscode;
     
+    // Workflow/Business Rule/Flow status codes:
+    // statecode: 0 = Draft, 1 = Activated/Active, 2 = Suspended
     if (stateCode === 1) {
-        return {
-            color: '#ef4444',
-            badge: '<span style="background-color: #ef4444; color: white; padding: 3px 10px; border-radius: 4px; font-size: 11px; font-weight: 600;">INACTIVE</span>'
-        };
-    } else if (stateCode === 0 && statusCode === 2) {
+        // Activated/Active
         return {
             color: '#10b981',
             badge: '<span style="background-color: #10b981; color: white; padding: 3px 10px; border-radius: 4px; font-size: 11px; font-weight: 600;">ACTIVE</span>'
         };
+    } else if (stateCode === 2) {
+        // Suspended/Inactive
+        return {
+            color: '#ef4444',
+            badge: '<span style="background-color: #ef4444; color: white; padding: 3px 10px; border-radius: 4px; font-size: 11px; font-weight: 600;">SUSPENDED</span>'
+        };
     } else {
+        // Draft (statecode 0)
         return {
             color: '#f59e0b',
             badge: '<span style="background-color: #f59e0b; color: white; padding: 3px 10px; border-radius: 4px; font-size: 11px; font-weight: 600;">DRAFT</span>'
