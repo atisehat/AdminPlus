@@ -240,15 +240,38 @@ function generateSectionHtml(title, items, type, icon) {
     return html;
 }
 
-// Get URL to open item in D365
+// Get URL to open item in D365 Classic interface
 function getItemUrl(item, type, clientUrl) {
-    if (type === 'workflow' || type === 'businessrule' || type === 'flow' || type === 'action') {
+    if (type === 'workflow') {
+        // Open classic workflow designer
+        if (item.workflowid) {
+            return `${clientUrl}/sfa/workflow/edit.aspx?id=${item.workflowid}`;
+        }
+    }
+    
+    if (type === 'businessrule') {
+        // Open business rule in classic editor
+        if (item.workflowid) {
+            return `${clientUrl}/sfa/workflow/edit.aspx?id=${item.workflowid}`;
+        }
+    }
+    
+    if (type === 'flow') {
+        // Cloud flows open in Power Automate (no classic version)
         if (item.workflowid) {
             return `${clientUrl}/main.aspx?pagetype=entityrecord&etn=workflow&id=${item.workflowid}`;
         }
     }
     
+    if (type === 'action') {
+        // Open custom action in classic editor
+        if (item.workflowid) {
+            return `${clientUrl}/sfa/workflow/edit.aspx?id=${item.workflowid}`;
+        }
+    }
+    
     if (type === 'customapi' && item.customapiid) {
+        // Custom APIs only have modern interface
         return `${clientUrl}/main.aspx?pagetype=entityrecord&etn=customapi&id=${item.customapiid}`;
     }
     
