@@ -46,6 +46,7 @@ function onUtilScriptLoaded() {
     loadScript('tools/securityOperations.js');
     loadScript('tools/dateCalculator.js');
     loadScript('tools/openRecord.js');
+    loadScript('tools/openWebApi.js');
     loadScript('tools/cloneRecord.js');
     loadScript('tools/commandChecker.js');
     loadScript('tools/performanceDiagnostics.js');
@@ -151,6 +152,9 @@ function openPopup() {
 	    </button>
 	    <button onclick="openRecord();" class="app-button" title="Open Record">
 	      <span class="app-icon">🔍</span>
+	    </button>
+	    <button onclick="openWebApi();" class="app-button" title="Open Web API">
+	      <span class="app-icon">🌐</span>
 	    </button>
 	    <button onclick="cloneRecord();" class="app-button" title="Clone Record">
 	      <span class="app-icon">🧬</span>
@@ -460,6 +464,7 @@ window.openUrl = openUrl;
 window.showDirtyFields = showDirtyFields;
 window.showToast = showToast;
 window.openRecord = openRecord;
+window.openWebApi = openWebApi;
 window.cloneRecord = cloneRecord;
 window.commandChecker = commandChecker;
 window.performanceDiagnostics = performanceDiagnostics;
