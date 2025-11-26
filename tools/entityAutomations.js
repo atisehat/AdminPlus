@@ -63,9 +63,9 @@ async function fetchWorkflows(entityName, clientUrl) {
         const data = await response.json();
         
         // Filter out child workflows to avoid duplicates
-        // Only show workflows where parentworkflowid is null (parent/definition workflows only)
+        // Only show Definition workflows (type 1) - excludes Activation (type 2) and Template (type 3)
         const filteredWorkflows = (data.value || []).filter(workflow => {
-            return !workflow.parentworkflowid;
+            return workflow.type === 1;
         });
         
         return filteredWorkflows;
