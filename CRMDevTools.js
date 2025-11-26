@@ -151,9 +151,6 @@ function openPopup() {
 	    <button onclick="setTimeout(fetchEntityFields, 0);" class="app-button" title="Entity Info">
 	      <span class="app-icon">📋</span>
 	    </button>
-	    <button onclick="showEntityAutomations();" class="app-button" title="Entity Automations">
-	      <span class="app-icon">🤖</span>
-	    </button>
 	    <button onclick="openRecord();" class="app-button" title="Open Record">
 	      <span class="app-icon">🔍</span>
 	    </button>
@@ -168,6 +165,9 @@ function openPopup() {
 	    </button>
 	    <button onclick="renameTabsSectionsFields();" class="app-button" title="Logical Names">
 	      <span class="app-icon">🏷️</span>
+	    </button>
+	    <button onclick="showEntityAutomations();" class="app-button" title="Entity Automations">
+	      <span class="app-icon">🤖</span>
 	    </button>
 	    <button onclick="openWebApi();" class="app-button" title="Open Web API Endpoint">
 	      <span class="app-icon">🌐</span>
