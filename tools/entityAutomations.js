@@ -281,12 +281,27 @@ async function enrichWithSolutionInfo(items, clientUrl) {
                         }
                     });
                 
-                item.solutions = solutions;
+                item.solutions = solutions.length > 0 ? solutions : [{
+                    name: 'Default Solution',
+                    uniquename: 'Default',
+                    isManaged: false
+                }];
             } else {
-                item.solutions = [];
+                // If no solutions found via API, assume it's in Default Solution
+                // All D365 components must be in at least one solution
+                item.solutions = [{
+                    name: 'Default Solution',
+                    uniquename: 'Default',
+                    isManaged: false
+                }];
             }
         } catch (error) {
-            item.solutions = [];
+            // If error occurs, assume Default Solution
+            item.solutions = [{
+                name: 'Default Solution',
+                uniquename: 'Default',
+                isManaged: false
+            }];
         }
     });
     
