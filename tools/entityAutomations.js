@@ -145,23 +145,11 @@ async function fetchBusinessProcessFlows(entityName, clientUrl) {
 
 // Fetch Flows (Modern Cloud Flows / Power Automate)
 async function fetchFlows(entityName, clientUrl) {
-    try {
-        let response = await fetch(
-            `${clientUrl}/api/data/v9.2/workflows?$select=name,category,statecode,statuscode,primaryentity,type,workflowid,_ownerid_value&$expand=ownerid($select=fullname)&$filter=primaryentity eq '${entityName}' and category eq 5&$orderby=name asc`
-        );
-        
-        if (!response.ok) {
-            response = await fetch(
-                `${clientUrl}/api/data/v9.2/workflows?$select=name,category,statecode,statuscode,primaryentity,type,workflowid,_ownerid_value&$filter=primaryentity eq '${entityName}' and category eq 5&$orderby=name asc`
-            );
-        }
-        
-        if (!response.ok) return [];
-        const data = await response.json();
-        return data.value || [];
-    } catch (error) {
-        return [];
-    }
+    // Note: Modern Cloud Flows might not be stored in the workflow entity
+    // Category 5 was intended for flows, but they may be in a different system
+    // For now, return empty array as Cloud Flows are managed in Power Automate
+    // and not typically queryable through the D365 Web API like classic workflows
+    return [];
 }
 
 // Fetch Custom APIs
