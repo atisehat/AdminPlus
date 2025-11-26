@@ -310,23 +310,19 @@ function createAutomationsPopup(entityName, workflows, dialogs, businessRules, b
     
     const totalCount = workflows.length + dialogs.length + businessRules.length + businessProcessFlows.length + customApis.length + customActions.length;
     
-    // Create Power Automate URL for the environment
-    const powerAutomateUrl = clientUrl.replace('.dynamics.com', '.flow.microsoft.com');
-    
     popupContainer.innerHTML = `
         <div class="commonPopup-header" style="background-color: #2b2b2b; position: relative; cursor: move; border-radius: 9px 9px 0 0; margin: 0; border-bottom: 2px solid #1a1a1a;">
             <span style="color: white;">Table Automations & Customizations</span>
             <span class="close-button" style="position: absolute; right: 0; top: 0; bottom: 0; width: 45px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 20px; color: white; font-weight: bold; transition: background-color 0.2s ease; border-radius: 0 9px 0 0;">&times;</span>
         </div>
         <div class="popup-body" style="padding: 20px;">
-            <div style="background-color: #f9f9f9; padding: 12px 20px; border-radius: 5px; margin-bottom: 20px;">
+            <div style="background-color: #f9f9f9; padding: 12px 20px; border-radius: 5px; margin-bottom: 15px;">
                 <div style="display: flex; justify-content: space-between; align-items: flex-start;">
                     <div><strong>Table:</strong> ${entityName}</div>
                     <div style="text-align: right;">
-                        <div style="margin-bottom: 5px;"><strong>Total Items:</strong> ${totalCount}</div>
+                        <div style="margin-bottom: 3px;"><strong>Total Items:</strong> ${totalCount}</div>
                         <div style="font-size: 11px; color: #666;">
-                            <strong>Note:</strong> Cloud Flows are not included. 
-                            <a href="${powerAutomateUrl}" target="_blank" style="color: #0066cc; text-decoration: underline;">Visit Power Automate</a> for Cloud Flows.
+                            <strong>Note:</strong> Cloud flows are not included here. To create or manage cloud flows, go to Power Automate.
                         </div>
                     </div>
                 </div>
