@@ -39,6 +39,7 @@ function onUtilScriptLoaded() {
     // All utilities loaded, now load tool scripts
     loadScript('tools/advancedFind.js');
     loadScript('tools/entityInfo.js');
+    loadScript('tools/entityAutomations.js');
     loadScript('tools/fieldsControl.js');
     loadScript('tools/dirtyFields.js');
     loadScript('tools/copySecurity.js');
@@ -149,6 +150,9 @@ function openPopup() {
 	    </button>
 	    <button onclick="setTimeout(fetchEntityFields, 0);" class="app-button" title="Entity Info">
 	      <span class="app-icon">📋</span>
+	    </button>
+	    <button onclick="showEntityAutomations();" class="app-button" title="Entity Automations">
+	      <span class="app-icon">🤖</span>
 	    </button>
 	    <button onclick="openRecord();" class="app-button" title="Open Record">
 	      <span class="app-icon">🔍</span>
@@ -456,6 +460,7 @@ function closeSubPopups() {
 window.isD365Context = isD365Context;
 window.checkSystemAdministratorRole = checkSystemAdministratorRole;
 window.fetchEntityFields = fetchEntityFields;
+window.showEntityAutomations = showEntityAutomations;
 window.unlockAllFields = unlockAllFields;
 window.showAllTabsAndSections = showAllTabsAndSections;
 window.renameTabsSectionsFields = renameTabsSectionsFields;
