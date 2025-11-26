@@ -8,7 +8,6 @@ async function showDirtyFields() {
         const entity = Xrm.Page.data.entity;
         const attributes = entity.attributes.get();
         const dirtyFields = attributes.filter(attribute => attribute.getIsDirty());
-        console.log('Dirty Fields: Found', dirtyFields.length, 'dirty fields');
         
         // If no dirty fields, show toast message and return
         if (dirtyFields.length === 0) {

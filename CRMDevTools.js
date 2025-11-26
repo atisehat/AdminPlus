@@ -153,9 +153,6 @@ function openPopup() {
 	    <button onclick="openRecord();" class="app-button" title="Open Record">
 	      <span class="app-icon">🔍</span>
 	    </button>
-	    <button onclick="openWebApi();" class="app-button" title="Open Web API">
-	      <span class="app-icon">🌐</span>
-	    </button>
 	    <button onclick="cloneRecord();" class="app-button" title="Clone Record">
 	      <span class="app-icon">🧬</span>
 	    </button>
@@ -167,6 +164,9 @@ function openPopup() {
 	    </button>
 	    <button onclick="renameTabsSectionsFields();" class="app-button" title="Logical Names">
 	      <span class="app-icon">🏷️</span>
+	    </button>
+	    <button onclick="openWebApi();" class="app-button" title="Open Web API Endpoint">
+	      <span class="app-icon">🌐</span>
 	    </button>
 	    <button onclick="editSecurity();" class="app-button" title="Assign Security">
 	      <span class="app-icon">🔐</span>
