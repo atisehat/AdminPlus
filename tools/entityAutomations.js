@@ -510,23 +510,57 @@ function getAdditionalInfo(item, type) {
         html += `<div style="margin-top: 8px; font-size: 12px; color: #666;"><strong>Unique Name:</strong> ${item.uniquename}</div>`;
     }
     
-    // Show solution information
-    if (item.solutions && item.solutions.length > 0) {
-        const solutionBadges = item.solutions.map(sol => {
-            const managedBadge = sol.isManaged 
-                ? '<span style="background-color: #3b82f6; color: white; padding: 2px 6px; border-radius: 3px; font-size: 10px; margin-left: 4px;">Managed</span>'
-                : '<span style="background-color: #10b981; color: white; padding: 2px 6px; border-radius: 3px; font-size: 10px; margin-left: 4px;">Unmanaged</span>';
-            return `<span style="display: inline-block; background-color: #f3f4f6; padding: 4px 8px; border-radius: 4px; margin-right: 6px; margin-bottom: 4px; font-size: 11px;">${sol.name}${managedBadge}</span>`;
-        }).join('');
+    // Show solution information as collapsible dropdown
+    if (item.solutions !== undefined) {
+        const itemId = item.workflowid || item.customapiid || Math.random().toString(36).substr(2, 9);
+        const solutionCount = item.solutions.length;
         
-        html += `<div style="margin-top: 8px; font-size: 12px; color: #666;">
-            <strong>Solutions:</strong><br/>
-            <div style="margin-top: 4px;">${solutionBadges}</div>
-        </div>`;
-    } else if (item.solutions && item.solutions.length === 0) {
-        html += `<div style="margin-top: 8px; font-size: 12px; color: #999; font-style: italic;">Not in any custom solution</div>`;
+        if (solutionCount > 0) {
+            const solutionBadges = item.solutions.map(sol => {
+                const managedBadge = sol.isManaged 
+                    ? '<span style="background-color: #3b82f6; color: white; padding: 2px 6px; border-radius: 3px; font-size: 10px; margin-left: 4px;">Managed</span>'
+                    : '<span style="background-color: #10b981; color: white; padding: 2px 6px; border-radius: 3px; font-size: 10px; margin-left: 4px;">Unmanaged</span>';
+                return `<span style="display: inline-block; background-color: #f3f4f6; padding: 4px 8px; border-radius: 4px; margin-right: 6px; margin-bottom: 4px; font-size: 11px;">${sol.name}${managedBadge}</span>`;
+            }).join('');
+            
+            html += `
+                <div style="margin-top: 8px; font-size: 12px; color: #666;">
+                    <div style="display: flex; align-items: center; cursor: pointer; padding: 4px 0;" onclick="toggleSolutions('${itemId}')">
+                        <span id="arrow-${itemId}" style="display: inline-block; margin-right: 6px; transition: transform 0.2s; font-size: 10px;">▶</span>
+                        <strong>Solutions (${solutionCount})</strong>
+                    </div>
+                    <div id="solutions-${itemId}" style="display: none; margin-top: 4px; padding-left: 16px;">
+                        ${solutionBadges}
+                    </div>
+                </div>`;
+        } else {
+            html += `
+                <div style="margin-top: 8px; font-size: 12px; color: #666;">
+                    <div style="display: flex; align-items: center; cursor: pointer; padding: 4px 0;" onclick="toggleSolutions('${itemId}')">
+                        <span id="arrow-${itemId}" style="display: inline-block; margin-right: 6px; transition: transform 0.2s; font-size: 10px;">▶</span>
+                        <strong>Solutions (0)</strong>
+                    </div>
+                    <div id="solutions-${itemId}" style="display: none; margin-top: 4px; padding-left: 16px; color: #999; font-style: italic;">
+                        Not in any custom solution
+                    </div>
+                </div>`;
+        }
     }
     
     return html;
+}
+
+// Toggle solution dropdown visibility
+function toggleSolutions(itemId) {
+    const solutionsDiv = document.getElementById(`solutions-${itemId}`);
+    const arrow = document.getElementById(`arrow-${itemId}`);
+    
+    if (solutionsDiv.style.display === 'none') {
+        solutionsDiv.style.display = 'block';
+        arrow.style.transform = 'rotate(90deg)';
+    } else {
+        solutionsDiv.style.display = 'none';
+        arrow.style.transform = 'rotate(0deg)';
+    }
 }
 
