@@ -134,6 +134,9 @@ function closeLoadingDialog() {
   }
 }
 
+// Alias for consistency
+const hideLoadingDialog = closeLoadingDialog;
+
 //AlertDialogBox 
 function showCustomAlert(message) {  
   const overlay = document.createElement('div');  

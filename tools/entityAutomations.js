@@ -30,15 +30,12 @@ async function showEntityAutomations() {
         // Enrich all items with solution information
         await enrichWithSolutionInfo(allItems, clientUrl);
         
-        // Hide loading dialog first
+        // Hide loading dialog before showing popup
         if (typeof hideLoadingDialog === 'function') {
             hideLoadingDialog();
         }
         
-        // Small delay to ensure loading dialog is fully removed before showing popup
-        await new Promise(resolve => setTimeout(resolve, 100));
-        
-        // Create and display popup
+        // Create and display popup after loading is complete
         createAutomationsPopup(entityName, workflows, businessRules, flows, customApis, customActions);
         
     } catch (error) {
@@ -373,7 +370,8 @@ function generateSectionHtml(title, items, type, icon) {
     items.forEach(item => {
         const name = item.name || item.displayname || item.uniquename || 'Unnamed';
         const owner = getOwnerName(item);
-        const solutionDropdown = getSolutionDropdown(item);
+        // Don't show solutions for Business Rules
+        const solutionDropdown = type === 'businessrule' ? '' : getSolutionDropdown(item);
         const status = getStatusInfo(item, type);
         const url = getItemUrl(item, type, clientUrl);
         const cursorStyle = url ? 'cursor: pointer; transition: background-color 0.2s;' : '';
