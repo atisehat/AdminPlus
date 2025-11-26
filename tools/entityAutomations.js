@@ -375,24 +375,24 @@ function generateAutomationsHtml(workflows, dialogs, businessRules, businessProc
     
     // Combine Workflows, Dialogs, and Custom Actions into one section
     const workflowItems = [
-        ...workflows.map(w => ({ ...w, itemType: 'Workflow' })),
+        ...workflows.map(w => ({ ...w, itemType: 'Workflow Classic' })),
         ...dialogs.map(d => ({ ...d, itemType: 'Dialog' })),
         ...customActions.map(a => ({ ...a, itemType: 'Custom Action' }))
     ].sort((a, b) => (a.name || '').localeCompare(b.name || ''));
     
-    html += generateSectionHtml('Workflows (Classic) / Dialogs / Custom Actions', workflowItems, 'workflow', '⚙️');
+    html += generateSectionHtml('Processes', workflowItems, 'workflow');
     
     // Business Rules Section
-    html += generateSectionHtml('Business Rules', businessRules, 'businessrule', '📋');
+    html += generateSectionHtml('Business Rules', businessRules, 'businessrule');
     
     // Business Process Flows Section
-    html += generateSectionHtml('Business Process Flows', businessProcessFlows, 'businessprocessflow', '🔄');
+    html += generateSectionHtml('Business Process Flows', businessProcessFlows, 'businessprocessflow');
     
     // Flows Section
-    html += generateSectionHtml('Cloud Flows (Power Automate)', flows, 'flow', '⚡');
+    html += generateSectionHtml('Cloud Flows (Power Automate)', flows, 'flow');
     
     // Custom APIs Section
-    html += generateSectionHtml('Custom APIs', customApis, 'customapi', '🔌');
+    html += generateSectionHtml('Custom APIs', customApis, 'customapi');
     
     if (html === '') {
         html = '<div style="text-align: center; padding: 40px; color: #666;">No automations or customizations found for this table.</div>';
@@ -402,7 +402,7 @@ function generateAutomationsHtml(workflows, dialogs, businessRules, businessProc
 }
 
 // Generate section HTML for each automation type
-function generateSectionHtml(title, items, type, icon) {
+function generateSectionHtml(title, items, type) {
     if (!items || items.length === 0) return '';
     
     const clientUrl = Xrm.Page.context.getClientUrl();
@@ -410,7 +410,6 @@ function generateSectionHtml(title, items, type, icon) {
     let html = `
         <div style="margin-bottom: 30px;">
             <h3 style="color: #2b2b2b; margin-bottom: 15px; font-size: 18px; font-weight: bold; display: flex; align-items: center; gap: 8px;">
-                <span>${icon}</span>
                 <span>${title}</span>
                 <span style="background-color: #2b2b2b; color: white; padding: 2px 8px; border-radius: 12px; font-size: 12px;">${items.length}</span>
             </h3>
