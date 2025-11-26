@@ -166,6 +166,9 @@ function openPopup() {
 	    <button onclick="renameTabsSectionsFields();" class="app-button" title="Logical Names">
 	      <span class="app-icon">🏷️</span>
 	    </button>
+	    <button onclick="unlockAllFields();" class="app-button" title="Unlock Fields">
+	      <span class="app-icon">🔓</span>
+	    </button>
 	    <button onclick="showEntityAutomations();" class="app-button" title="Table Automations">
 	      <span class="app-icon">🤖</span>
 	    </button>
