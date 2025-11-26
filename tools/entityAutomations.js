@@ -233,25 +233,53 @@ async function enrichWithSolutionInfo(items, clientUrl) {
                 return;
             }
             
-            // Fetch solution components for this item
-            const response = await fetch(
+            // Fetch solution components for this item - try with expand first
+            let response = await fetch(
                 `${clientUrl}/api/data/v9.2/solutioncomponents?$select=solutioncomponentid&$expand=solutionid($select=friendlyname,uniquename,ismanaged)&$filter=objectid eq ${objectId} and componenttype eq ${componentType}`
             );
             
-            if (!response.ok) return;
+            // If expand fails, try without it
+            if (!response.ok) {
+                response = await fetch(
+                    `${clientUrl}/api/data/v9.2/solutioncomponents?$select=solutioncomponentid,_solutionid_value&$filter=objectid eq ${objectId} and componenttype eq ${componentType}`
+                );
+            }
+            
+            if (!response.ok) {
+                item.solutions = [];
+                return;
+            }
             
             const data = await response.json();
             
             if (data.value && data.value.length > 0) {
                 // Filter out "Active" solution but keep "Default" solution
                 const solutions = data.value
-                    .filter(sc => sc.solutionid && 
-                           sc.solutionid.uniquename !== 'Active')
-                    .map(sc => ({
-                        name: sc.solutionid.friendlyname || sc.solutionid.uniquename,
-                        uniquename: sc.solutionid.uniquename,
-                        isManaged: sc.solutionid.ismanaged
-                    }));
+                    .filter(sc => {
+                        // Check if we have expanded solutionid or just the _solutionid_value
+                        if (sc.solutionid) {
+                            return sc.solutionid.uniquename !== 'Active';
+                        }
+                        // If expand didn't work, include all solution components
+                        return sc._solutionid_value !== undefined;
+                    })
+                    .map(sc => {
+                        if (sc.solutionid) {
+                            // Expanded solution data
+                            return {
+                                name: sc.solutionid.friendlyname || sc.solutionid.uniquename,
+                                uniquename: sc.solutionid.uniquename,
+                                isManaged: sc.solutionid.ismanaged
+                            };
+                        } else {
+                            // Fallback - just show that solution exists
+                            return {
+                                name: 'Solution',
+                                uniquename: sc._solutionid_value,
+                                isManaged: false
+                            };
+                        }
+                    });
                 
                 item.solutions = solutions;
             } else {
