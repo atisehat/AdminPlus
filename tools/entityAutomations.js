@@ -23,6 +23,9 @@ async function showEntityAutomations() {
             fetchCustomActions(entityName, clientUrl)
         ]);
         
+        // Enrich all items with owner information if missing
+        await enrichWithOwnerNames([...workflows, ...businessRules, ...flows, ...customApis, ...customActions], clientUrl);
+        
         // Hide loading dialog
         if (typeof hideLoadingDialog === 'function') {
             hideLoadingDialog();
@@ -59,11 +62,10 @@ async function fetchWorkflows(entityName, clientUrl) {
         if (!response.ok) return [];
         const data = await response.json();
         
-        // Filter out child workflows (type 2 = Activation) to avoid duplicates
-        // Only show Definition (type 1) workflows
+        // Filter out child workflows to avoid duplicates
+        // Only show workflows where parentworkflowid is null (parent/definition workflows only)
         const filteredWorkflows = (data.value || []).filter(workflow => {
-            // Show only if type is 1 (Definition) OR if parentworkflowid is null
-            return workflow.type === 1 || !workflow.parentworkflowid;
+            return !workflow.parentworkflowid;
         });
         
         return filteredWorkflows;
@@ -133,6 +135,57 @@ async function fetchCustomApis(entityName, clientUrl) {
     } catch (error) {
         return [];
     }
+}
+
+// Enrich items with owner names if missing
+async function enrichWithOwnerNames(items, clientUrl) {
+    // Get all items that have owner ID but missing owner name
+    const itemsNeedingOwner = items.filter(item => 
+        item._ownerid_value && (!item.ownerid || !item.ownerid.fullname)
+    );
+    
+    if (itemsNeedingOwner.length === 0) return;
+    
+    // Fetch owner information for each unique owner ID
+    const uniqueOwnerIds = [...new Set(itemsNeedingOwner.map(item => item._ownerid_value))];
+    
+    const ownerPromises = uniqueOwnerIds.map(async ownerId => {
+        try {
+            // Try systemuser first
+            let response = await fetch(`${clientUrl}/api/data/v9.2/systemusers(${ownerId})?$select=fullname`);
+            
+            if (response.ok) {
+                const data = await response.json();
+                return { id: ownerId, name: data.fullname, type: 'systemuser' };
+            }
+            
+            // If not systemuser, try team
+            response = await fetch(`${clientUrl}/api/data/v9.2/teams(${ownerId})?$select=name`);
+            
+            if (response.ok) {
+                const data = await response.json();
+                return { id: ownerId, name: data.name, type: 'team' };
+            }
+            
+            return { id: ownerId, name: 'Unknown Owner', type: 'unknown' };
+        } catch (error) {
+            return { id: ownerId, name: 'Unknown Owner', type: 'unknown' };
+        }
+    });
+    
+    const ownerResults = await Promise.all(ownerPromises);
+    const ownerMap = {};
+    ownerResults.forEach(result => {
+        ownerMap[result.id] = result.name;
+    });
+    
+    // Update items with owner names
+    itemsNeedingOwner.forEach(item => {
+        if (!item.ownerid) {
+            item.ownerid = {};
+        }
+        item.ownerid.fullname = ownerMap[item._ownerid_value] || 'Unknown Owner';
+    });
 }
 
 // Fetch Custom Actions
@@ -291,10 +344,7 @@ function getOwnerName(item) {
     if (item.ownerid && item.ownerid.fullname) {
         return item.ownerid.fullname;
     }
-    if (item._ownerid_value) {
-        return 'System User';
-    }
-    return 'Unknown';
+    return 'Unknown Owner';
 }
 
 // Get URL to open item in D365 Classic interface
@@ -377,14 +427,8 @@ function getTypeInfo(item, type) {
         return `<span style="font-size: 11px; color: #666; background-color: #e5e7eb; padding: 3px 8px; border-radius: 4px;">${funcType} | ${bindingType}</span>`;
     }
     
-    if (type === 'workflow' && item.type !== undefined) {
-        const typeLabels = {
-            1: 'Definition',
-            2: 'Activation',
-            3: 'Template'
-        };
-        return `<span style="font-size: 11px; color: #666; background-color: #e5e7eb; padding: 3px 8px; border-radius: 4px;">${typeLabels[item.type] || 'Unknown'}</span>`;
-    }
+    // Don't show workflow type labels (Definition/Activation/Template) to end users
+    // as they are internal D365 implementation details
     
     return '';
 }
