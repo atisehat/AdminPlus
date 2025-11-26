@@ -113,10 +113,16 @@ function checkSystemAdministratorRole() {
 function openPopup() {
   // Check if running within Dynamics 365
   if (!isD365Context()) {
+    // Wait a moment for showToast to be available, then show message
     if (typeof showToast === 'function') {
       showToast('AdminPlus can only be used within Dynamics 365. Please open this tool from within your D365 environment.', 'warning', 4000);
     } else {
-      alert('AdminPlus can only be used within Dynamics 365. Please open this tool from within your D365 environment.');
+      // If showToast not loaded yet, wait and try again
+      setTimeout(function() {
+        if (typeof showToast === 'function') {
+          showToast('AdminPlus can only be used within Dynamics 365. Please open this tool from within your D365 environment.', 'warning', 4000);
+        }
+      }, 100);
     }
     return;
   }
