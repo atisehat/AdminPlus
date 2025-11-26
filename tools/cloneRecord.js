@@ -148,7 +148,6 @@ function analyzeFormFields() {
                         break;
                     default:
                         // Catch all other field types (owner, customer, state, status, etc.)
-                        console.log(`Other field type detected: ${attrType} (${attrName})`);
                         fields.other.push(fieldInfo);
                         break;
                 }
@@ -396,13 +395,11 @@ function handleCloneRecord(container, fieldAnalysis, entityName) {
                 // Find the field in analysis
                 const field = fieldAnalysis[fieldType].find(f => f.name === fieldName);
                 if (!field) {
-                    console.log(`Skipping field ${fieldName} - not found in analysis`);
                     return;
                 }
                 
                 // Check if field has a value (but allow 0, false, empty string for optionsets/booleans)
                 if (field.currentValue === null || field.currentValue === undefined) {
-                    console.log(`Skipping field ${fieldName} - no value`);
                     return;
                 }
                 
@@ -417,28 +414,23 @@ function handleCloneRecord(container, fieldAnalysis, entityName) {
                             lv && lv.id && lv.name && lv.entityType
                         );
                         if (!hasValidLookups) {
-                            console.warn(`Skipping ${fieldName} - lookup missing required properties (id, name, entityType)`);
                             return;
                         }
                     } else if (typeof valueToStore === 'object' && valueToStore !== null) {
                         // Single lookup object
                         if (!valueToStore.id || !valueToStore.name || !valueToStore.entityType) {
-                            console.warn(`Skipping ${fieldName} - lookup missing required properties (id, name, entityType)`);
                             return;
                         }
                     }
                 }
                 
                 fieldsToClone[fieldName] = valueToStore;
-                console.log(`✓ Collected field ${fieldName} (${fieldType}):`, valueToStore);
                 
             } catch (e) {
                 console.error(`✗ Error collecting field value for ${fieldName}:`, e);
             }
         });
         
-        console.log('Total fields to clone:', Object.keys(fieldsToClone).length);
-        console.log('Fields to clone:', fieldsToClone);
         
         if (Object.keys(fieldsToClone).length === 0) {
             if (typeof showToast === 'function') {
@@ -467,7 +459,6 @@ function handleCloneRecord(container, fieldAnalysis, entityName) {
             openInNewWindow: false
         }).then(function(result) {
             // Form opened successfully
-            console.log('Clone form opened', result);
             
             // Set the field values on the new form after it loads
             // We need to wait for the new form to be ready
@@ -509,7 +500,6 @@ function handleCloneRecord(container, fieldAnalysis, entityName) {
                                             if (Array.isArray(valueToSet) && valueToSet.length > 0) {
                                                 const lookup = valueToSet[0];
                                                 if (!lookup.id || !lookup.name || !lookup.entityType) {
-                                                    console.warn(`Invalid lookup format for ${fieldName}:`, valueToSet);
                                                     errorCount++;
                                                     return;
                                                 }
@@ -518,12 +508,10 @@ function handleCloneRecord(container, fieldAnalysis, entityName) {
                                         
                                         attribute.setValue(valueToSet);
                                         successCount++;
-                                        console.log(`✓ Set field ${fieldName} (${attrType}):`, valueToSet);
                                     } else {
                                         // Field not on create form - will need to apply after save
                                         // Only store fields that user CHECKED to clone
                                         skippedFields[fieldName] = fieldsToClone[fieldName];
-                                        console.log(`⊝ Field ${fieldName} not on create form - will apply after save`);
                                     }
                                 } catch (e) {
                                     errorCount++;
@@ -534,11 +522,9 @@ function handleCloneRecord(container, fieldAnalysis, entityName) {
                             const skippedCount = Object.keys(skippedFields).length;
                             
                             // Show results
-                            console.log(`Clone Results: ${successCount} succeeded, ${errorCount} failed, ${skippedCount} will apply after save`);
                             
                             // If there are skipped fields, store them and set up save handler
                             if (skippedCount > 0) {
-                                console.log('Skipped fields to apply after save:', Object.keys(skippedFields));
                                 
                                 const entityName = Xrm.Page.data.entity.getEntityName();
                                 
@@ -557,7 +543,6 @@ function handleCloneRecord(container, fieldAnalysis, entityName) {
                                 // Add a form close handler to cleanup if user navigates away
                                 try {
                                     const onCloseHandler = function() {
-                                        console.log('Form being closed/navigated away - cleaning up clone session');
                                         const waiting = sessionStorage.getItem('adminplus_waiting_for_save');
                                         if (waiting === 'true') {
                                             // User closed the form without completing the save cycle
@@ -567,7 +552,6 @@ function handleCloneRecord(container, fieldAnalysis, entityName) {
                                     
                                     // Add to OnSave to detect if save is happening
                                     Xrm.Page.data.entity.addOnSave(function(context) {
-                                        console.log('OnSave event detected');
                                         sessionStorage.setItem('adminplus_save_in_progress', 'true');
                                     });
                                     
@@ -575,11 +559,9 @@ function handleCloneRecord(container, fieldAnalysis, entityName) {
                                     window.addEventListener('beforeunload', onCloseHandler);
                                     window.addEventListener('pagehide', onCloseHandler);
                                 } catch (e) {
-                                    console.warn('Could not attach close handlers:', e);
                                 }
                                 
                                 // Start monitoring for save
-                                console.log('✓ Stored skipped fields, monitoring for save...');
                                 startSaveMonitoring();
                             }
                             
@@ -596,13 +578,11 @@ function handleCloneRecord(container, fieldAnalysis, entityName) {
                         }
                     }
                 } catch (e) {
-                    console.warn('Waiting for form to load...', e);
                 }
                 
                 // Stop trying after max attempts
                 if (attempts >= maxAttempts) {
                     clearInterval(setValues);
-                    console.warn('Could not set cloned values - form did not load in time');
                     if (typeof showToast === 'function') {
                         showToast('Form opened but values may not be set', 'warning');
                     }
@@ -626,7 +606,6 @@ function handleCloneRecord(container, fieldAnalysis, entityName) {
 
 // Start monitoring for save and apply skipped fields
 function startSaveMonitoring() {
-    console.log('Starting save monitoring...');
     
     // Poll every second to check if record has been saved
     const monitorInterval = setInterval(() => {
@@ -659,7 +638,6 @@ function startSaveMonitoring() {
             const currentEntity = Xrm.Page.data.entity.getEntityName();
             
             if (expectedEntity && currentEntity !== expectedEntity) {
-                console.log('User navigated to different entity type. Cleaning up.');
                 clearInterval(monitorInterval);
                 cleanupSkippedFieldsStorage();
                 return;
@@ -676,8 +654,6 @@ function startSaveMonitoring() {
             sessionStorage.setItem('adminplus_saved_record_id', cleanRecordId);
             sessionStorage.setItem('adminplus_waiting_for_save', 'false');
             
-            console.log('✓ Record saved detected! Record ID:', cleanRecordId);
-            console.log('Applying skipped fields...');
             
             // Show visual feedback immediately (only after verification)
             if (typeof showToast === 'function') {
@@ -690,7 +666,6 @@ function startSaveMonitoring() {
             }, 800); // Wait 800ms for form to stabilize - faster response
             
         } catch (e) {
-            console.warn('Error in save monitoring:', e);
         }
     }, 1000); // Check every second
     
@@ -699,7 +674,6 @@ function startSaveMonitoring() {
         clearInterval(monitorInterval);
         const waiting = sessionStorage.getItem('adminplus_waiting_for_save');
         if (waiting === 'true') {
-            console.warn('Save monitoring timeout - user may have abandoned the record. Cleaning up.');
             cleanupSkippedFieldsStorage();
         }
     }, 600000); // 10 minutes
@@ -708,7 +682,6 @@ function startSaveMonitoring() {
 // Function to apply skipped fields
 function applySkippedFields() {
     try {
-        console.log('Applying skipped fields...');
         
         // Get skipped fields from sessionStorage
         const skippedFieldsStr = sessionStorage.getItem('adminplus_skipped_fields');
@@ -717,14 +690,12 @@ function applySkippedFields() {
         const savedRecordId = sessionStorage.getItem('adminplus_saved_record_id');
         
         if (!skippedFieldsStr) {
-            console.log('No skipped fields found');
             return;
         }
         
         // Verify we're on the right entity
         const currentEntity = Xrm.Page.data.entity.getEntityName();
         if (currentEntity !== entityName) {
-            console.log('Different entity, cleaning up and skipping');
             cleanupSkippedFieldsStorage();
             return;
         }
@@ -732,14 +703,12 @@ function applySkippedFields() {
         // Verify we're still on the same record (user didn't navigate away)
         const currentRecordId = Xrm.Page.data.entity.getId();
         if (!currentRecordId) {
-            console.log('No record ID found, user may have navigated away');
             cleanupSkippedFieldsStorage();
             return;
         }
         
         const cleanCurrentId = currentRecordId.replace(/[{}]/g, "").toLowerCase();
         if (savedRecordId && cleanCurrentId !== savedRecordId) {
-            console.log('Different record detected, user navigated away. Cleaning up.');
             cleanupSkippedFieldsStorage();
             return;
         }
@@ -748,7 +717,6 @@ function applySkippedFields() {
         if (timestamp) {
             const age = Date.now() - parseInt(timestamp);
             if (age > 600000) { // 10 minutes
-                console.log('Skipped fields data is too old, clearing');
                 cleanupSkippedFieldsStorage();
                 return;
             }
@@ -762,7 +730,6 @@ function applySkippedFields() {
             return;
         }
         
-        console.log(`Found ${fieldCount} skipped fields to apply`);
         
         let appliedCount = 0;
         let errorCount = 0;
@@ -785,7 +752,6 @@ function applySkippedFields() {
                         if (Array.isArray(valueToSet) && valueToSet.length > 0) {
                             const lookup = valueToSet[0];
                             if (!lookup.id || !lookup.name || !lookup.entityType) {
-                                console.warn(`Invalid lookup format for ${fieldName}`);
                                 errorCount++;
                                 return;
                             }
@@ -794,11 +760,9 @@ function applySkippedFields() {
                     
                     attribute.setValue(valueToSet);
                     appliedCount++;
-                    console.log(`✓ Applied skipped field ${fieldName} (${attrType})`);
                 } else {
                     // Field still not on main form - truly missing
                     stillSkippedCount++;
-                    console.warn(`Field ${fieldName} not available on main form either - cannot apply`);
                 }
             } catch (e) {
                 errorCount++;
@@ -806,20 +770,17 @@ function applySkippedFields() {
             }
         });
         
-        console.log(`Applied ${appliedCount} skipped field(s), ${errorCount} failed, ${stillSkippedCount} not on form`);
         
         // Clean up sessionStorage
         cleanupSkippedFieldsStorage();
         
         // Auto-save the record with the new fields (only if we successfully applied some)
         if (appliedCount > 0) {
-            console.log('Saving record with applied fields...');
             
             // Simply save - let Dynamics handle required field validation normally
             // This way user will see the standard required field errors if any
             Xrm.Page.data.entity.save().then(
                 function() {
-                    console.log('✓ Record saved successfully with all fields');
                     if (typeof showToast === 'function') {
                         let message = `Successfully applied and saved ${appliedCount} additional field(s)!`;
                         if (stillSkippedCount > 0) {
@@ -843,7 +804,7 @@ function applySkippedFields() {
             }
         } else if (errorCount > 0) {
             if (typeof showToast === 'function') {
-                showToast(`Could not apply ${errorCount} field(s). Check console.`, 'error', 4000);
+                showToast(`Could not apply ${errorCount} field(s).`, 'error', 4000);
             }
         }
         
@@ -863,6 +824,5 @@ function cleanupSkippedFieldsStorage() {
     sessionStorage.removeItem('adminplus_saved_record_id');
     sessionStorage.removeItem('adminplus_save_in_progress');
     sessionStorage.removeItem('adminplus_form_identifier');
-    console.log('Cleaned up clone session storage');
 }
 
