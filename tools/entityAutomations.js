@@ -434,14 +434,11 @@ function generateSectionHtml(title, items, type) {
         const solutionDropdown = type === 'businessrule' ? '' : getSolutionDropdown(item);
         const status = getStatusInfo(item, type);
         const url = getItemUrl(item, type, clientUrl);
-        const cursorStyle = url ? 'cursor: pointer; transition: background-color 0.2s;' : '';
-        const hoverAttribute = url ? 'onmouseenter="this.style.backgroundColor=\'#e8e8e8\';" onmouseleave="this.style.backgroundColor=\'#f5f5f5\';"' : '';
-        const clickAttribute = url ? `onclick="window.open('${url}', '_blank');"` : '';
         
         html += `
-            <div style="padding: 12px; background-color: #f5f5f5; border-radius: 6px; border-left: 3px solid ${status.color}; ${cursorStyle}" ${hoverAttribute} ${clickAttribute}>
+            <div style="padding: 12px; background-color: #f5f5f5; border-radius: 6px; border-left: 3px solid ${status.color};">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                    <div style="font-weight: 600; color: #333; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; margin-right: 10px;">${name}</div>
+                    <div style="font-weight: 600; color: #333; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; margin-right: 10px; ${url ? 'cursor: pointer; text-decoration: underline;' : ''}" ${url ? `onclick="window.open('${url}', '_blank');"` : ''}>${name}</div>
                     <div style="display: flex; gap: 8px; align-items: center; flex-shrink: 0;">
                         ${status.badge}
                     </div>
