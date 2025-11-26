@@ -59,12 +59,36 @@ loadScript('utils/ui.js', onUtilScriptLoaded);
 // Sidebar Management
 // ============================================================================
 
-// Helper function to check if running within Dynamics 365
+// Helper function to check if running within Dynamics 365 (not Power Pages or other contexts)
 function isD365Context() {
   try {
-    return typeof Xrm !== 'undefined' && 
-           Xrm.Utility && 
-           Xrm.Utility.getGlobalContext;
+    // Check if Xrm exists
+    if (typeof Xrm === 'undefined' || !Xrm.Utility || !Xrm.Utility.getGlobalContext) {
+      return false;
+    }
+    
+    // Check if we have access to Xrm.Page (specific to D365 forms/views)
+    // Power Pages has Xrm but not Xrm.Page or other D365-specific APIs
+    if (typeof Xrm.Page === 'undefined' || !Xrm.Page.context) {
+      return false;
+    }
+    
+    // Additional check: Ensure we can get client URL (D365 specific)
+    var clientUrl = Xrm.Page.context.getClientUrl();
+    if (!clientUrl) {
+      return false;
+    }
+    
+    // Check that URL contains dynamics.com or typical D365 patterns
+    // Power Pages URLs are different (powerappsportals.com, microsoftcrmportals.com, etc.)
+    var url = window.location.href.toLowerCase();
+    var isD365Url = url.includes('dynamics.com') || 
+                    url.includes('crm.dynamics.com') ||
+                    url.includes('/main.aspx') ||
+                    url.includes('/userdefined/') ||
+                    (clientUrl && (clientUrl.includes('dynamics.com') || clientUrl.includes('.crm')));
+    
+    return isD365Url;
   } catch (error) {
     return false;
   }
