@@ -423,12 +423,12 @@ function getSolutionDropdown(item) {
     const solutionCount = item.solutions.length;
     
     if (solutionCount === 0) {
-        return `<div style="font-size: 12px; color: #666;">
+        return `<div style="font-size: 12px; color: #666; position: relative;">
             <div style="display: flex; align-items: center; cursor: pointer; padding: 4px 0;" onclick="event.stopPropagation(); toggleSolutionList('${itemId}')">
                 <span id="arrow-${itemId}" style="display: inline-block; margin-right: 6px; transition: transform 0.2s; font-size: 10px;">▶</span>
                 <strong>Solutions (0)</strong>
             </div>
-            <div id="solutions-${itemId}" style="display: none; margin-top: 4px; padding-left: 16px; color: #999; font-style: italic; font-size: 11px;">
+            <div id="solutions-${itemId}" style="display: none; position: absolute; top: 100%; left: 0; background: white; border: 1px solid #ccc; border-radius: 4px; padding: 8px 12px; margin-top: 2px; box-shadow: 0 2px 8px rgba(0,0,0,0.15); z-index: 1000; min-width: 200px; color: #999; font-style: italic; font-size: 11px;">
                 Not in any solution
             </div>
         </div>`;
@@ -438,17 +438,17 @@ function getSolutionDropdown(item) {
     const solutionList = item.solutions.map(sol => {
         const icon = sol.isManaged ? '🔒' : '🔓';
         const bgColor = sol.isManaged ? '#e3f2fd' : '#e8f5e9';
-        return `<div style="padding: 4px 8px; margin-bottom: 4px; background-color: ${bgColor}; border-radius: 3px; font-size: 11px;">
+        return `<div style="padding: 6px 10px; margin-bottom: 4px; background-color: ${bgColor}; border-radius: 3px; font-size: 11px; white-space: nowrap;">
             ${sol.name} ${icon}
         </div>`;
     }).join('');
     
-    return `<div style="font-size: 12px; color: #666;">
+    return `<div style="font-size: 12px; color: #666; position: relative;">
         <div style="display: flex; align-items: center; cursor: pointer; padding: 4px 0;" onclick="event.stopPropagation(); toggleSolutionList('${itemId}')">
             <span id="arrow-${itemId}" style="display: inline-block; margin-right: 6px; transition: transform 0.2s; font-size: 10px;">▶</span>
             <strong>Solutions (${solutionCount})</strong>
         </div>
-        <div id="solutions-${itemId}" style="display: none; margin-top: 4px; padding-left: 16px;">
+        <div id="solutions-${itemId}" style="display: none; position: absolute; top: 100%; left: 0; background: white; border: 1px solid #ccc; border-radius: 4px; padding: 8px; margin-top: 2px; box-shadow: 0 2px 8px rgba(0,0,0,0.15); z-index: 1000; min-width: 200px; max-height: 300px; overflow-y: auto;">
             ${solutionList}
         </div>
     </div>`;
@@ -561,7 +561,19 @@ function toggleSolutionList(itemId) {
     const solutionsDiv = document.getElementById(`solutions-${itemId}`);
     const arrow = document.getElementById(`arrow-${itemId}`);
     
-    if (solutionsDiv.style.display === 'none') {
+    // Close all other solution dropdowns first
+    document.querySelectorAll('[id^="solutions-"]').forEach(el => {
+        if (el.id !== `solutions-${itemId}`) {
+            el.style.display = 'none';
+        }
+    });
+    document.querySelectorAll('[id^="arrow-"]').forEach(el => {
+        if (el.id !== `arrow-${itemId}`) {
+            el.style.transform = 'rotate(0deg)';
+        }
+    });
+    
+    if (solutionsDiv.style.display === 'none' || solutionsDiv.style.display === '') {
         solutionsDiv.style.display = 'block';
         arrow.style.transform = 'rotate(90deg)';
     } else {
@@ -569,4 +581,17 @@ function toggleSolutionList(itemId) {
         arrow.style.transform = 'rotate(0deg)';
     }
 }
+
+// Close solution dropdowns when clicking outside
+document.addEventListener('click', function(event) {
+    // Check if click is outside of solution dropdown triggers
+    if (!event.target.closest('[id^="arrow-"]') && !event.target.closest('[id^="solutions-"]')) {
+        document.querySelectorAll('[id^="solutions-"]').forEach(el => {
+            el.style.display = 'none';
+        });
+        document.querySelectorAll('[id^="arrow-"]').forEach(el => {
+            el.style.transform = 'rotate(0deg)';
+        });
+    }
+});
 
