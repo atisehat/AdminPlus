@@ -437,10 +437,9 @@ function getSolutionDropdown(item) {
     
     // Create solution list (vertical list format)
     const solutionList = item.solutions.map(sol => {
-        const icon = sol.isManaged ? '🔒' : '🔓';
         const bgColor = sol.isManaged ? '#e3f2fd' : '#e8f5e9';
         return `<div style="padding: 6px 10px; margin-bottom: 4px; background-color: ${bgColor}; border-radius: 3px; font-size: 11px; white-space: nowrap;">
-            ${sol.name} ${icon}
+            ${sol.name}
         </div>`;
     }).join('');
     
