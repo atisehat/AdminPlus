@@ -15,16 +15,18 @@ async function showEntityAutomations() {
         }
         
         // Fetch all automation data in parallel
-        const [workflows, businessRules, flows, customApis, customActions] = await Promise.all([
+        const [workflows, dialogs, businessRules, businessProcessFlows, flows, customApis, customActions] = await Promise.all([
             fetchWorkflows(entityName, clientUrl),
+            fetchDialogs(entityName, clientUrl),
             fetchBusinessRules(entityName, clientUrl),
+            fetchBusinessProcessFlows(entityName, clientUrl),
             fetchFlows(entityName, clientUrl),
             fetchCustomApis(entityName, clientUrl),
             fetchCustomActions(entityName, clientUrl)
         ]);
         
         // Enrich all items with owner information if missing
-        const allItems = [...workflows, ...businessRules, ...flows, ...customApis, ...customActions];
+        const allItems = [...workflows, ...dialogs, ...businessRules, ...businessProcessFlows, ...flows, ...customApis, ...customActions];
         await enrichWithOwnerNames(allItems, clientUrl);
         
         // Enrich all items with solution information
@@ -36,7 +38,7 @@ async function showEntityAutomations() {
         }
         
         // Create and display popup after loading is complete
-        createAutomationsPopup(entityName, workflows, businessRules, flows, customApis, customActions);
+        createAutomationsPopup(entityName, workflows, dialogs, businessRules, businessProcessFlows, flows, customApis, customActions);
         
     } catch (error) {
         if (typeof hideLoadingDialog === 'function') {
@@ -78,6 +80,27 @@ async function fetchWorkflows(entityName, clientUrl) {
     }
 }
 
+// Fetch Dialogs
+async function fetchDialogs(entityName, clientUrl) {
+    try {
+        let response = await fetch(
+            `${clientUrl}/api/data/v9.2/workflows?$select=name,statecode,statuscode,primaryentity,workflowid,_ownerid_value&$expand=ownerid($select=fullname)&$filter=primaryentity eq '${entityName}' and category eq 1&$orderby=name asc`
+        );
+        
+        if (!response.ok) {
+            response = await fetch(
+                `${clientUrl}/api/data/v9.2/workflows?$select=name,statecode,statuscode,primaryentity,workflowid,_ownerid_value&$filter=primaryentity eq '${entityName}' and category eq 1&$orderby=name asc`
+            );
+        }
+        
+        if (!response.ok) return [];
+        const data = await response.json();
+        return data.value || [];
+    } catch (error) {
+        return [];
+    }
+}
+
 // Fetch Business Rules
 async function fetchBusinessRules(entityName, clientUrl) {
     try {
@@ -88,6 +111,27 @@ async function fetchBusinessRules(entityName, clientUrl) {
         if (!response.ok) {
             response = await fetch(
                 `${clientUrl}/api/data/v9.2/workflows?$select=name,statecode,statuscode,primaryentity,workflowid,_ownerid_value&$filter=primaryentity eq '${entityName}' and category eq 2&$orderby=name asc`
+            );
+        }
+        
+        if (!response.ok) return [];
+        const data = await response.json();
+        return data.value || [];
+    } catch (error) {
+        return [];
+    }
+}
+
+// Fetch Business Process Flows
+async function fetchBusinessProcessFlows(entityName, clientUrl) {
+    try {
+        let response = await fetch(
+            `${clientUrl}/api/data/v9.2/workflows?$select=name,statecode,statuscode,primaryentity,workflowid,_ownerid_value&$expand=ownerid($select=fullname)&$filter=primaryentity eq '${entityName}' and category eq 4&$orderby=name asc`
+        );
+        
+        if (!response.ok) {
+            response = await fetch(
+                `${clientUrl}/api/data/v9.2/workflows?$select=name,statecode,statuscode,primaryentity,workflowid,_ownerid_value&$filter=primaryentity eq '${entityName}' and category eq 4&$orderby=name asc`
             );
         }
         
@@ -274,7 +318,7 @@ async function fetchCustomActions(entityName, clientUrl) {
 }
 
 // Create the automations popup
-function createAutomationsPopup(entityName, workflows, businessRules, flows, customApis, customActions) {
+function createAutomationsPopup(entityName, workflows, dialogs, businessRules, businessProcessFlows, flows, customApis, customActions) {
     // Close any existing popups
     const existingPopups = document.querySelectorAll('.commonPopup');
     existingPopups.forEach(popup => popup.remove());
@@ -286,7 +330,7 @@ function createAutomationsPopup(entityName, workflows, businessRules, flows, cus
     popupContainer.style.width = '75%';
     popupContainer.style.maxHeight = '90vh';
     
-    const totalCount = workflows.length + businessRules.length + flows.length + customApis.length + customActions.length;
+    const totalCount = workflows.length + dialogs.length + businessRules.length + businessProcessFlows.length + flows.length + customApis.length + customActions.length;
     
     popupContainer.innerHTML = `
         <div class="commonPopup-header" style="background-color: #2b2b2b; position: relative; cursor: move; border-radius: 9px 9px 0 0; margin: 0; border-bottom: 2px solid #1a1a1a;">
@@ -302,7 +346,7 @@ function createAutomationsPopup(entityName, workflows, businessRules, flows, cus
             </div>
             
             <div class="scroll-section" style="overflow-y: auto; max-height: calc(90vh - 200px);">
-                ${generateAutomationsHtml(workflows, businessRules, flows, customApis, customActions)}
+                ${generateAutomationsHtml(workflows, dialogs, businessRules, businessProcessFlows, flows, customApis, customActions)}
             </div>
         </div>
     `;
@@ -326,14 +370,20 @@ function createAutomationsPopup(entityName, workflows, businessRules, flows, cus
 }
 
 // Generate HTML for all automations
-function generateAutomationsHtml(workflows, businessRules, flows, customApis, customActions) {
+function generateAutomationsHtml(workflows, dialogs, businessRules, businessProcessFlows, flows, customApis, customActions) {
     let html = '';
     
     // Workflows Section
     html += generateSectionHtml('Workflows (Classic)', workflows, 'workflow', '⚙️');
     
+    // Dialogs Section
+    html += generateSectionHtml('Dialogs', dialogs, 'dialog', '💬');
+    
     // Business Rules Section
     html += generateSectionHtml('Business Rules', businessRules, 'businessrule', '📋');
+    
+    // Business Process Flows Section
+    html += generateSectionHtml('Business Process Flows', businessProcessFlows, 'businessprocessflow', '🔄');
     
     // Flows Section
     html += generateSectionHtml('Cloud Flows (Power Automate)', flows, 'flow', '⚡');
@@ -463,8 +513,22 @@ function getItemUrl(item, type, clientUrl) {
         }
     }
     
+    if (type === 'dialog') {
+        // Open dialog in classic editor
+        if (item.workflowid) {
+            return `${clientUrl}/sfa/workflow/edit.aspx?id=${item.workflowid}`;
+        }
+    }
+    
     if (type === 'businessrule') {
         // Open business rule in classic editor
+        if (item.workflowid) {
+            return `${clientUrl}/sfa/workflow/edit.aspx?id=${item.workflowid}`;
+        }
+    }
+    
+    if (type === 'businessprocessflow') {
+        // Open business process flow in classic editor
         if (item.workflowid) {
             return `${clientUrl}/sfa/workflow/edit.aspx?id=${item.workflowid}`;
         }
