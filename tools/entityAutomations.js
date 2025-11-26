@@ -37,7 +37,7 @@ async function showEntityAutomations() {
         }
         
         // Create and display popup after loading is complete
-        createAutomationsPopup(entityName, workflows, dialogs, businessRules, businessProcessFlows, customApis, customActions);
+        createAutomationsPopup(entityName, workflows, dialogs, businessRules, businessProcessFlows, customApis, customActions, clientUrl);
         
     } catch (error) {
         if (typeof hideLoadingDialog === 'function') {
@@ -296,7 +296,7 @@ async function fetchCustomActions(entityName, clientUrl) {
 }
 
 // Create the automations popup
-function createAutomationsPopup(entityName, workflows, dialogs, businessRules, businessProcessFlows, customApis, customActions) {
+function createAutomationsPopup(entityName, workflows, dialogs, businessRules, businessProcessFlows, customApis, customActions, clientUrl) {
     // Close any existing popups
     const existingPopups = document.querySelectorAll('.commonPopup');
     existingPopups.forEach(popup => popup.remove());
@@ -310,6 +310,9 @@ function createAutomationsPopup(entityName, workflows, dialogs, businessRules, b
     
     const totalCount = workflows.length + dialogs.length + businessRules.length + businessProcessFlows.length + customApis.length + customActions.length;
     
+    // Create Power Automate URL for the environment
+    const powerAutomateUrl = clientUrl.replace('.dynamics.com', '.flow.microsoft.com');
+    
     popupContainer.innerHTML = `
         <div class="commonPopup-header" style="background-color: #2b2b2b; position: relative; cursor: move; border-radius: 9px 9px 0 0; margin: 0; border-bottom: 2px solid #1a1a1a;">
             <span style="color: white;">Table Automations & Customizations</span>
@@ -317,11 +320,14 @@ function createAutomationsPopup(entityName, workflows, dialogs, businessRules, b
         </div>
         <div class="popup-body" style="padding: 20px;">
             <div style="background-color: #f9f9f9; padding: 12px 20px; border-radius: 5px; margin-bottom: 20px;">
-                <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
                     <div><strong>Table:</strong> ${entityName}</div>
-                    <div style="display: flex; align-items: center; gap: 20px;">
-                        <div style="font-size: 11px; color: #666; font-style: italic;">Note: Cloud Flows are not included</div>
-                        <div><strong>Total Items:</strong> ${totalCount}</div>
+                    <div style="text-align: right;">
+                        <div style="margin-bottom: 5px;"><strong>Total Items:</strong> ${totalCount}</div>
+                        <div style="font-size: 11px; color: #666;">
+                            <strong>Note:</strong> Cloud Flows are not included. 
+                            <a href="${powerAutomateUrl}" target="_blank" style="color: #0066cc; text-decoration: underline;">Visit Power Automate</a> for Cloud Flows.
+                        </div>
                     </div>
                 </div>
             </div>
@@ -354,10 +360,11 @@ function createAutomationsPopup(entityName, workflows, dialogs, businessRules, b
 function generateAutomationsHtml(workflows, dialogs, businessRules, businessProcessFlows, customApis, customActions) {
     let html = '';
     
-    // Combine Workflows, Dialogs, and Custom Actions into one section
+    // Combine Workflows, Dialogs, Business Process Flows, and Custom Actions into one section
     const workflowItems = [
         ...workflows.map(w => ({ ...w, itemType: 'Workflow Classic' })),
         ...dialogs.map(d => ({ ...d, itemType: 'Dialog' })),
+        ...businessProcessFlows.map(b => ({ ...b, itemType: 'Business Process' })),
         ...customActions.map(a => ({ ...a, itemType: 'Custom Action' }))
     ].sort((a, b) => (a.name || '').localeCompare(b.name || ''));
     
@@ -365,9 +372,6 @@ function generateAutomationsHtml(workflows, dialogs, businessRules, businessProc
     
     // Business Rules Section
     html += generateSectionHtml('Business Rules', businessRules, 'businessrule');
-    
-    // Business Process Flows Section
-    html += generateSectionHtml('Business Process Flows', businessProcessFlows, 'businessprocessflow');
     
     // Custom APIs Section
     html += generateSectionHtml('Custom APIs', customApis, 'customapi');
