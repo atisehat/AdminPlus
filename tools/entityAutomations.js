@@ -45,7 +45,7 @@ async function showEntityAutomations() {
 async function fetchWorkflows(entityName, clientUrl) {
     try {
         const response = await fetch(
-            `${clientUrl}/api/data/v9.2/workflows?$select=name,category,statecode,statuscode,primaryentity,type,workflowid,parentworkflowid&$filter=primaryentity eq '${entityName}' and category eq 0&$orderby=name asc`
+            `${clientUrl}/api/data/v9.2/workflows?$select=name,category,statecode,statuscode,primaryentity,type,workflowid,parentworkflowid,_ownerid_value&$expand=ownerid($select=fullname)&$filter=primaryentity eq '${entityName}' and category eq 0&$orderby=name asc`
         );
         
         if (!response.ok) return [];
@@ -68,7 +68,7 @@ async function fetchWorkflows(entityName, clientUrl) {
 async function fetchBusinessRules(entityName, clientUrl) {
     try {
         const response = await fetch(
-            `${clientUrl}/api/data/v9.2/workflows?$select=name,statecode,statuscode,primaryentity,workflowid&$filter=primaryentity eq '${entityName}' and category eq 2&$orderby=name asc`
+            `${clientUrl}/api/data/v9.2/workflows?$select=name,statecode,statuscode,primaryentity,workflowid,_ownerid_value&$expand=ownerid($select=fullname)&$filter=primaryentity eq '${entityName}' and category eq 2&$orderby=name asc`
         );
         
         if (!response.ok) return [];
@@ -83,7 +83,7 @@ async function fetchBusinessRules(entityName, clientUrl) {
 async function fetchFlows(entityName, clientUrl) {
     try {
         const response = await fetch(
-            `${clientUrl}/api/data/v9.2/workflows?$select=name,category,statecode,statuscode,primaryentity,type,workflowid&$filter=primaryentity eq '${entityName}' and category eq 5&$orderby=name asc`
+            `${clientUrl}/api/data/v9.2/workflows?$select=name,category,statecode,statuscode,primaryentity,type,workflowid,_ownerid_value&$expand=ownerid($select=fullname)&$filter=primaryentity eq '${entityName}' and category eq 5&$orderby=name asc`
         );
         
         if (!response.ok) return [];
@@ -98,7 +98,7 @@ async function fetchFlows(entityName, clientUrl) {
 async function fetchCustomApis(entityName, clientUrl) {
     try {
         const response = await fetch(
-            `${clientUrl}/api/data/v9.2/customapis?$select=uniquename,displayname,bindingtype,boundentitylogicalname,isfunction,customapiid&$filter=boundentitylogicalname eq '${entityName}'&$orderby=uniquename asc`
+            `${clientUrl}/api/data/v9.2/customapis?$select=uniquename,displayname,bindingtype,boundentitylogicalname,isfunction,customapiid,_ownerid_value&$expand=ownerid($select=fullname)&$filter=boundentitylogicalname eq '${entityName}'&$orderby=uniquename asc`
         );
         
         if (!response.ok) return [];
@@ -113,7 +113,7 @@ async function fetchCustomApis(entityName, clientUrl) {
 async function fetchCustomActions(entityName, clientUrl) {
     try {
         const response = await fetch(
-            `${clientUrl}/api/data/v9.2/workflows?$select=name,uniquename,statecode,statuscode,primaryentity,workflowid&$filter=primaryentity eq '${entityName}' and category eq 3&$orderby=name asc`
+            `${clientUrl}/api/data/v9.2/workflows?$select=name,uniquename,statecode,statuscode,primaryentity,workflowid,_ownerid_value&$expand=ownerid($select=fullname)&$filter=primaryentity eq '${entityName}' and category eq 3&$orderby=name asc`
         );
         
         if (!response.ok) return [];
@@ -215,11 +215,12 @@ function generateSectionHtml(title, items, type, icon) {
                 <span>${title}</span>
                 <span style="background-color: #2b2b2b; color: white; padding: 2px 8px; border-radius: 12px; font-size: 12px;">${items.length}</span>
             </h3>
-            <div style="display: grid; gap: 10px;">
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
     `;
     
     items.forEach(item => {
         const name = item.name || item.displayname || item.uniquename || 'Unnamed';
+        const owner = getOwnerName(item);
         const status = getStatusInfo(item, type);
         const url = getItemUrl(item, type, clientUrl);
         const cursorStyle = url ? 'cursor: pointer; transition: background-color 0.2s;' : '';
@@ -228,12 +229,17 @@ function generateSectionHtml(title, items, type, icon) {
         
         html += `
             <div style="padding: 12px; background-color: #f5f5f5; border-radius: 6px; border-left: 3px solid ${status.color}; ${cursorStyle}" ${hoverAttribute} ${clickAttribute}>
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <div style="font-weight: 600; color: #333;">${name}</div>
-                    <div style="display: flex; gap: 10px; align-items: center;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                    <div style="font-weight: 600; color: #333; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; margin-right: 10px;">${name}</div>
+                    <div style="display: flex; gap: 8px; align-items: center; flex-shrink: 0;">
                         ${status.badge}
-                        ${getTypeInfo(item, type)}
                     </div>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px; padding-top: 8px; border-top: 1px solid #ddd;">
+                    <div style="font-size: 12px; color: #666;">
+                        <strong>Owner:</strong> ${owner}
+                    </div>
+                    ${getTypeInfo(item, type)}
                 </div>
                 ${getAdditionalInfo(item, type)}
             </div>
@@ -246,6 +252,17 @@ function generateSectionHtml(title, items, type, icon) {
     `;
     
     return html;
+}
+
+// Get owner name from item
+function getOwnerName(item) {
+    if (item.ownerid && item.ownerid.fullname) {
+        return item.ownerid.fullname;
+    }
+    if (item._ownerid_value) {
+        return 'System User';
+    }
+    return 'Unknown';
 }
 
 // Get URL to open item in D365 Classic interface
