@@ -176,7 +176,7 @@ function openPopup() {
 	      <span class="app-icon">🌐</span>
 	    </button>
 	    <button onclick="editSecurity();" class="app-button" title="Assign Security">
-	      <span class="app-icon">👤</span>
+	      <span class="app-icon">🔑</span>
 	    </button>
 	    <button onclick="copySecurity();" class="app-button" title="Copy Security">
 	      <span class="app-icon">🛡️</span>
