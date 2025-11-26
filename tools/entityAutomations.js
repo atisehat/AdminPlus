@@ -45,12 +45,20 @@ async function showEntityAutomations() {
 async function fetchWorkflows(entityName, clientUrl) {
     try {
         const response = await fetch(
-            `${clientUrl}/api/data/v9.2/workflows?$select=name,category,statecode,statuscode,primaryentity,type,workflowid&$filter=primaryentity eq '${entityName}' and category eq 0&$orderby=name asc`
+            `${clientUrl}/api/data/v9.2/workflows?$select=name,category,statecode,statuscode,primaryentity,type,workflowid,parentworkflowid&$filter=primaryentity eq '${entityName}' and category eq 0&$orderby=name asc`
         );
         
         if (!response.ok) return [];
         const data = await response.json();
-        return data.value || [];
+        
+        // Filter out child workflows (type 2 = Activation) to avoid duplicates
+        // Only show Definition (type 1) workflows
+        const filteredWorkflows = (data.value || []).filter(workflow => {
+            // Show only if type is 1 (Definition) OR if parentworkflowid is null
+            return workflow.type === 1 || !workflow.parentworkflowid;
+        });
+        
+        return filteredWorkflows;
     } catch (error) {
         return [];
     }
