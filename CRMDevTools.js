@@ -59,6 +59,17 @@ loadScript('utils/ui.js', onUtilScriptLoaded);
 // Sidebar Management
 // ============================================================================
 
+// Helper function to check if running within Dynamics 365
+function isD365Context() {
+  try {
+    return typeof Xrm !== 'undefined' && 
+           Xrm.Utility && 
+           Xrm.Utility.getGlobalContext;
+  } catch (error) {
+    return false;
+  }
+}
+
 // Helper function to check if user has System Administrator role
 function checkSystemAdministratorRole() {
   try {
@@ -76,6 +87,16 @@ function checkSystemAdministratorRole() {
 }
 
 function openPopup() {
+  // Check if running within Dynamics 365
+  if (!isD365Context()) {
+    if (typeof showToast === 'function') {
+      showToast('AdminPlus can only be used within Dynamics 365. Please open this tool from within your D365 environment.', 'warning', 4000);
+    } else {
+      alert('AdminPlus can only be used within Dynamics 365. Please open this tool from within your D365 environment.');
+    }
+    return;
+  }
+  
   // Toggle: Close sidebar if already open
   if (document.getElementById('MenuPopup')) {
     closePopup();
@@ -398,6 +419,7 @@ function closeSubPopups() {
 // ============================================================================
 // Global Exports
 // ============================================================================
+window.isD365Context = isD365Context;
 window.checkSystemAdministratorRole = checkSystemAdministratorRole;
 window.fetchEntityFields = fetchEntityFields;
 window.unlockAllFields = unlockAllFields;
