@@ -319,11 +319,8 @@ function createAutomationsPopup(entityName, workflows, dialogs, businessRules, b
             <div style="background-color: #f9f9f9; padding: 12px 20px; border-radius: 5px; margin-bottom: 15px;">
                 <div style="display: flex; justify-content: space-between; align-items: flex-start;">
                     <div><strong>Table:</strong> ${entityName}</div>
-                    <div style="text-align: right;">
-                        <div style="margin-bottom: 3px;"><strong>Total Items:</strong> ${totalCount}</div>
-                        <div style="font-size: 11px; color: #666;">
-                            <strong>Note:</strong> Cloud flows are not included here. To create or manage cloud flows, go to Power Automate.
-                        </div>
+                    <div style="text-align: right; font-size: 12px; color: #666; max-width: 400px;">
+                        <strong>Note:</strong> Cloud flows are not included here. To create or manage cloud flows, go to Power Automate.
                     </div>
                 </div>
             </div>
