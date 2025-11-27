@@ -372,32 +372,29 @@ function editSecurity() {
 		// Refresh the current user's security display without losing the selection
 		if (!userId) return;
 		
-		fetchBusinessUnitName(userId, function(response) {
+		const businessUnitAndTeamsList = document.getElementById('section3')?.querySelector('ul');
+		if (!businessUnitAndTeamsList) return;
+		
+		// Clear the list once
+		businessUnitAndTeamsList.innerHTML = '';
+		
+		// Fetch business unit and teams together to avoid race condition
+		Promise.all([
+			new Promise(resolve => fetchBusinessUnitName(userId, resolve)),
+			new Promise(resolve => fetchTeamsForUser(userId, resolve))
+		]).then(([buResponse, teamsResponse]) => {
 			try {
-				const businessUnitAndTeamsList = document.getElementById('section3')?.querySelector('ul');
-				if (!businessUnitAndTeamsList) return;
-				
-				businessUnitAndTeamsList.innerHTML = '';
-				
-				if (response && response.entities && response.entities[0] && response.entities[0].businessunitid) {
-					const businessUnitName = response.entities[0].businessunitid.name;
+				// Add business unit
+				if (buResponse && buResponse.entities && buResponse.entities[0] && buResponse.entities[0].businessunitid) {
+					const businessUnitName = buResponse.entities[0].businessunitid.name;
 					const businessUnitListItem = document.createElement('li');
 					businessUnitListItem.innerHTML = '<strong>Business Unit:</strong> ' + businessUnitName;
 					businessUnitAndTeamsList.appendChild(businessUnitListItem);
-					businessUnitAndTeamsList.appendChild(document.createElement('br'));
 				}
-			} catch (error) {
-				console.error('Error refreshing business unit:', error);
-			}
-		});
-		
-		fetchTeamsForUser(userId, function(response) {
-			try {
-				const businessUnitAndTeamsList = document.getElementById('section3')?.querySelector('ul');
-				if (!businessUnitAndTeamsList) return;
 				
-				if (response && response.entities && response.entities[0]) {
-					const teams = response.entities[0].teammembership_association || [];
+				// Add teams (no <br> between BU and teams)
+				if (teamsResponse && teamsResponse.entities && teamsResponse.entities[0]) {
+					const teams = teamsResponse.entities[0].teammembership_association || [];
 					const teamListItems = teams.map(team => {
 						const listItem = document.createElement('li');
 						const teamTypeText = team['teamtype@OData.Community.Display.V1.FormattedValue'] || 'Unknown';
@@ -414,8 +411,10 @@ function editSecurity() {
 					teamListItems.forEach(item => businessUnitAndTeamsList.appendChild(item));
 				}
 			} catch (error) {
-				console.error('Error refreshing teams:', error);
+				console.error('Error refreshing business unit and teams:', error);
 			}
+		}).catch(error => {
+			console.error('Error fetching user security data:', error);
 		});
 		
 		fetchRolesForUser(userId, function(roles) {
@@ -481,7 +480,6 @@ function editSecurity() {
 			const appendLists = () => {
 		            if (businessUnitListItem) {
 		                businessUnitAndTeamsList.appendChild(businessUnitListItem);
-				businessUnitAndTeamsList.appendChild(document.createElement('br'));
 		            }
 		            teamListItems.forEach(item => businessUnitAndTeamsList.appendChild(item));
 		        };
