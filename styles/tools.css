@@ -700,7 +700,7 @@
 .user-item {
     display: flex;
     flex-direction: column;
-    padding: 12px;
+    padding: 10px 12px;
     margin-bottom: 4px;
     border-radius: 6px;
     cursor: pointer;
@@ -722,12 +722,6 @@
     font-size: 14px;
     font-weight: 500;
     color: #2b2b2b;
-    margin-bottom: 4px;
-}
-
-.user-bu {
-    font-size: 12px;
-    color: #666;
 }
 
 .selected-user-info {
@@ -796,7 +790,7 @@
 .tab-navigation {
     display: flex;
     gap: 8px;
-    padding: 20px 20px 0 20px;
+    padding: 12px 20px 0 20px;
     border-bottom: 2px solid #e0e0e0;
     background: white;
 }
@@ -924,6 +918,23 @@
     margin-bottom: 20px;
 }
 
+.action-selector.inline {
+    margin-bottom: 0;
+    gap: 8px;
+}
+
+.section-title-with-actions {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.section-title-with-actions h4 {
+    margin: 0;
+    flex-shrink: 0;
+}
+
 .radio-option {
     display: flex;
     align-items: center;
@@ -938,6 +949,11 @@
     color: #2b2b2b;
 }
 
+.action-selector.inline .radio-option {
+    padding: 8px 14px;
+    font-size: 13px;
+}
+
 .radio-option:hover {
     border-color: #2b2b2b;
     background: #f8f9fa;
@@ -947,6 +963,11 @@
     cursor: pointer;
     width: 18px;
     height: 18px;
+}
+
+.action-selector.inline .radio-option input[type="radio"] {
+    width: 16px;
+    height: 16px;
 }
 
 .radio-option input[type="radio"]:checked + span {

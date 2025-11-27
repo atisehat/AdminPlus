@@ -147,7 +147,6 @@ function editSecurityCopy() {
 			userDiv.dataset.searchText = user.displayName.toLowerCase();
 			userDiv.innerHTML = `
 				<div class="user-name">${user.displayName}</div>
-				<div class="user-bu">${user._businessunitid_value ? 'BU: ' + (user.businessunitid?.name || 'N/A') : ''}</div>
 			`;
 			
 			userDiv.addEventListener('click', () => selectUser(user));
@@ -396,16 +395,14 @@ function editSecurityCopy() {
 				</div>
 				
 				<div class="panel-section">
-					<h4>Change Business Unit</h4>
-					<div class="action-selector">
-						<label class="radio-option">
-							<input type="radio" name="buAction" value="nochange" ${businessUnitAction === 'nochange' ? 'checked' : ''}>
-							<span>No Change</span>
-						</label>
-						<label class="radio-option">
-							<input type="radio" name="buAction" value="change" ${businessUnitAction === 'change' ? 'checked' : ''}>
-							<span>Change to New Business Unit</span>
-						</label>
+					<div class="section-title-with-actions">
+						<h4>Change Business Unit</h4>
+						<div class="action-selector inline">
+							<label class="radio-option">
+								<input type="radio" name="buAction" value="change" ${businessUnitAction === 'change' ? 'checked' : ''}>
+								<span>Change to New Business Unit</span>
+							</label>
+						</div>
 					</div>
 					
 					<div id="buSelectionArea" style="display: ${businessUnitAction === 'change' ? 'block' : 'none'};">
@@ -434,10 +431,6 @@ function editSecurityCopy() {
 				businessUnitAction = this.value;
 				const selectionArea = document.getElementById('buSelectionArea');
 				selectionArea.style.display = this.value === 'change' ? 'block' : 'none';
-				if (this.value === 'nochange') {
-					newBusinessUnitId = null;
-					document.querySelectorAll('.bu-item').forEach(el => el.classList.remove('selected'));
-				}
 				updateActionButtons();
 			});
 		});
@@ -507,27 +500,25 @@ function editSecurityCopy() {
 				</div>
 				
 				<div class="panel-section">
-					<h4>Modify Teams</h4>
-					<div class="action-selector">
-						<label class="radio-option">
-							<input type="radio" name="teamAction" value="nochange" ${teamAction === 'nochange' ? 'checked' : ''}>
-							<span>No Change</span>
-						</label>
-						<label class="radio-option">
-							<input type="radio" name="teamAction" value="add" ${teamAction === 'add' ? 'checked' : ''}>
-							<span>Add Teams</span>
-						</label>
-						<label class="radio-option">
-							<input type="radio" name="teamAction" value="remove" ${teamAction === 'remove' ? 'checked' : ''}>
-							<span>Remove Teams</span>
-						</label>
-						<label class="radio-option">
-							<input type="radio" name="teamAction" value="replace" ${teamAction === 'replace' ? 'checked' : ''}>
-							<span>Replace All Teams</span>
-						</label>
+					<div class="section-title-with-actions">
+						<h4>Modify Teams</h4>
+						<div class="action-selector inline">
+							<label class="radio-option">
+								<input type="radio" name="teamAction" value="add" ${teamAction === 'add' ? 'checked' : ''}>
+								<span>Add</span>
+							</label>
+							<label class="radio-option">
+								<input type="radio" name="teamAction" value="remove" ${teamAction === 'remove' ? 'checked' : ''}>
+								<span>Remove</span>
+							</label>
+							<label class="radio-option">
+								<input type="radio" name="teamAction" value="replace" ${teamAction === 'replace' ? 'checked' : ''}>
+								<span>Replace All</span>
+							</label>
+						</div>
 					</div>
 					
-					<div id="teamSelectionArea" style="display: ${teamAction && teamAction !== 'nochange' ? 'block' : 'none'};">
+					<div id="teamSelectionArea" style="display: ${teamAction ? 'block' : 'none'};">
 						<input type="text" id="teamSearchInput" placeholder="Search teams..." class="search-input">
 						<div class="selection-list" id="teamList"></div>
 					</div>
@@ -558,12 +549,10 @@ function editSecurityCopy() {
 			radio.addEventListener('change', function() {
 				teamAction = this.value;
 				const selectionArea = document.getElementById('teamSelectionArea');
-				selectionArea.style.display = this.value !== 'nochange' ? 'block' : 'none';
-				if (this.value === 'nochange') {
-					teamsToAdd = [];
-					teamsToRemove = [];
-					document.querySelectorAll('.team-item').forEach(el => el.classList.remove('selected'));
-				}
+				selectionArea.style.display = 'block';
+				teamsToAdd = [];
+				teamsToRemove = [];
+				document.querySelectorAll('.team-item').forEach(el => el.classList.remove('selected'));
 				updateActionButtons();
 			});
 		});
@@ -658,27 +647,25 @@ function editSecurityCopy() {
 				</div>
 				
 				<div class="panel-section">
-					<h4>Modify Security Roles</h4>
-					<div class="action-selector">
-						<label class="radio-option">
-							<input type="radio" name="roleAction" value="nochange" ${roleAction === 'nochange' ? 'checked' : ''}>
-							<span>No Change</span>
-						</label>
-						<label class="radio-option">
-							<input type="radio" name="roleAction" value="add" ${roleAction === 'add' ? 'checked' : ''}>
-							<span>Add Roles</span>
-						</label>
-						<label class="radio-option">
-							<input type="radio" name="roleAction" value="remove" ${roleAction === 'remove' ? 'checked' : ''}>
-							<span>Remove Roles</span>
-						</label>
-						<label class="radio-option">
-							<input type="radio" name="roleAction" value="replace" ${roleAction === 'replace' ? 'checked' : ''}>
-							<span>Replace All Roles</span>
-						</label>
+					<div class="section-title-with-actions">
+						<h4>Modify Security Roles</h4>
+						<div class="action-selector inline">
+							<label class="radio-option">
+								<input type="radio" name="roleAction" value="add" ${roleAction === 'add' ? 'checked' : ''}>
+								<span>Add</span>
+							</label>
+							<label class="radio-option">
+								<input type="radio" name="roleAction" value="remove" ${roleAction === 'remove' ? 'checked' : ''}>
+								<span>Remove</span>
+							</label>
+							<label class="radio-option">
+								<input type="radio" name="roleAction" value="replace" ${roleAction === 'replace' ? 'checked' : ''}>
+								<span>Replace All</span>
+							</label>
+						</div>
 					</div>
 					
-					<div id="roleSelectionArea" style="display: ${roleAction && roleAction !== 'nochange' ? 'block' : 'none'};">
+					<div id="roleSelectionArea" style="display: ${roleAction ? 'block' : 'none'};">
 						<input type="text" id="roleSearchInput" placeholder="Search roles..." class="search-input">
 						<div class="selection-list" id="roleList"></div>
 					</div>
@@ -707,12 +694,10 @@ function editSecurityCopy() {
 			radio.addEventListener('change', function() {
 				roleAction = this.value;
 				const selectionArea = document.getElementById('roleSelectionArea');
-				selectionArea.style.display = this.value !== 'nochange' ? 'block' : 'none';
-				if (this.value === 'nochange') {
-					rolesToAdd = [];
-					rolesToRemove = [];
-					document.querySelectorAll('.role-item').forEach(el => el.classList.remove('selected'));
-				}
+				selectionArea.style.display = 'block';
+				rolesToAdd = [];
+				rolesToRemove = [];
+				document.querySelectorAll('.role-item').forEach(el => el.classList.remove('selected'));
 				updateActionButtons();
 			});
 		});
