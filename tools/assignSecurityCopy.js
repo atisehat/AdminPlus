@@ -221,14 +221,47 @@ function editSecurityCopy() {
 		activeTab = 'businessunit';
 		newBusinessUnitId = null;
 		businessUnitAction = null;
-		currentTeamIds = [];
+		// Don't reset currentTeamIds - these are the user's actual current teams
 		teamsToAdd = [];
 		teamsToRemove = [];
 		teamAction = null;
-		currentRoleIds = [];
+		// Don't reset currentRoleIds - these are the user's actual current roles
 		rolesToAdd = [];
 		rolesToRemove = [];
 		roleAction = null;
+	}
+	
+	/**
+	 * Reset only the modification selections (for Reset button)
+	 */
+	function resetModifications() {
+		// Reset Business Unit modifications
+		newBusinessUnitId = null;
+		businessUnitAction = null;
+		
+		// Reset Team modifications
+		teamsToAdd = [];
+		teamsToRemove = [];
+		teamAction = null;
+		
+		// Reset Role modifications
+		rolesToAdd = [];
+		rolesToRemove = [];
+		roleAction = null;
+		
+		// Clear visual selections
+		document.querySelectorAll('.bu-item').forEach(el => el.classList.remove('selected'));
+		document.querySelectorAll('.team-item').forEach(el => el.classList.remove('selected'));
+		document.querySelectorAll('.role-item').forEach(el => el.classList.remove('selected'));
+		
+		// Uncheck all radio buttons
+		document.querySelectorAll('input[name="buAction"]').forEach(radio => radio.checked = false);
+		document.querySelectorAll('input[name="teamAction"]').forEach(radio => radio.checked = false);
+		document.querySelectorAll('input[name="roleAction"]').forEach(radio => radio.checked = false);
+		
+		// Update counters
+		updateSelectionCounter('teams');
+		updateSelectionCounter('roles');
 	}
 	
 	/**
@@ -948,7 +981,7 @@ function editSecurityCopy() {
 	 * Handle reset changes
 	 */
 	function handleResetChanges() {
-		resetAllStates();
+		resetModifications();
 		updateActiveTab();
 	}
 	
