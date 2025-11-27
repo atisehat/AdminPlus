@@ -2,7 +2,8 @@
 
 // User API calls
 function fetchUsers(callback) {
-    Xrm.WebApi.retrieveMultipleRecords('systemuser', '?$select=systemuserid,firstname,lastname,fullname,_businessunitid_value&$filter=(isdisabled eq false)').then(callback);
+    // Filter: enabled users, with license type != Application (exclude system/app users)
+    Xrm.WebApi.retrieveMultipleRecords('systemuser', '?$select=systemuserid,firstname,lastname,fullname,_businessunitid_value&$filter=(isdisabled eq false) and (accessmode eq 0)').then(callback);
 }
 
 function fetchBusinessUnitName(userId, callback) {

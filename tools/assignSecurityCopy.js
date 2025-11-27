@@ -384,34 +384,20 @@ function editSecurityCopy() {
 	function renderBusinessUnitTab(container) {
 		container.innerHTML = `
 			<div class="tab-panel">
-				<div class="panel-section current-section">
-					<h4>Current Business Unit</h4>
-					<div class="current-value-display">
-						<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2">
-							<path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
-						</svg>
-						<span>${currentBusinessUnitName || 'N/A'}</span>
-					</div>
+				<div class="panel-section current-section-inline">
+					<h4>Current Business Unit: <span class="current-value-inline">${currentBusinessUnitName || 'N/A'}</span></h4>
 				</div>
 				
 				<div class="panel-section">
-					<div class="section-title-with-actions">
-						<h4>Change Business Unit</h4>
-						<div class="action-selector inline">
-							<label class="radio-option">
-								<input type="radio" name="buAction" value="change" ${businessUnitAction === 'change' ? 'checked' : ''}>
-								<span>Change to New Business Unit</span>
-							</label>
-						</div>
-					</div>
-					
-					<div id="buSelectionArea" style="display: ${businessUnitAction === 'change' ? 'block' : 'none'};">
-						<input type="text" id="buSearchInput" placeholder="Search business units..." class="search-input">
-						<div class="selection-list" id="buList"></div>
-					</div>
+					<h4>Change Business Unit</h4>
+					<input type="text" id="buSearchInput" placeholder="Search business units..." class="search-input">
+					<div class="selection-list" id="buList"></div>
 				</div>
 			</div>
 		`;
+		
+		// Always set action to 'change' since it's the only option
+		businessUnitAction = 'change';
 		
 		// Load business units
 		if (allBusinessUnits.length === 0) {
@@ -424,16 +410,6 @@ function editSecurityCopy() {
 		} else {
 			renderBusinessUnitList();
 		}
-		
-		// Attach event handlers
-		container.querySelectorAll('input[name="buAction"]').forEach(radio => {
-			radio.addEventListener('change', function() {
-				businessUnitAction = this.value;
-				const selectionArea = document.getElementById('buSelectionArea');
-				selectionArea.style.display = this.value === 'change' ? 'block' : 'none';
-				updateActionButtons();
-			});
-		});
 	}
 	
 	/**
