@@ -18,7 +18,7 @@
 function editSecurity() {
 	// Check if user Sys Admin
 	if (!checkSystemAdministratorRole()) {
-		Xrm.Navigation.openAlertDialog({ text: "You do not have permission to execute this action. System Administrator role required." });
+		showToast("You do not have permission to execute this action. System Administrator role required.", 'error', 4000);
 		return;
 	}
 	
@@ -830,18 +830,18 @@ function editSecurity() {
 	    const hasRoleChange = rolesRadioSelected && rolesRadioSelected !== "noRoleUpdates" && rolesCheckedValues.length > 0;
 	    
 	    if (!hasBusinessUnitChange && !hasTeamChange && !hasRoleChange) {
-		    showCustomAlert('To update user security, please select from one of the following categories: Business Unit, Team, or Security Role.');
+		    showToast('To update user security, please select from one of the following categories: Business Unit, Team, or Security Role.', 'warning', 4000);
 		    return;
 	    }
 	    
 	    // Additional validation
 	    if (teamsRadioSelected && teamsRadioSelected !== "noTeamUpdates" && teamsCheckedValues.length === 0) {
-	        showCustomAlert('Please select at least one team to modify.');
+	        showToast('Please select at least one team to modify.', 'warning', 3000);
 	        return;
 	    }
 	    
 	    if (rolesRadioSelected && rolesRadioSelected !== "noRoleUpdates" && rolesCheckedValues.length === 0) {
-	        showCustomAlert('Please select at least one role to modify.');
+	        showToast('Please select at least one role to modify.', 'warning', 3000);
 	        return;
 	    }
 	    
@@ -890,13 +890,55 @@ function editSecurity() {
 		    if (searchInput3) searchInput3.value = '';
 		    if (searchInput4) searchInput4.value = '';
 		    
+		    // Reset the lists - reload teams and roles to show full lists
+		    // Re-fetch and display teams
+		    fetchTeams(function(teams) {
+		        try {
+		            if (teams && teams.entities) {
+		                const teamsList = document.getElementById('teamsList');
+		                if (teamsList) {
+		                    const teamDetailsArr = teams.entities.map(team => ({
+		                        name: team.name || 'Unnamed Team',
+		                        teamid: team.teamid,
+		                        businessUnitName: team.businessunitid ? `(BU: ${team.businessunitid.name})` : '(BU: N/A)'
+		                    }));
+		                    teamDetailsArr.sort((a, b) => a.name.localeCompare(b.name));
+		                    createAndAppendItems(teamDetailsArr, teamsList, 'checkbox', 'teamid', ['name', 'businessUnitName'], 'teamsCheckbox', 'team');
+		                }
+		            }
+		        } catch (error) {
+		            console.error('Error resetting teams list:', error);
+		        }
+		    });
+		    
+		    // Re-fetch and display security roles
+		    if (selectedBusinessUnitId) {
+		        fetchSecurityRoles(selectedBusinessUnitId, function(response) {
+		            try {
+		                if (response && response.entities) {
+		                    const rolesListBusinessUnit = document.getElementById('section6')?.querySelector('#securityRolesList');
+		                    if (rolesListBusinessUnit) {
+		                        const roleDetailsArr = response.entities.map(role => ({
+		                            name: role.name || 'Unnamed Role',
+		                            roleid: role.roleid
+		                        }));
+		                        roleDetailsArr.sort((a, b) => a.name.localeCompare(b.name));
+		                        createAndAppendItems(roleDetailsArr, rolesListBusinessUnit, 'checkbox', 'roleid', ['name'], 'rolesCheckbox', 'role');
+		                    }
+		                }
+		            } catch (error) {
+		                console.error('Error resetting roles list:', error);
+		            }
+		        });
+		    }
+		    
 		    closeLoadingDialog();
-		    showCustomAlert(`Security updated successfully for ${selectedUserFullName || 'user'}`);
+		    showToast(`Security updated successfully for ${selectedUserFullName || 'user'}`, 'success', 3000);
 		    
 	    } catch (error) {
 	        console.error('Error updating user security:', error);
 	        closeLoadingDialog();
-	        showCustomAlert(`Error updating security: ${error.message || 'Unknown error'}. Please try again.`);
+	        showToast(`Error updating security: ${error.message || 'Unknown error'}. Please try again.`, 'error', 4000);
 	        throw error; // Re-throw to be caught by handleSubmitButtonClick
 	    }
 	}
