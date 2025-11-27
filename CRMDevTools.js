@@ -35,6 +35,7 @@ function onUtilScriptLoaded() {
     loadScript('tools/fieldsControl.js');
     loadScript('tools/dirtyFields.js');
     loadScript('tools/copySecurity.js');
+    loadScript('tools/copySecurityCopy.js');
     loadScript('tools/assignSecurity.js');
     loadScript('tools/securityOperations.js');
     loadScript('tools/dateCalculator.js');
@@ -167,6 +168,9 @@ function openPopup() {
 	    </button>
 	    <button onclick="performanceDiagnostics();" class="app-button" title="Performance Diagnostics">
 	      <span class="app-icon">⚡</span>
+	    </button>
+	    <button onclick="copySecurityCopy();" class="app-button" title="Copy Security (Copy)">
+	      <span class="app-icon">🔓</span>
 	    </button>
 	  </div>
 	</div>
