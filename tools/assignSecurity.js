@@ -371,7 +371,7 @@ function editSecurity() {
 		        if (sectionPrefix === '1') {
 		            selectedUserId = user.systemuserid;
 		            selectedBusinessUnitId = user._businessunitid_value;
-			    selectedUserFullName = user.fullname;
+			    selectedUserFullName = user.displayName || user.fullname;
 				
    			    //clear 
 			    stateArray['team'] = [];
@@ -890,7 +890,14 @@ function editSecurity() {
 	
 	function displayPopup(users, businessUnits) {
 	    if (users && users.entities) {
-	        sortByProperty(users.entities, 'fullname');
+	        // Format user names to "FirstName LastName" and add to displayName property
+	        users.entities.forEach(user => {
+	            const firstName = user.firstname || '';
+	            const lastName = user.lastname || '';
+	            user.displayName = `${firstName} ${lastName}`.trim() || user.fullname || 'Unknown User';
+	        });
+	        // Sort by the new display name
+	        sortByProperty(users.entities, 'displayName');
 	    }	
 	    createAppendSecurityPopup();
 
@@ -898,7 +905,7 @@ function editSecurity() {
 	        sortByProperty(businessUnits.entities, 'name');
 	    }
 	    if (users && users.entities) {		    
-		renderGenericList(users.entities, user => selectUser(user, '1'), 'userList1', 'searchInput1', 'user', 'fullname', 'systemuserid', true);		
+		renderGenericList(users.entities, user => selectUser(user, '1'), 'userList1', 'searchInput1', 'user', 'displayName', 'systemuserid', true);		
 	    }			
 	      setupSearchFilter('searchInput1', `user${'userList1'.charAt('userList1'.length - 1)}`);	     
 	}	

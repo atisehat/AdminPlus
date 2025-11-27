@@ -181,10 +181,26 @@ function setupSearchFilter(searchInputId, targetClassSuffix) {
   if (!searchInput) return;
   
   searchInput.oninput = function() {
-    const searchValue = this.value.toLowerCase();
+    const searchValue = this.value.toLowerCase().trim();
+    
+    // If empty search, show all
+    if (!searchValue) {
+      document.querySelectorAll(`.${targetClassSuffix}`).forEach(el => {
+        el.style.display = 'block';
+      });
+      return;
+    }
+    
+    // Split search into words for flexible matching
+    const searchWords = searchValue.split(/\s+/).filter(word => word.length > 0);
+    
     document.querySelectorAll(`.${targetClassSuffix}`).forEach(el => {
-      const searchText = el.dataset.searchText || el.textContent;
-      el.style.display = searchText.toLowerCase().includes(searchValue) ? 'block' : 'none';
+      const searchText = (el.dataset.searchText || el.textContent).toLowerCase();
+      
+      // Check if all search words are found in the text (in any order)
+      const allWordsFound = searchWords.every(word => searchText.includes(word));
+      
+      el.style.display = allWordsFound ? 'block' : 'none';
     });
   };
 }

@@ -2,7 +2,7 @@
 
 // User API calls
 function fetchUsers(callback) {
-    Xrm.WebApi.retrieveMultipleRecords('systemuser', '?$select=systemuserid,fullname,_businessunitid_value&$filter=(isdisabled eq false)').then(callback);
+    Xrm.WebApi.retrieveMultipleRecords('systemuser', '?$select=systemuserid,firstname,lastname,fullname,_businessunitid_value&$filter=(isdisabled eq false)').then(callback);
 }
 
 function fetchBusinessUnitName(userId, callback) {
