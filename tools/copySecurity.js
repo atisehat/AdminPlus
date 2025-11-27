@@ -1,5 +1,5 @@
 function copySecurity() {
-	// Check if user has System Administrator role
+	// Check if Sys Admin
 	if (!checkSystemAdministratorRole()) {
 		Xrm.Navigation.openAlertDialog({ text: "You do not have permission to execute this action. System Administrator role required." });
 		return;
@@ -80,27 +80,25 @@ function copySecurity() {
 		  </div>
 		`;
 		
-		// Close any existing popups (from other tools)
+		// Close all popups
 		const existingPopups = document.querySelectorAll('.commonPopup');
-		existingPopups.forEach(popup => popup.remove());
-		
+		existingPopups.forEach(popup => popup.remove());		
 		newContainer.setAttribute('data-popup-id', 'copySecurity');
 		document.body.appendChild(newContainer);
 		
-		// Setup close button functionality
+		// Close Btn
 		const closeButton = newContainer.querySelector('.close-button');
 		closeButton.addEventListener('click', () => {
 		  newContainer.remove();
 		});
 		
-		// Add hover effect for close button
+		// Hover effect for Close Btn
 		closeButton.addEventListener('mouseenter', function() {
 		  this.style.backgroundColor = '#e81123';
 		});
 		closeButton.addEventListener('mouseleave', function() {
 		  this.style.backgroundColor = 'transparent';
-		});
-		
+		});		
 		makePopupMovable(newContainer);	
 }
 
@@ -146,7 +144,6 @@ function copySecurity() {
 			businessUnitAndTeamsList.innerHTML = '';
 			let businessUnitListItem = null;
 			let teamListItems = [];
-
 			const appendLists = () => {
 			 	if (businessUnitListItem) {
 				    businessUnitAndTeamsList.appendChild(businessUnitListItem);

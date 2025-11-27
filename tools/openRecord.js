@@ -1,22 +1,21 @@
-// Open Record Tool - Navigate to any record by Entity Logical Name and Record ID
+// Open Record Tool
 async function openRecord() {
     try {
-        // Close any existing popups first
+        // Close existing popups
         const existingPopups = document.querySelectorAll('.commonPopup');
         existingPopups.forEach(popup => popup.remove());
         
-        // Create and display the popup
+        // Display popup
         const popupContainer = createOpenRecordPopup();
         document.body.appendChild(popupContainer);
         
-        // Setup event handlers
+        // Event handlers
         setupOpenRecordHandlers(popupContainer);
         
-        // Make popup movable
+        // Movable popup
         if (typeof makePopupMovable === 'function') {
             makePopupMovable(popupContainer);
-        }
-        
+        }        
     } catch (error) {
         console.error('Error opening Open Record tool:', error);
         if (typeof showToast === 'function') {
@@ -118,38 +117,33 @@ function createOpenRecordPopup() {
 }
 
 function setupOpenRecordHandlers(container) {
-    // Close button
+    // Close btn
     const closeButton = container.querySelector('.close-button');
     closeButton.addEventListener('click', () => {
         container.remove();
     });
     
-    // Close button hover effect
+    // Hover effect
     closeButton.addEventListener('mouseenter', function() {
         this.style.backgroundColor = '#e81123';
     });
     closeButton.addEventListener('mouseleave', function() {
         this.style.backgroundColor = 'transparent';
-    });
-    
-    // Use Current Record button
+    });    
+    // Current Record btn
     const useCurrentButton = container.querySelector('#useCurrentRecord');
-    useCurrentButton.addEventListener('click', populateCurrentRecordInfo);
-    
-    // Open Record button
+    useCurrentButton.addEventListener('click', populateCurrentRecordInfo);    
+    // Record btn
     const openButton = container.querySelector('#openRecordButton');
-    openButton.addEventListener('click', handleOpenRecord);
-    
-    // Allow Enter key to submit
+    openButton.addEventListener('click', handleOpenRecord);    
+    // Enter key to submit
     const entityInput = container.querySelector('#entityLogicalName');
-    const recordIdInput = container.querySelector('#recordId');
-    
+    const recordIdInput = container.querySelector('#recordId');    
     entityInput.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') {
             handleOpenRecord();
         }
-    });
-    
+    });    
     recordIdInput.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') {
             handleOpenRecord();
@@ -159,17 +153,15 @@ function setupOpenRecordHandlers(container) {
 
 function populateCurrentRecordInfo() {
     try {
-        // Check if we're on a record form
+        // Check if form
         if (typeof Xrm === 'undefined' || !Xrm.Page || !Xrm.Page.data || !Xrm.Page.data.entity) {
             if (typeof showToast === 'function') {
                 showToast('No record is currently open', 'warning');
             }
             return;
-        }
-        
+        }        
         const entityName = Xrm.Page.data.entity.getEntityName();
-        const recordId = Xrm.Page.data.entity.getId();
-        
+        const recordId = Xrm.Page.data.entity.getId();        
         if (!entityName || !recordId) {
             if (typeof showToast === 'function') {
                 showToast('Unable to get current record information', 'warning');
@@ -177,17 +169,13 @@ function populateCurrentRecordInfo() {
             return;
         }
         
-        // Clean the record ID (remove curly braces)
-        const cleanRecordId = recordId.replace(/[{}]/g, "");
-        
-        // Populate the inputs
+        // Clean the record ID 
+        const cleanRecordId = recordId.replace(/[{}]/g, "");                
         document.getElementById('entityLogicalName').value = entityName;
-        document.getElementById('recordId').value = cleanRecordId;
-        
+        document.getElementById('recordId').value = cleanRecordId;        
         if (typeof showToast === 'function') {
             showToast('Current record info populated', 'success');
-        }
-        
+        }        
     } catch (error) {
         console.error('Error populating current record info:', error);
         if (typeof showToast === 'function') {
@@ -198,10 +186,9 @@ function populateCurrentRecordInfo() {
 
 function handleOpenRecord() {
     try {
-        // Get input values
+        // Input values
         const entityLogicalName = document.getElementById('entityLogicalName').value.trim();
-        const recordId = document.getElementById('recordId').value.trim();
-        
+        const recordId = document.getElementById('recordId').value.trim();        
         // Validate inputs
         if (!entityLogicalName) {
             if (typeof showToast === 'function') {
@@ -209,20 +196,16 @@ function handleOpenRecord() {
             }
             document.getElementById('entityLogicalName').focus();
             return;
-        }
-        
+        }        
         if (!recordId) {
             if (typeof showToast === 'function') {
                 showToast('Please enter a record ID', 'warning');
             }
             document.getElementById('recordId').focus();
             return;
-        }
-        
-        // Clean the record ID (remove curly braces and convert to lowercase)
-        const cleanRecordId = recordId.replace(/[{}]/g, "").toLowerCase();
-        
-        // Validate GUID format (basic validation)
+        }        
+        // Clean the record ID
+        const cleanRecordId = recordId.replace(/[{}]/g, "").toLowerCase();        
         const guidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
         if (!guidPattern.test(cleanRecordId)) {
             if (typeof showToast === 'function') {
@@ -230,25 +213,19 @@ function handleOpenRecord() {
             }
             document.getElementById('recordId').focus();
             return;
-        }
-        
-        // Get the client URL
+        }        
+        // Get client URL
         const clientUrl = Xrm.Page.context.getClientUrl();
         
-        // Construct the record URL
-        const recordUrl = `${clientUrl}/main.aspx?etn=${entityLogicalName}&id=${cleanRecordId}&pagetype=entityrecord`;
-        
-        // Open the record in a new window
+        // Construct record URL and open record in a new window
+        const recordUrl = `${clientUrl}/main.aspx?etn=${entityLogicalName}&id=${cleanRecordId}&pagetype=entityrecord`;        
         const timestamp = new Date().getTime();
         const windowName = `Record_${entityLogicalName}_${timestamp}`;
-        const windowOptions = "height=700,width=1200,location=no,menubar=no,resizable=yes,scrollbars=yes,status=no,titlebar=no,toolbar=no";
-        
-        window.open(recordUrl, windowName, windowOptions);
-        
+        const windowOptions = "height=700,width=1200,location=no,menubar=no,resizable=yes,scrollbars=yes,status=no,titlebar=no,toolbar=no";        
+        window.open(recordUrl, windowName, windowOptions);        
         if (typeof showToast === 'function') {
             showToast('Record opened in new window', 'success');
-        }
-        
+        }        
     } catch (error) {
         console.error('Error opening record:', error);
         if (typeof showToast === 'function') {

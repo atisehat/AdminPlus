@@ -106,9 +106,7 @@ async function disassociateUserFromTeams(selectedUserId, clientUrl) {
   if (!response.ok) {
     throw new Error(`HTTP error ${response.status}`);
   }
-
   const results = await response.json();
-
   await Promise.all(results.value.map(async (result) => {    
     if (result.teamtype === 0 || result.teamtype === 1) {
       const disassociateUrl = `${clientUrl}/api/data/v9.2/teams(${result.teamid})/teammembership_association/$ref?$id=${clientUrl}/api/data/v9.2/systemusers(${selectedUserId})`;
@@ -134,12 +132,10 @@ async function associateUserToRole(selectedUserId, selectedRoleIds) {
     console.error("Invalid parameters.");
     return;
   }
-
   // Check if not array
   if (!Array.isArray(selectedRoleIds)) {
     selectedRoleIds = [selectedRoleIds];
   }
-
   // Association
   var associateRequest = {
     target: { entityType: "systemuser", id: selectedUserId }, 
@@ -153,12 +149,11 @@ async function associateUserToRole(selectedUserId, selectedRoleIds) {
         operationName: "Associate"
       };
     }
-  };  
-
+  };
   try {
     const response = await Xrm.WebApi.online.execute(associateRequest);
     if (response.ok) {
-      //      
+            
     } else {
       console.error('Association failed:', response);
     }

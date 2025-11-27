@@ -1,5 +1,5 @@
 async function showDirtyFields() {
-    // Check if we're on a form page
+    // Check if form
     if (!requireFormContext()) {
         return;
     }
@@ -7,25 +7,20 @@ async function showDirtyFields() {
     try {
         const entity = Xrm.Page.data.entity;
         const attributes = entity.attributes.get();
-        const dirtyFields = attributes.filter(attribute => attribute.getIsDirty());
-        
-        // If no dirty fields, show toast message and return
+        const dirtyFields = attributes.filter(attribute => attribute.getIsDirty());        
+        // If no dirty fields, show message
         if (dirtyFields.length === 0) {
             showToast('No dirty fields found.', 'success');
             return;
-        }
-        
-        // Get entity information
+        }        
+        // Get entity info
         const entityName = entity.getEntityName();
         const recordId = entity.getId().replace(/[{}]/g, "").toLowerCase();
-        const clientUrl = Xrm.Page.context.getClientUrl();
-        
-        // Fetch metadata for display names (especially for hidden fields)
-        const metadata = await fetchFieldMetadata(entityName, clientUrl);
-        
+        const clientUrl = Xrm.Page.context.getClientUrl();        
+        // Fetch metadata for display names
+        const metadata = await fetchFieldMetadata(entityName, clientUrl);        
         const fieldListHtml = generateDirtyFieldsHtml(dirtyFields, metadata);
-        appendDirtyFieldsPopupToBody(entityName, recordId, dirtyFields.length, fieldListHtml);
-        
+        appendDirtyFieldsPopupToBody(entityName, recordId, dirtyFields.length, fieldListHtml);        
     } catch (error) {
         console.error('Error showing dirty fields:', error);
         alert(`Error: ${error.message}`);
@@ -41,14 +36,12 @@ async function fetchFieldMetadata(entityName, clientUrl) {
         }
         
         const data = await response.json();
-        const metadataMap = {};
-        
+        const metadataMap = {};        
         data.value.forEach(field => {
             if (field.DisplayName && field.DisplayName.UserLocalizedLabel && field.DisplayName.UserLocalizedLabel.Label) {
                 metadataMap[field.LogicalName] = field.DisplayName.UserLocalizedLabel.Label;
             }
-        });
-        
+        });        
         return metadataMap;
     } catch (error) {
         console.error('Error fetching field metadata:', error);
@@ -70,9 +63,8 @@ function generateDirtyFieldsHtml(dirtyFields, metadata) {
     
     dirtyFields.forEach((attribute) => {
         const logicalName = attribute.getName();
-        const control = attribute.controls.get(0);
-        
-        // Get display name from control, or fallback to metadata, or use logical name
+        const control = attribute.controls.get(0);        
+        // Get display name from control
         let displayName;
         if (control && control.getLabel()) {
             displayName = control.getLabel();
@@ -83,11 +75,9 @@ function generateDirtyFieldsHtml(dirtyFields, metadata) {
         }
         
         const attrType = attribute.getAttributeType();
-        const value = formatDirtyFieldValue(attribute);
-        
+        const value = formatDirtyFieldValue(attribute);        
         // Get attribute type label
-        const typeLabel = getDirtyFieldTypeLabel(attrType);
-        
+        const typeLabel = getDirtyFieldTypeLabel(attrType);        
         html += `
             <div class="dirtyfield-card" style="padding: 8px; background-color: #f5f5f5; border-radius: 5px; border-left: 3px solid #e81123;">
                 <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -102,8 +92,7 @@ function generateDirtyFieldsHtml(dirtyFields, metadata) {
                 </div>
             </div>
         `;
-    });
-    
+    });    
     html += '</div>';
     return html;
 }
@@ -114,24 +103,21 @@ function formatDirtyFieldValue(attribute) {
         
         if (value === null || value === undefined) {
             return '(empty)';
-        }
-        
+        }        
         const attrType = attribute.getAttributeType();
         
-        // Handle lookups
+        // Lookups
         if (attrType === 'lookup') {
             if (Array.isArray(value) && value.length > 0) {
                 return value.map(v => v.name).join(', ');
             }
             return '(empty)';
-        }
-        
-        // Handle boolean
+        }        
+        // Boolean
         if (attrType === 'boolean') {
             return value ? 'Yes' : 'No';
-        }
-        
-        // Handle optionset (picklist)
+        }        
+        // Optionset
         if (attrType === 'optionset' || attrType === 'multiselectoptionset') {
             try {
                 if (typeof attribute.getFormattedValue === 'function') {
@@ -141,26 +127,22 @@ function formatDirtyFieldValue(attribute) {
                     }
                 }
             } catch (e) {
-                // Fallback to raw value
+
             }
             return value.toString();
-        }
-        
-        // Handle datetime
+        }        
+        // Datetime
         if (attrType === 'datetime' && value instanceof Date) {
             return value.toLocaleString();
-        }
-        
-        // Handle money
+        }        
+        // Money
         if (attrType === 'money') {
             return '$' + value.toFixed(2);
-        }
-        
-        // Handle arrays (multiselect)
+        }        
+        // Multiselect
         if (Array.isArray(value)) {
             return value.join(', ');
         }
-        
         // Truncate long values
         const stringValue = value.toString();
         return stringValue.length > 100 ? stringValue.substring(0, 100) + '...' : stringValue;
@@ -189,19 +171,18 @@ function getDirtyFieldTypeLabel(attrType) {
 }
 
 function appendDirtyFieldsPopupToBody(entityName, recordId, dirtyCount, fieldListHtml) {
-    // Close any existing popups first
+    // Close all popups
     const existingPopups = document.querySelectorAll('.commonPopup');
     existingPopups.forEach(popup => popup.remove());
     
-    // Create popup container
+    // Popup Container
     const popupContainer = document.createElement('div');
     popupContainer.className = 'commonPopup';
     popupContainer.style.border = '3px solid #1a1a1a';
     popupContainer.style.borderRadius = '12px';
     popupContainer.style.width = '75%';
     popupContainer.style.maxHeight = '90vh';
-    
-    // Build content HTML
+        
     const contentHtml = `
         <div style="background-color: #f9f9f9; padding: 15px 20px; border-radius: 5px; margin-bottom: 15px;">
             <div style="display: flex; gap: 50px; align-items: center; flex-wrap: wrap; font-size: 15px;">
@@ -214,8 +195,7 @@ function appendDirtyFieldsPopupToBody(entityName, recordId, dirtyCount, fieldLis
             ${fieldListHtml}
         </div>
     `;
-    
-    // Build popup HTML structure
+        
     popupContainer.innerHTML = `
         <div class="commonPopup-header" style="background-color: #2b2b2b; position: relative; cursor: move; border-radius: 9px 9px 0 0; margin: 0; border-bottom: 2px solid #1a1a1a;">
             <span style="color: white;">Dirty Fields Info</span>
@@ -226,26 +206,22 @@ function appendDirtyFieldsPopupToBody(entityName, recordId, dirtyCount, fieldLis
                 ${contentHtml}
             </div>
         </div>
-    `;
-    
-    // Append to body
+    `;    
     document.body.appendChild(popupContainer);
     
-    // Setup close button functionality
+    // Close Btn
     const closeButton = popupContainer.querySelector('.close-button');
     closeButton.addEventListener('click', () => {
         popupContainer.remove();
-    });
-    
-    // Add hover effect for close button
+    });    
+    // Hover effect
     closeButton.addEventListener('mouseenter', function() {
         this.style.backgroundColor = '#e81123';
     });
     closeButton.addEventListener('mouseleave', function() {
         this.style.backgroundColor = 'transparent';
-    });
-    
-    // Make popup movable
+    });    
+    // Movable Popup
     if (typeof makePopupMovable === 'function') {
         makePopupMovable(popupContainer);
     }

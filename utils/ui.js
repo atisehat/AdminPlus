@@ -1,27 +1,23 @@
 //UI Helper Functions
 
-/**
- * Check if the current page is a form with a valid record context
+/** 
  * @returns {boolean} True if on a form page, false otherwise
  */
 function isFormContext() {
     try {
         if (typeof Xrm === 'undefined' || !Xrm.Page || !Xrm.Page.data || !Xrm.Page.data.entity) {
             return false;
-        }
-        
+        }        
         const entityName = Xrm.Page.data.entity.getEntityName();
-        const recordId = Xrm.Page.data.entity.getId();
-        
+        const recordId = Xrm.Page.data.entity.getId();        
         return !!(entityName && recordId);
     } catch (error) {
         return false;
     }
 }
 
-/**
- * Validate form context and show error message if not on a form
- * @param {string} toolName - Optional name of the tool for more specific error message
+/** 
+ * @param {string} toolName 
  * @returns {boolean} True if valid form context, false otherwise
  */
 function requireFormContext(toolName) {
@@ -40,8 +36,7 @@ function requireFormContext(toolName) {
 
 //Make window movable
 function makePopupMovable(newContainer) {   
-   var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;   
-  
+   var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;  
    var header = newContainer.querySelector('.commonPopup-header');   
    if (!header) {
        return;
@@ -122,7 +117,7 @@ function showLoadingDialog(message) {
   `;
   document.head.appendChild(style);
 
-  // Close the loading dialog after 20 seconds
+  // Close the loading dialog
   setTimeout(() => { closeLoadingDialog(); }, 20000);
 }
 
@@ -133,10 +128,7 @@ function closeLoadingDialog() {
     document.body.removeChild(overlay);
   }
 }
-
-// Alias for consistency
 const hideLoadingDialog = closeLoadingDialog;
-
 //AlertDialogBox 
 function showCustomAlert(message) {  
   const overlay = document.createElement('div');  
@@ -148,13 +140,11 @@ function showCustomAlert(message) {
   });
   
   const messageParagraph = document.createElement('p');
-  messageParagraph.textContent = message;
-  
+  messageParagraph.textContent = message;  
   alertBox.appendChild(closeButton);
   alertBox.appendChild(messageParagraph);
   overlay.appendChild(alertBox);
-  document.body.appendChild(overlay);
-  
+  document.body.appendChild(overlay);  
   const styleElement = document.createElement('style');
   styleElement.innerHTML = `
     #overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.7); z-index: 1000; display: flex; align-items: center; justify-content: center; }
@@ -167,8 +157,7 @@ function showCustomAlert(message) {
   overlay.id = 'overlay';
   alertBox.id = 'alertBox';
   closeButton.id = 'closeButton';
-  messageParagraph.id = 'messageParagraph';
-  
+  messageParagraph.id = 'messageParagraph';  
   const messageWidth = messageParagraph.offsetWidth;
   const finalWidth = Math.max(messageWidth + 40, 400); 
   alertBox.style.width = `${finalWidth}px`;
@@ -210,28 +199,22 @@ function sortByProperty(array, property) {
   });
 }
 
-// ============================================================================
-// Modern Toast Notification System
-// ============================================================================
-
-/**
- * Show a modern toast notification that auto-dismisses
- * @param {string} message - The message to display
- * @param {string} type - Type of notification: 'success', 'info', 'warning', 'error'
- * @param {number} duration - Duration in milliseconds (default: 1500)
+/** 
+ * @param {string} message 
+ * @param {string} type 
+ * @param {number} duration 
  */
-function showToast(message, type, duration) {
-    // Set defaults
+function showToast(message, type, duration) {    
     type = type || 'success';
     duration = duration || 1500;
     
-    // Remove any existing toasts
+    // Remove existing toasts
     var existingToast = document.getElementById('adminplus-toast');
     if (existingToast) {
         existingToast.remove();
     }
     
-    // Create toast container
+    // Toast container
     var toast = document.createElement('div');
     toast.id = 'adminplus-toast';
     toast.className = 'adminplus-toast adminplus-toast-' + type;
@@ -257,7 +240,7 @@ function showToast(message, type, duration) {
     toast.appendChild(icon);
     toast.appendChild(messageSpan);
     
-    // Add styles if not already present
+    // Add styles if not present
     if (!document.getElementById('adminplus-toast-styles')) {
         var style = document.createElement('style');
         style.id = 'adminplus-toast-styles';
@@ -280,12 +263,10 @@ function showToast(message, type, duration) {
                 width: fit-content;
                 max-width: 500px;
                 animation: adminplus-toast-in 0.3s ease-out;
-            }
-            
+            }            
             .adminplus-toast.adminplus-toast-out {
                 animation: adminplus-toast-out 0.3s ease-in;
-            }
-            
+            }            
             .adminplus-toast-icon {
                 display: flex;
                 align-items: center;
@@ -296,57 +277,47 @@ function showToast(message, type, duration) {
                 font-size: 16px;
                 font-weight: bold;
                 flex-shrink: 0;
-            }
-            
+            }            
             .adminplus-toast-message {
                 color: #333;
                 line-height: 1.4;
-            }
-            
+            }            
             /* Success */
             .adminplus-toast-success {
                 border-left: 4px solid #10b981;
                 border-right: 4px solid #10b981;
-            }
-            
+            }            
             .adminplus-toast-success .adminplus-toast-icon {
                 background-color: #d1fae5;
                 color: #10b981;
-            }
-            
+            }            
             /* Info */
             .adminplus-toast-info {
                 border-left: 4px solid #3b82f6;
                 border-right: 4px solid #3b82f6;
-            }
-            
+            }            
             .adminplus-toast-info .adminplus-toast-icon {
                 background-color: #dbeafe;
                 color: #3b82f6;
-            }
-            
+            }            
             /* Warning */
             .adminplus-toast-warning {
                 border-left: 4px solid #f59e0b;
                 border-right: 4px solid #f59e0b;
-            }
-            
+            }            
             .adminplus-toast-warning .adminplus-toast-icon {
                 background-color: #fef3c7;
                 color: #f59e0b;
-            }
-            
+            }            
             /* Error */
             .adminplus-toast-error {
                 border-left: 4px solid #ef4444;
                 border-right: 4px solid #ef4444;
-            }
-            
+            }            
             .adminplus-toast-error .adminplus-toast-icon {
                 background-color: #fee2e2;
                 color: #ef4444;
-            }
-            
+            }            
             /* Animations */
             @keyframes adminplus-toast-in {
                 from {
@@ -357,8 +328,7 @@ function showToast(message, type, duration) {
                     opacity: 1;
                     transform: translate(-50%, -50%) scale(1);
                 }
-            }
-            
+            }            
             @keyframes adminplus-toast-out {
                 from {
                     opacity: 1;
@@ -371,12 +341,8 @@ function showToast(message, type, duration) {
             }
         `;
         document.head.appendChild(style);
-    }
-    
-    // Add to document
-    document.body.appendChild(toast);
-    
-    // Auto dismiss
+    }    
+    document.body.appendChild(toast);    
     setTimeout(function() {
         toast.classList.add('adminplus-toast-out');
         setTimeout(function() {

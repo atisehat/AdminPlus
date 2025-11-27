@@ -1,20 +1,19 @@
-// Table Automations Tool - Show workflows, business rules, business process flows, custom APIs, and actions for current table
+// Table Automations Tool
 async function showEntityAutomations() {
-    // Check if we're on a form page
+    // Check if form
     if (!requireFormContext()) {
         return;
     }
     
     try {
         const entityName = Xrm.Page.data.entity.getEntityName();
-        const clientUrl = Xrm.Page.context.getClientUrl();
-        
-        // Show loading dialog
+        const clientUrl = Xrm.Page.context.getClientUrl();        
+        // Show loading
         if (typeof showLoadingDialog === 'function') {
             showLoadingDialog('Loading table automations...');
         }
         
-        // Fetch all automation data in parallel
+        // Fetch all automation data
         const [workflows, dialogs, businessRules, businessProcessFlows, customApis, customActions] = await Promise.all([
             fetchWorkflows(entityName, clientUrl),
             fetchDialogs(entityName, clientUrl),
@@ -24,21 +23,18 @@ async function showEntityAutomations() {
             fetchCustomActions(entityName, clientUrl)
         ]);
         
-        // Enrich all items with owner information if missing
+        // Owner information if missing
         const allItems = [...workflows, ...dialogs, ...businessRules, ...businessProcessFlows, ...customApis, ...customActions];
         await enrichWithOwnerNames(allItems, clientUrl);
         
-        // Enrich all items with solution information
-        await enrichWithSolutionInfo(allItems, clientUrl);
-        
-        // Hide loading dialog before showing popup
+        // All items with solution info
+        await enrichWithSolutionInfo(allItems, clientUrl);        
+        // Hide loading before popup
         if (typeof hideLoadingDialog === 'function') {
             hideLoadingDialog();
-        }
-        
-        // Create and display popup after loading is complete
-        createAutomationsPopup(entityName, workflows, dialogs, businessRules, businessProcessFlows, customApis, customActions);
-        
+        }        
+        // Display popup after loading
+        createAutomationsPopup(entityName, workflows, dialogs, businessRules, businessProcessFlows, customApis, customActions);        
     } catch (error) {
         if (typeof hideLoadingDialog === 'function') {
             hideLoadingDialog();
@@ -49,37 +45,33 @@ async function showEntityAutomations() {
     }
 }
 
-// Fetch Workflows (Classic Workflows)
+// Workflows (Classic Workflows)
 async function fetchWorkflows(entityName, clientUrl) {
     try {
-        // Try with expand first
+        // Try with expand
         let response = await fetch(
             `${clientUrl}/api/data/v9.2/workflows?$select=name,category,statecode,statuscode,primaryentity,type,workflowid,parentworkflowid,_ownerid_value&$expand=ownerid($select=fullname)&$filter=primaryentity eq '${entityName}' and category eq 0&$orderby=name asc`
-        );
-        
-        // If expand fails, try without it
+        );        
+        // Try without expand
         if (!response.ok) {
             response = await fetch(
                 `${clientUrl}/api/data/v9.2/workflows?$select=name,category,statecode,statuscode,primaryentity,type,workflowid,parentworkflowid,_ownerid_value&$filter=primaryentity eq '${entityName}' and category eq 0&$orderby=name asc`
             );
-        }
-        
+        }        
         if (!response.ok) return [];
         const data = await response.json();
         
-        // Filter out child workflows to avoid duplicates
-        // Only show Definition workflows (type 1) - excludes Activation (type 2) and Template (type 3)
+        // Filter out child workflows and only show Definition workflows
         const filteredWorkflows = (data.value || []).filter(workflow => {
             return workflow.type === 1;
-        });
-        
+        });        
         return filteredWorkflows;
     } catch (error) {
         return [];
     }
 }
 
-// Fetch Dialogs
+// Dialogs
 async function fetchDialogs(entityName, clientUrl) {
     try {
         let response = await fetch(
@@ -100,7 +92,7 @@ async function fetchDialogs(entityName, clientUrl) {
     }
 }
 
-// Fetch Business Rules
+// Business Rules
 async function fetchBusinessRules(entityName, clientUrl) {
     try {
         let response = await fetch(
@@ -121,7 +113,7 @@ async function fetchBusinessRules(entityName, clientUrl) {
     }
 }
 
-// Fetch Business Process Flows
+// Business Process Flows
 async function fetchBusinessProcessFlows(entityName, clientUrl) {
     try {
         let response = await fetch(
@@ -142,7 +134,7 @@ async function fetchBusinessProcessFlows(entityName, clientUrl) {
     }
 }
 
-// Fetch Custom APIs
+// Custom APIs
 async function fetchCustomApis(entityName, clientUrl) {
     try {
         let response = await fetch(
@@ -163,23 +155,19 @@ async function fetchCustomApis(entityName, clientUrl) {
     }
 }
 
-// Enrich items with owner names if missing
-async function enrichWithOwnerNames(items, clientUrl) {
-    // Get all items that have owner ID but missing owner name
+// Owner names if missing
+async function enrichWithOwnerNames(items, clientUrl) {    
     const itemsNeedingOwner = items.filter(item => 
         item._ownerid_value && (!item.ownerid || !item.ownerid.fullname)
     );
     
     if (itemsNeedingOwner.length === 0) return;
     
-    // Fetch owner information for each unique owner ID
-    const uniqueOwnerIds = [...new Set(itemsNeedingOwner.map(item => item._ownerid_value))];
-    
+    // Owner info each owner ID
+    const uniqueOwnerIds = [...new Set(itemsNeedingOwner.map(item => item._ownerid_value))];    
     const ownerPromises = uniqueOwnerIds.map(async ownerId => {
-        try {
-            // Try systemuser first
-            let response = await fetch(`${clientUrl}/api/data/v9.2/systemusers(${ownerId})?$select=fullname`);
-            
+        try {            
+            let response = await fetch(`${clientUrl}/api/data/v9.2/systemusers(${ownerId})?$select=fullname`);            
             if (response.ok) {
                 const data = await response.json();
                 return { id: ownerId, name: data.fullname, type: 'systemuser' };
@@ -213,17 +201,14 @@ async function enrichWithOwnerNames(items, clientUrl) {
         item.ownerid.fullname = ownerMap[item._ownerid_value] || 'Unknown Owner';
     });
 }
-
-// Enrich items with solution information
+// Items with solution info
 async function enrichWithSolutionInfo(items, clientUrl) {
     const solutionPromises = items.map(async item => {
         try {
             let objectId;
-            let componentType;
-            
+            let componentType;            
             // Determine the object ID and component type based on item type
-            if (item.workflowid) {
-                // Remove braces and convert to lowercase for GUID format
+            if (item.workflowid) {                
                 objectId = item.workflowid.replace(/[{}]/g, '').toLowerCase();
                 componentType = 29; // Workflow/Business Rule/Flow/Action
             } else if (item.customapiid) {
@@ -231,13 +216,11 @@ async function enrichWithSolutionInfo(items, clientUrl) {
                 componentType = 10380; // Custom API
             } else {
                 return;
-            }
+            }            
             
-            // Fetch solution components for this item - try with expand first
             let response = await fetch(
                 `${clientUrl}/api/data/v9.2/solutioncomponents?$select=solutioncomponentid&$expand=solutionid($select=friendlyname,uniquename,ismanaged)&$filter=objectid eq ${objectId} and componenttype eq ${componentType}`
-            );
-            
+            );            
             // If expand fails, try without it
             if (!response.ok) {
                 response = await fetch(
@@ -249,30 +232,27 @@ async function enrichWithSolutionInfo(items, clientUrl) {
                 item.solutions = [];
                 return;
             }
-            
-            const data = await response.json();
-            
+            const data = await response.json();            
             if (data.value && data.value.length > 0) {
-                // Filter out "Active" solution but keep "Default" solution
+                // Filter out active solution but keep default solution
                 const solutions = data.value
-                    .filter(sc => {
-                        // Check if we have expanded solutionid or just the _solutionid_value
+                    .filter(sc => {                        
                         if (sc.solutionid) {
                             return sc.solutionid.uniquename !== 'Active';
                         }
-                        // If expand didn't work, include all solution components
+                        // If expand fails include all solution components
                         return sc._solutionid_value !== undefined;
                     })
                     .map(sc => {
                         if (sc.solutionid) {
-                            // Expanded solution data
+                            // Expanded solution
                             return {
                                 name: sc.solutionid.friendlyname || sc.solutionid.uniquename,
                                 uniquename: sc.solutionid.uniquename,
                                 isManaged: sc.solutionid.ismanaged
                             };
                         } else {
-                            // Fallback - just show that solution exists
+                            // Fallback
                             return {
                                 name: 'Solution',
                                 uniquename: sc._solutionid_value,
@@ -287,8 +267,7 @@ async function enrichWithSolutionInfo(items, clientUrl) {
                     isManaged: false
                 }];
             } else {
-                // If no solutions found via API, assume it's in Default Solution
-                // All D365 components must be in at least one solution
+                // If no solutions found assume it's in Default Solution                
                 item.solutions = [{
                     name: 'Default Solution',
                     uniquename: 'Default',
@@ -308,7 +287,7 @@ async function enrichWithSolutionInfo(items, clientUrl) {
     await Promise.all(solutionPromises);
 }
 
-// Fetch Custom Actions
+// Custom Actions
 async function fetchCustomActions(entityName, clientUrl) {
     try {
         let response = await fetch(
@@ -329,12 +308,11 @@ async function fetchCustomActions(entityName, clientUrl) {
     }
 }
 
-// Create the automations popup
+// Automations popup
 function createAutomationsPopup(entityName, workflows, dialogs, businessRules, businessProcessFlows, customApis, customActions) {
-    // Close any existing popups
+    // Close all existing popups
     const existingPopups = document.querySelectorAll('.commonPopup');
-    existingPopups.forEach(popup => popup.remove());
-    
+    existingPopups.forEach(popup => popup.remove());    
     const popupContainer = document.createElement('div');
     popupContainer.className = 'commonPopup';
     popupContainer.style.border = '3px solid #1a1a1a';
@@ -365,7 +343,7 @@ function createAutomationsPopup(entityName, workflows, dialogs, businessRules, b
     
     document.body.appendChild(popupContainer);
     
-    // Setup close button
+    // Close Btn
     const closeButton = popupContainer.querySelector('.close-button');
     closeButton.addEventListener('click', () => popupContainer.remove());
     closeButton.addEventListener('mouseenter', function() {
@@ -375,18 +353,16 @@ function createAutomationsPopup(entityName, workflows, dialogs, businessRules, b
         this.style.backgroundColor = 'transparent';
     });
     
-    // Make popup movable
+    // Movable Popup
     if (typeof makePopupMovable === 'function') {
         makePopupMovable(popupContainer);
     }
 }
 
-// Generate HTML for all automations
+// Generate HTML
 function generateAutomationsHtml(workflows, dialogs, businessRules, businessProcessFlows, customApis, customActions) {
-    let html = '';
-    
-    // Combine Workflows, Dialogs, Business Process Flows, and Custom Actions into one section
-    // Define sort order for item types
+    let html = '';    
+    // Combine Workflows, Dialogs, Business Process Flows, and Custom Actions into one section   
     const typeOrder = {
         'Workflow Classic': 1,
         'Dialog': 2,
@@ -400,34 +376,28 @@ function generateAutomationsHtml(workflows, dialogs, businessRules, businessProc
         ...customActions.map(a => ({ ...a, itemType: 'Custom Action' })),
         ...businessProcessFlows.map(b => ({ ...b, itemType: 'Business Process' }))
     ].sort((a, b) => {
-        // First sort by type order
+        // Sort by type
         const typeComparison = (typeOrder[a.itemType] || 999) - (typeOrder[b.itemType] || 999);
         if (typeComparison !== 0) return typeComparison;
-        // Then sort alphabetically by name within the same type
+        // Sort alphabetically by name 
         return (a.name || '').localeCompare(b.name || '');
     });
     
-    html += generateSectionHtml('Processes', workflowItems, 'workflow');
-    
-    // Business Rules Section
-    html += generateSectionHtml('Business Rules', businessRules, 'businessrule');
-    
-    // Custom APIs Section
-    html += generateSectionHtml('Custom APIs', customApis, 'customapi');
-    
+    html += generateSectionHtml('Processes', workflowItems, 'workflow');    
+    // Business Rules 
+    html += generateSectionHtml('Business Rules', businessRules, 'businessrule');    
+    // Custom APIs 
+    html += generateSectionHtml('Custom APIs', customApis, 'customapi');    
     if (html === '') {
         html = '<div style="text-align: center; padding: 40px; color: #666;">No automations or customizations found for this table.</div>';
-    }
-    
+    }    
     return html;
 }
 
-// Generate section HTML for each automation type
+// Generate HTML for each type
 function generateSectionHtml(title, items, type) {
-    if (!items || items.length === 0) return '';
-    
-    const clientUrl = Xrm.Page.context.getClientUrl();
-    
+    if (!items || items.length === 0) return '';    
+    const clientUrl = Xrm.Page.context.getClientUrl();    
     let html = `
         <div style="margin-bottom: 30px;">
             <h3 style="color: #2b2b2b; margin-bottom: 15px; font-size: 18px; font-weight: bold; display: flex; align-items: center; gap: 8px;">
@@ -439,16 +409,14 @@ function generateSectionHtml(title, items, type) {
     
     items.forEach(item => {
         const baseName = item.name || item.displayname || item.uniquename || 'Unnamed';
-        // Add item type label for combined workflow section
+        // Add item type label
         const itemTypeLabel = item.itemType ? ` (${item.itemType})` : '';
-        const name = baseName + itemTypeLabel;
-        
+        const name = baseName + itemTypeLabel;        
         const owner = getOwnerName(item);
         // Don't show solutions for Business Rules
         const solutionDropdown = type === 'businessrule' ? '' : getSolutionDropdown(item);
         const status = getStatusInfo(item, type);
-        const url = getItemUrl(item, type, clientUrl);
-        
+        const url = getItemUrl(item, type, clientUrl);        
         html += `
             <div style="padding: 12px; background-color: #f5f5f5; border-radius: 6px; border-left: 3px solid ${status.color};">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
@@ -477,7 +445,7 @@ function generateSectionHtml(title, items, type) {
     return html;
 }
 
-// Get owner name from item
+// Owner from item
 function getOwnerName(item) {
     if (item.ownerid && item.ownerid.fullname) {
         return item.ownerid.fullname;
@@ -485,15 +453,13 @@ function getOwnerName(item) {
     return 'Unknown Owner';
 }
 
-// Get solution dropdown for item
+// Solution dropdown for item
 function getSolutionDropdown(item) {
     if (!item.solutions) {
         return '';
-    }
-    
+    }    
     const itemId = item.workflowid || item.customapiid || Math.random().toString(36).substr(2, 9);
-    const solutionCount = item.solutions.length;
-    
+    const solutionCount = item.solutions.length;    
     if (solutionCount === 0) {
         return `<div style="font-size: 12px; color: #666; position: relative;">
             <div style="display: flex; align-items: center; cursor: pointer; padding: 4px 0;" onclick="event.stopPropagation(); toggleSolutionList('${itemId}')">
@@ -506,7 +472,7 @@ function getSolutionDropdown(item) {
         </div>`;
     }
     
-    // Create solution list (vertical list format)
+    // Solution list
     const solutionList = item.solutions.map(sol => {
         const bgColor = sol.isManaged ? '#e3f2fd' : '#e8f5e9';
         return `<div style="padding: 6px 10px; margin-bottom: 4px; background-color: ${bgColor}; border-radius: 3px; font-size: 11px; white-space: nowrap;">
@@ -525,117 +491,89 @@ function getSolutionDropdown(item) {
     </div>`;
 }
 
-// Get URL to open item in D365 Classic interface
+// URL to open item
 function getItemUrl(item, type, clientUrl) {
-    if (type === 'workflow') {
-        // Open classic workflow designer
+    if (type === 'workflow') {        
+        if (item.workflowid) {
+            return `${clientUrl}/sfa/workflow/edit.aspx?id=${item.workflowid}`;
+        }
+    }    
+    if (type === 'dialog') {        
+        if (item.workflowid) {
+            return `${clientUrl}/sfa/workflow/edit.aspx?id=${item.workflowid}`;
+        }
+    }    
+    if (type === 'businessrule') {        
+        if (item.workflowid) {
+            return `${clientUrl}/sfa/workflow/edit.aspx?id=${item.workflowid}`;
+        }
+    }    
+    if (type === 'businessprocessflow') {        
+        if (item.workflowid) {
+            return `${clientUrl}/sfa/workflow/edit.aspx?id=${item.workflowid}`;
+        }
+    }    
+    if (type === 'action') {        
         if (item.workflowid) {
             return `${clientUrl}/sfa/workflow/edit.aspx?id=${item.workflowid}`;
         }
     }
     
-    if (type === 'dialog') {
-        // Open dialog in classic editor
-        if (item.workflowid) {
-            return `${clientUrl}/sfa/workflow/edit.aspx?id=${item.workflowid}`;
-        }
-    }
-    
-    if (type === 'businessrule') {
-        // Open business rule in classic editor
-        if (item.workflowid) {
-            return `${clientUrl}/sfa/workflow/edit.aspx?id=${item.workflowid}`;
-        }
-    }
-    
-    if (type === 'businessprocessflow') {
-        // Open business process flow in classic editor
-        if (item.workflowid) {
-            return `${clientUrl}/sfa/workflow/edit.aspx?id=${item.workflowid}`;
-        }
-    }
-    
-    if (type === 'action') {
-        // Open custom action in classic editor
-        if (item.workflowid) {
-            return `${clientUrl}/sfa/workflow/edit.aspx?id=${item.workflowid}`;
-        }
-    }
-    
-    if (type === 'customapi' && item.customapiid) {
-        // Custom APIs only have modern interface
+    if (type === 'customapi' && item.customapiid) {        
         return `${clientUrl}/main.aspx?pagetype=entityrecord&etn=customapi&id=${item.customapiid}`;
     }
     
     return null;
 }
-
-// Get status information
+// Get status info
 function getStatusInfo(item, type) {
     if (type === 'customapi') {
         return {
             color: '#10b981',
             badge: '<span style="background-color: #10b981; color: white; padding: 3px 10px; border-radius: 4px; font-size: 11px; font-weight: 600;">ACTIVE</span>'
         };
-    }
-    
-    const stateCode = item.statecode;
-    
-    // Workflow/Business Rule/Flow status codes:
-    // statecode: 0 = Draft, 1 = Activated/Active, 2 = Suspended
-    if (stateCode === 1) {
-        // Activated/Active
+    }    
+    const stateCode = item.statecode;    
+    // Workflow/Business Rule/Flow status    
+    if (stateCode === 1) {        
         return {
             color: '#10b981',
             badge: '<span style="background-color: #10b981; color: white; padding: 3px 10px; border-radius: 4px; font-size: 11px; font-weight: 600;">ACTIVE</span>'
         };
-    } else if (stateCode === 2) {
-        // Suspended/Inactive
+    } else if (stateCode === 2) {        
         return {
             color: '#ef4444',
             badge: '<span style="background-color: #ef4444; color: white; padding: 3px 10px; border-radius: 4px; font-size: 11px; font-weight: 600;">SUSPENDED</span>'
         };
-    } else {
-        // Draft (statecode 0)
+    } else {        
         return {
             color: '#f59e0b',
             badge: '<span style="background-color: #f59e0b; color: white; padding: 3px 10px; border-radius: 4px; font-size: 11px; font-weight: 600;">DRAFT</span>'
         };
     }
 }
-
-// Get type information
+// Get type info
 function getTypeInfo(item, type) {
     if (type === 'customapi') {
         const bindingType = item.bindingtype === 0 ? 'Global' : item.bindingtype === 1 ? 'Entity' : 'Entity Collection';
         const funcType = item.isfunction ? 'Function' : 'Action';
         return `<span style="font-size: 11px; color: #666; background-color: #e5e7eb; padding: 3px 8px; border-radius: 4px;">${funcType} | ${bindingType}</span>`;
-    }
-    
-    // Don't show workflow type labels (Definition/Activation/Template) to end users
-    // as they are internal D365 implementation details
-    
+    }    
     return '';
 }
 
-// Get additional information
+// Get additional info
 function getAdditionalInfo(item, type) {
-    let html = '';
-    
-    // Show unique name for custom APIs only (not for custom actions)
+    let html = '';        
     if (type === 'customapi' && item.uniquename) {
         html += `<div style="margin-top: 8px; font-size: 12px; color: #666;"><strong>Unique Name:</strong> ${item.uniquename}</div>`;
-    }
-    
+    }    
     return html;
 }
-
-// Toggle solution list visibility
+// Toggle solution list
 function toggleSolutionList(itemId) {
     const solutionsDiv = document.getElementById(`solutions-${itemId}`);
-    const arrow = document.getElementById(`arrow-${itemId}`);
-    
-    // Close all other solution dropdowns first
+    const arrow = document.getElementById(`arrow-${itemId}`);        
     document.querySelectorAll('[id^="solutions-"]').forEach(el => {
         if (el.id !== `solutions-${itemId}`) {
             el.style.display = 'none';
@@ -656,9 +594,8 @@ function toggleSolutionList(itemId) {
     }
 }
 
-// Close solution dropdowns when clicking outside
-document.addEventListener('click', function(event) {
-    // Check if click is outside of solution dropdown triggers
+// Close solution dropdowns
+document.addEventListener('click', function(event) {    
     if (!event.target.closest('[id^="arrow-"]') && !event.target.closest('[id^="solutions-"]')) {
         document.querySelectorAll('[id^="solutions-"]').forEach(el => {
             el.style.display = 'none';

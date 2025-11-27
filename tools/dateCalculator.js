@@ -1,4 +1,4 @@
-// Date Calculator Tool - Keep sidebar open
+// Date Calculator
 let listOfHolidays = [];
 let calcDateDays = { startDate: null, endDate: null };
 const typeNames = { 0: "Default", 1: "Customer Service", 2: "Holiday Schedule", "-1": "Inner Calendar" };
@@ -45,7 +45,6 @@ async function setupHolidayScheduleDropdown() {
     dropdown.append(...options); 
     dropdown.value = defaultScheduleName;
     displayHolidays(defaultScheduleName); 
-
     dropdown.addEventListener('change', (e) => {
         displayHolidays(e.target.value);
     }); 
@@ -276,7 +275,7 @@ function setupDateFormListeners() {
             return; 
         }
         
-        // Proper date comparison using Date objects
+        // Date comparison using Date obj
         const startDateObj = createDateObject(calcDateDays.startDate);
         const endDateObj = createDateObject(calcDateDays.endDate);
         
@@ -341,7 +340,7 @@ function setupSection4FormListeners() {
         let holidaysCount = 0;
         
         while (totalAddedDays < daysToAdd) {
-            finalDate.setDate(finalDate.getDate() + 1); // Use local time, not UTC
+            finalDate.setDate(finalDate.getDate() + 1); // Use local time
             const dayOfWeek = finalDate.getDay();
             
             // Check if current date is a weekend
@@ -357,7 +356,7 @@ function setupSection4FormListeners() {
                 continue; 
             }
             
-            // Skip holidays if option is checked (but only if not already a weekend, to avoid double-counting)
+            // Skip holidays if option is checked
             if (isAddScheduleChecked && isHoliday && !(isAddWeekendsChecked && isWeekend)) {
                 holidaysCount++;
                 continue; 
@@ -366,7 +365,7 @@ function setupSection4FormListeners() {
             totalAddedDays++; 
         }
         
-        // Format date with zero-padding for consistency
+        // Format date with zero-padding 
         const month = String(finalDate.getMonth() + 1).padStart(2, '0');
         const day = String(finalDate.getDate()).padStart(2, '0');
         const year = finalDate.getFullYear();
@@ -383,13 +382,13 @@ function setupSection4FormListeners() {
 }
 
 function attachModalEventHandlers(container) {
-    // Setup close button functionality
+    // Close Btn
     const closeButton = container.querySelector('.close-button');
     closeButton.addEventListener('click', () => {
       container.remove();
     });
     
-    // Add hover effect to close button
+    // Hover effect
     closeButton.addEventListener('mouseenter', () => {
       closeButton.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
     });
@@ -403,10 +402,9 @@ function attachModalEventHandlers(container) {
 }
 
 async function dateCalc() {
-    // Close any existing popups (from other tools)
+    // Close all popups
     const existingPopups = document.querySelectorAll('.commonPopup');
-    existingPopups.forEach(popup => popup.remove());
-    
+    existingPopups.forEach(popup => popup.remove());    
     const modalContent = createModalContent();
     modalContent.setAttribute('data-popup-id', 'dateCalculator');
     document.body.appendChild(modalContent);
@@ -417,9 +415,8 @@ async function dateCalc() {
 // Calendar functionality
 function initCalendar(holidays) {    
     let currentMonth = new Date().getMonth();
-    let currentYear = new Date().getFullYear();
-    
-    // Converting dates to string.
+    let currentYear = new Date().getFullYear();    
+    // Dates to string.
     const holidayDates = new Set(holidays.map(h => (h.date instanceof Date ? h.date.toISOString() : h.date).split('T')[0]));
 
     function displayCalendar(holidays, month, year) {
@@ -434,13 +431,11 @@ function initCalendar(holidays) {
         let calendarHTML = '';            
         for (let i = 0; i < firstDayOfMonth; i++) {
             calendarHTML += '<div></div>';
-        }    
-        
+        }        
         for (let i = 1; i <= daysInMonth; i++) {
             let currentDate = `${year}-${(month + 1).toString().padStart(2, '0')}-${i.toString().padStart(2, '0')}`; 
             let dateClass = '';
-            let titleAttr = '';
-            
+            let titleAttr = '';            
             if (holidayDates.has(currentDate)) {
                 const holidayObject = holidays.find(h => {
                     const formattedDate = (h.date instanceof Date ? h.date.toISOString() : h.date).split('T')[0];
@@ -454,8 +449,7 @@ function initCalendar(holidays) {
                 dateClass += ' todayDate'; 
             }    
             calendarHTML += `<div class="${dateClass}" ${titleAttr}>${i}</div>`;
-        }
-    
+        }    
         document.getElementById('calendarDates').innerHTML = calendarHTML;    
         const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
         document.getElementById('monthYearLabel').innerText = `${monthNames[month]} ${year}`;
@@ -483,14 +477,12 @@ function initCalendar(holidays) {
 
     document.getElementById('prevMonth').addEventListener('click', goToPrevMonth);
     document.getElementById('nextMonth').addEventListener('click', goToNextMonth);    
-
-    // Initial display
+    
     displayCalendar(holidays, currentMonth, currentYear);    
 }
 
 function createDateObject(dateString) {
-    const [year, month, day] = dateString.split('-').map(Number);
-    // Create date at midnight local time for consistency
+    const [year, month, day] = dateString.split('-').map(Number);    
     const date = new Date(year, month - 1, day);
     date.setHours(0, 0, 0, 0);
     return date;
@@ -498,8 +490,7 @@ function createDateObject(dateString) {
 
 function calculateDateDifference(startDate, endDate) {
     const start = createDateObject(startDate);
-    const end = createDateObject(endDate);
-    
+    const end = createDateObject(endDate);    
     const diffInDays = (end - start) / (1000 * 60 * 60 * 24) + 1; 
     return Math.round(diffInDays); 
 }
@@ -507,22 +498,19 @@ function calculateDateDifference(startDate, endDate) {
 function getHolidaysBetweenDates(startDate, endDate, excludeWeekends = false) {
     const start = createDateObject(startDate);
     const end = createDateObject(endDate);
-
     return listOfHolidays.reduce((count, holidayDateStr) => {
-        const holiday = new Date(holidayDateStr);
-        // Normalize to midnight local time for consistent comparison
+        const holiday = new Date(holidayDateStr);        
         holiday.setHours(0, 0, 0, 0);
-        const dayOfWeek = holiday.getDay(); // Use local time, not UTC
+        const dayOfWeek = holiday.getDay(); // Use local time
         
         if (holiday >= start && holiday <= end) {
             if (excludeWeekends) {
-                // Only count holidays that are NOT on weekends
-                // This prevents double-counting when both options are checked
+                // Only count holidays, NOT on weekends                
                 if (dayOfWeek !== 6 && dayOfWeek !== 0) {
                     count++;
                 }
             } else {
-                // Count all holidays regardless of day of week
+                // Count all holidays
                 count++;
             }
         }
@@ -532,10 +520,8 @@ function getHolidaysBetweenDates(startDate, endDate, excludeWeekends = false) {
 
 function countWeekendsBetweenDates(startDate, endDate) {
     const start = createDateObject(startDate);
-    const end = createDateObject(endDate);
-    
-    let count = 0;
-    // Create a copy to avoid mutating the original date
+    const end = createDateObject(endDate);    
+    let count = 0;    
     let currentDate = new Date(start);
     
     while (currentDate <= end) {

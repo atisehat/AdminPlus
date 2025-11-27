@@ -1,5 +1,5 @@
 async function fetchEntityFields() {
-    // Check if we're on a form page with an entity context
+    // Check if form
     if (!requireFormContext('Table & Fields Info')) {
         return;
     }
@@ -10,7 +10,7 @@ async function fetchEntityFields() {
     const clientUrl = Xrm.Page.context.getClientUrl();
     
     try {
-        // Fetch entity metadata and plural name in parallel
+        // Fetch entity metadata
         const [metadataResponse, pluralResponse] = await Promise.all([
             fetch(`${clientUrl}/api/data/v9.2/EntityDefinitions(LogicalName='${entityName}')/Attributes?$select=LogicalName,AttributeType,DisplayName`),
             fetch(`${clientUrl}/api/data/v9.2/EntityDefinitions(LogicalName='${entityName}')?$select=LogicalCollectionName`)
@@ -27,7 +27,7 @@ async function fetchEntityFields() {
         
         const pluralName = pluralData.LogicalCollectionName;
         
-        // Get field values from current form
+        // Get field values
         const fieldValues = {};
         const fieldMetadata = {};
         const attributes = Xrm.Page.data.entity.attributes.get();
@@ -41,13 +41,11 @@ async function fetchEntityFields() {
             };
         });
         
-        // Fetch complete record data for fields not on form
-        const recordResponse = await fetch(`${clientUrl}/api/data/v9.2/${pluralName}(${cleanRecordId})`);
-        
+        // Get complete record data for fields not on form
+        const recordResponse = await fetch(`${clientUrl}/api/data/v9.2/${pluralName}(${cleanRecordId})`);        
         if (recordResponse.ok) {
-            const recordData = await recordResponse.json();
-            
-            // Populate values for fields not on form
+            const recordData = await recordResponse.json();            
+            // Populate values
             metadata.value.forEach(field => {
                 const logicalName = field.LogicalName;
                 if (!fieldValues[logicalName]) {
@@ -61,8 +59,7 @@ async function fetchEntityFields() {
         }
         
         const fieldListHtml = generateFieldListHtml(metadata.value, fieldValues, fieldMetadata);
-        appendEntityInfoPopupToBody(entityName, cleanRecordId, pluralName, fieldListHtml);
-        
+        appendEntityInfoPopupToBody(entityName, cleanRecordId, pluralName, fieldListHtml);        
     } catch (error) {
         alert(`Error: ${error.message}`);
     }
@@ -72,43 +69,35 @@ function formatFieldValueFromAPI(value, attributeType, recordData, logicalName) 
     try {
         if (value === null || value === undefined) {
             return '(empty)';
-        }
-        
-        // Handle lookups
+        }        
+        // Lookups
         if (attributeType === 'Lookup' || attributeType === 'Customer' || attributeType === 'Owner') {
             const lookupValue = recordData[`_${logicalName}_value`];
             const lookupFormatted = recordData[`_${logicalName}_value@OData.Community.Display.V1.FormattedValue`];
             return lookupFormatted || lookupValue || '(empty)';
-        }
-        
-        // Handle boolean
+        }        
+        // Boolean
         if (attributeType === 'Boolean') {
             return value ? 'Yes' : 'No';
-        }
-        
-        // Handle option sets (check for formatted value)
+        }        
+        // Optionsets
         if (attributeType === 'Picklist' || attributeType === 'State' || attributeType === 'Status') {
             const formattedValue = recordData[`${logicalName}@OData.Community.Display.V1.FormattedValue`];
             return formattedValue || value.toString();
-        }
-        
-        // Handle multi-select option sets
+        }        
+        // Multiselect
         if (attributeType === 'MultiSelectPicklist') {
             const formattedValue = recordData[`${logicalName}@OData.Community.Display.V1.FormattedValue`];
             return formattedValue || value;
-        }
-        
-        // Handle datetime
+        }        
+        // Datetime
         if (attributeType === 'DateTime') {
             return new Date(value).toLocaleString();
-        }
-        
-        // Handle money
+        }        
+        // Money
         if (attributeType === 'Money') {
             return '$' + parseFloat(value).toFixed(2);
-        }
-        
-        // Default: convert to string
+        }         
         return value.toString();
     } catch (error) {
         return '(empty)';
@@ -117,28 +106,24 @@ function formatFieldValueFromAPI(value, attributeType, recordData, logicalName) 
 
 function formatFieldValue(attribute) {
     try {
-        const value = attribute.getValue();
-        
+        const value = attribute.getValue();        
         if (value === null || value === undefined) {
             return '(empty)';
         }
         
-        const attrType = attribute.getAttributeType();
-        
-        // Handle lookups
+        const attrType = attribute.getAttributeType();        
+        // Lookups
         if (attrType === 'lookup') {
             if (Array.isArray(value) && value.length > 0) {
                 return value.map(v => v.name).join(', ');
             }
             return '(empty)';
-        }
-        
-        // Handle boolean
+        }        
+        // Boolean
         if (attrType === 'boolean') {
             return value ? 'Yes' : 'No';
-        }
-        
-        // Handle optionset (picklist)
+        }        
+        // Optionset
         if (attrType === 'optionset' || attrType === 'multiselectoptionset') {
             try {
                 if (typeof attribute.getFormattedValue === 'function') {
@@ -148,27 +133,23 @@ function formatFieldValue(attribute) {
                     }
                 }
             } catch (e) {
-                // Fallback to raw value
+                // Fallback
             }
             return value.toString();
-        }
-        
-        // Handle datetime
+        }        
+        // Datetime
         if (attrType === 'datetime' && value instanceof Date) {
             return value.toLocaleString();
         }
-        
-        // Handle money
+        //Money
         if (attrType === 'money') {
             return '$' + value.toFixed(2);
-        }
-        
-        // Handle arrays (multiselect)
+        }        
+        // Multiselect
         if (Array.isArray(value)) {
             return value.join(', ');
-        }
+        }        
         
-        // Default: convert to string
         return value.toString();
     } catch (error) {
         return '(error)';
@@ -224,11 +205,9 @@ function categorizeFields(fields) {
 }
 
 function generateFieldListHtml(fields, fieldValues, fieldMetadata) {
-    const categories = categorizeFields(fields);
-    
+    const categories = categorizeFields(fields);    
     // Store available sections globally for navigation buttons
-    window.entityInfoAvailableSections = Object.keys(categories).filter(key => categories[key].length > 0);
-    
+    window.entityInfoAvailableSections = Object.keys(categories).filter(key => categories[key].length > 0);    
     const categoryLabels = {
         'TextFields': 'Text Fields',
         'ChoiceFields': 'Choice Fields',
@@ -238,8 +217,7 @@ function generateFieldListHtml(fields, fieldValues, fieldMetadata) {
         'FileMediaFields': 'File & Media Fields',
         'ComputedFields': 'Computed Fields',
         'OtherFields': 'Other Fields'
-    };
-    
+    };    
     const typeLabels = {
         'String': 'Single line of text',
         'Memo': 'Multiple lines of text',
@@ -262,8 +240,7 @@ function generateFieldListHtml(fields, fieldValues, fieldMetadata) {
         'Image': 'Image',
         'Calculated': 'Calculated',
         'Rollup': 'Rollup'
-    };
-    
+    };    
     const escapeHtml = (str) => {
         return str.replace(/&/g, '&amp;')
                   .replace(/</g, '&lt;')
@@ -272,42 +249,32 @@ function generateFieldListHtml(fields, fieldValues, fieldMetadata) {
                   .replace(/'/g, '&#039;');
     };
     
-    let html = '';
-    
+    let html = '';    
     Object.keys(categories).forEach(categoryKey => {
         const categoryFields = categories[categoryKey];
-        if (categoryFields.length === 0) return;
-        
-        // Sort fields alphabetically
+        if (categoryFields.length === 0) return;        
+        // Sort fields
         categoryFields.sort((a, b) => 
             a.DisplayName.UserLocalizedLabel.Label.localeCompare(b.DisplayName.UserLocalizedLabel.Label)
-        );
-        
+        );        
         html += `
             <div id="section-${categoryKey}" style="margin-bottom: 25px;">
                 <h3 style="color: #2b2b2b; margin-bottom: 15px; font-size: 18px; font-weight: bold;">${categoryLabels[categoryKey]}</h3>
                 <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-left: 15px;">
-        `;
-        
+        `;        
         categoryFields.forEach(field => {
             const typeLabel = typeLabels[field.AttributeType] || field.AttributeType;
             const displayName = field.DisplayName.UserLocalizedLabel.Label;
             const logicalName = field.LogicalName;
             const fieldValue = fieldValues[logicalName] || '(empty)';
-            const metadata = fieldMetadata[logicalName];
-            
-            // Truncate value for display (max 100 characters)
-            const displayValue = fieldValue.length > 100 ? fieldValue.substring(0, 100) + '...' : fieldValue;
-            
-            // Build tooltip based on field type
+            const metadata = fieldMetadata[logicalName];            
+            const displayValue = fieldValue.length > 100 ? fieldValue.substring(0, 100) + '...' : fieldValue;                        
             let fullTooltip = `${displayName} (${logicalName})\nValue: ${fieldValue}`;
-            
-            // Enhanced tooltip for lookup fields
+                        
             if (metadata && metadata.type === 'lookup' && metadata.rawValue && Array.isArray(metadata.rawValue) && metadata.rawValue.length > 0) {
                 const lookupData = metadata.rawValue[0];
                 fullTooltip = `Lookup Name: ${displayName} (${logicalName})\nEntity Name: ${lookupData.entityType || 'N/A'}\nRecord ID: ${lookupData.id || 'N/A'}\nValue: ${lookupData.name || fieldValue}`;
-            }
-            
+            }            
             html += `
                 <div class="entityinfo-field-card" data-copy-text="${escapeHtml(fullTooltip)}" data-tooltip="${escapeHtml(fullTooltip)}" style="padding: 8px; background-color: #f5f5f5; border-radius: 5px; border-left: 3px solid #2b2b2b; cursor: pointer; transition: background-color 0.2s;">
                     <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -335,25 +302,22 @@ function generateFieldListHtml(fields, fieldValues, fieldMetadata) {
 }
 
 function appendEntityInfoPopupToBody(entityName, recordId, pluralName, fieldListHtml) {
-    // Close any existing popups first
+    // Close all popups
     const existingPopups = document.querySelectorAll('.commonPopup');
-    existingPopups.forEach(popup => popup.remove());
-    
-    // Add tooltip styling for Entity Info
+    existingPopups.forEach(popup => popup.remove());    
+    // Tooltip styling
     addEntityInfoTooltipStyles();
     
-    // Create popup container
+    // Popup container
     const popupContainer = document.createElement('div');
     popupContainer.className = 'commonPopup';
     popupContainer.style.border = '3px solid #1a1a1a';
     popupContainer.style.borderRadius = '12px';
     popupContainer.style.width = '75%';
-    popupContainer.style.maxHeight = '90vh';
-    
-    // Generate section navigation buttons
+    popupContainer.style.maxHeight = '90vh';   
     const sectionNavHtml = generateSectionNavigationButtons();
     
-    // Build content HTML
+    // HTML Content
     const contentHtml = `
         <div style="background-color: #f9f9f9; padding: 12px 20px; border-radius: 5px; margin-bottom: 8px;">
             <div style="display: flex; gap: 20px; align-items: center; flex-wrap: wrap; font-size: 15px;">
@@ -375,7 +339,7 @@ function appendEntityInfoPopupToBody(entityName, recordId, pluralName, fieldList
         </div>
     `;
     
-    // Build popup HTML structure
+    // HTML Structure
     popupContainer.innerHTML = `
         <div class="commonPopup-header" style="background-color: #2b2b2b; position: relative; cursor: move; border-radius: 9px 9px 0 0; margin: 0; border-bottom: 2px solid #1a1a1a;">
             <span style="color: white;">Table & Fields Info</span>
@@ -386,18 +350,16 @@ function appendEntityInfoPopupToBody(entityName, recordId, pluralName, fieldList
                 ${contentHtml}
             </div>
         </div>
-    `;
-    
-    // Append to body
+    `;    
     document.body.appendChild(popupContainer);
     
-    // Setup close button functionality
+    // Close Btn
     const closeButton = popupContainer.querySelector('.close-button');
     closeButton.addEventListener('click', () => {
         popupContainer.remove();
     });
     
-    // Add hover effect for close button
+    // Hover effect
     closeButton.addEventListener('mouseenter', function() {
         this.style.backgroundColor = '#e81123';
     });
@@ -405,26 +367,22 @@ function appendEntityInfoPopupToBody(entityName, recordId, pluralName, fieldList
         this.style.backgroundColor = 'transparent';
     });
     
-    // Make popup movable
+    // Movable popup
     if (typeof makePopupMovable === 'function') {
         makePopupMovable(popupContainer);
-    }
-    
-    // Setup section navigation buttons
+    }   
     setupSectionNavigation(popupContainer);
     
-    // Add click-to-copy functionality for field cards
+    // Click to copy
     popupContainer.querySelectorAll('.entityinfo-field-card').forEach(card => {
         card.addEventListener('click', function() {
             const copyText = decodeHtmlEntities(this.getAttribute('data-copy-text'));
             
-            navigator.clipboard.writeText(copyText).then(() => {
-                // Visual feedback
+            navigator.clipboard.writeText(copyText).then(() => {                
                 const originalBg = this.style.backgroundColor;
                 this.style.backgroundColor = '#d4edda';
-                setTimeout(() => this.style.backgroundColor = originalBg, 300);
+                setTimeout(() => this.style.backgroundColor = originalBg, 300);                
                 
-                // Tooltip feedback
                 const originalTooltip = this.getAttribute('data-tooltip');
                 this.setAttribute('data-tooltip', 'Copied to clipboard! ✓');
                 setTimeout(() => this.setAttribute('data-tooltip', originalTooltip), 1500);
@@ -443,8 +401,7 @@ function appendEntityInfoPopupToBody(entityName, recordId, pluralName, fieldList
     });
 }
 
-function addEntityInfoTooltipStyles() {
-    // Check if styles already exist
+function addEntityInfoTooltipStyles() {    
     if (document.getElementById('entityinfo-tooltip-styles')) {
         return;
     }
@@ -497,11 +454,8 @@ function generateSectionNavigationButtons() {
         'OtherFields': 'Other'
     };
     
-    // Only show buttons for sections that exist
-    const availableSections = window.entityInfoAvailableSections || [];
-    
-    let buttonsHtml = '<div class="nav-buttons-container" style="display: flex; gap: 8px; flex: 1; align-items: center; overflow: visible;">';
-    
+    const availableSections = window.entityInfoAvailableSections || [];    
+    let buttonsHtml = '<div class="nav-buttons-container" style="display: flex; gap: 8px; flex: 1; align-items: center; overflow: visible;">';    
     availableSections.forEach(categoryKey => {
         if (categoryLabels[categoryKey]) {
             buttonsHtml += `
@@ -527,9 +481,8 @@ function generateSectionNavigationButtons() {
                 </button>
             `;
         }
-    });
-    
-    // Add overflow menu button with different styling
+    });    
+    // Overflow menu button
     buttonsHtml += `
         <div class="overflow-menu-container" style="position: relative; flex-shrink: 0; display: none; z-index: 10001;">
             <button 
@@ -571,8 +524,7 @@ function generateSectionNavigationButtons() {
         </div>
     `;
     
-    buttonsHtml += '</div>';
-    
+    buttonsHtml += '</div>';    
     return buttonsHtml;
 }
 
@@ -583,44 +535,34 @@ function setupSectionNavigation(popupContainer) {
     const overflowMenuBtn = popupContainer.querySelector('.overflow-menu-btn');
     const overflowMenuDropdown = popupContainer.querySelector('.overflow-menu-dropdown');
     
-    // Function to handle button click and scroll to section
+    // Btn click and scroll in section
     const handleSectionClick = (sectionId) => {
-        const targetSection = popupContainer.querySelector(`#section-${sectionId}`);
-        
-        if (targetSection) {
-            // Calculate the position relative to the scroll container
-            const scrollContainer = scrollSection;
-            // Use positive offset to scroll the section header to the top, away from previous content
-            const targetPosition = targetSection.offsetTop - scrollContainer.offsetTop + 120; // Positive offset to hide previous section
-            
-            // Smooth scroll to the section
+        const targetSection = popupContainer.querySelector(`#section-${sectionId}`);        
+        if (targetSection) {            
+            const scrollContainer = scrollSection;            
+            const targetPosition = targetSection.offsetTop - scrollContainer.offsetTop + 120;                         
             scrollContainer.scrollTo({
                 top: targetPosition,
                 behavior: 'smooth'
-            });
+            });          
             
-            // Visual feedback - highlight the section briefly
             const originalBg = targetSection.style.backgroundColor;
             targetSection.style.backgroundColor = '#e6f3ff';
-            targetSection.style.transition = 'background-color 0.3s ease';
-            
+            targetSection.style.transition = 'background-color 0.3s ease';            
             setTimeout(() => {
                 targetSection.style.backgroundColor = originalBg;
                 setTimeout(() => {
                     targetSection.style.transition = '';
                 }, 300);
-            }, 600);
-            
-            // Close overflow menu if open
+            }, 600);                        
             if (overflowMenuDropdown) {
                 overflowMenuDropdown.style.display = 'none';
             }
         }
     };
     
-    // Setup navigation buttons
-    const setupButton = (button) => {
-        // Add hover effects
+    // Navigation Btn
+    const setupButton = (button) => {        
         button.addEventListener('mouseenter', function() {
             this.style.backgroundColor = '#0078d4';
             this.style.transform = 'translateY(-2px)';
@@ -635,9 +577,8 @@ function setupSectionNavigation(popupContainer) {
         
         button.addEventListener('mousedown', function() {
             this.style.transform = 'translateY(0)';
-        });
+        });        
         
-        // Add click handler for scrolling
         button.addEventListener('click', function() {
             const sectionId = this.getAttribute('data-section');
             handleSectionClick(sectionId);
@@ -647,7 +588,7 @@ function setupSectionNavigation(popupContainer) {
     const navButtons = popupContainer.querySelectorAll('.section-nav-btn');
     navButtons.forEach(setupButton);
     
-    // Setup overflow menu button with different hover effect
+    // Menu button
     if (overflowMenuBtn && overflowMenuDropdown) {
         overflowMenuBtn.addEventListener('mouseenter', function() {
             this.style.background = 'linear-gradient(135deg, #106ebe 0%, #005a9e 100%)';
@@ -677,19 +618,17 @@ function setupSectionNavigation(popupContainer) {
             }
         });
         
-        // Close dropdown when clicking outside
+        // Close dropdown
         const closeDropdown = function(e) {
             if (overflowMenuDropdown && overflowMenuContainer && !overflowMenuContainer.contains(e.target)) {
                 overflowMenuDropdown.style.display = 'none';
             }
-        };
+        };        
         
-        // Use setTimeout to add the listener after current event completes
         setTimeout(() => {
             document.addEventListener('click', closeDropdown);
-        }, 100);
+        }, 100);        
         
-        // Clean up event listener when popup is removed
         const observer = new MutationObserver(function(mutations) {
             mutations.forEach(function(mutation) {
                 mutation.removedNodes.forEach(function(node) {
@@ -699,35 +638,30 @@ function setupSectionNavigation(popupContainer) {
                     }
                 });
             });
-        });
-        
+        });        
         observer.observe(document.body, { childList: true });
-    }
-    
-    // Function to check and manage overflow
+    }    
+    // Manage overflow
     const manageOverflow = () => {
         if (!navContainer || !overflowMenuContainer || !overflowMenuDropdown) {
             return;
-        }
-        
+        }        
         const buttons = Array.from(navContainer.querySelectorAll('.section-nav-btn'));
         if (buttons.length === 0) return;
         
         const containerWidth = navContainer.offsetWidth;
-        const overflowBtnWidth = 80; // Approximate width of "More" button
-        let totalWidth = overflowBtnWidth; // Start with space for overflow button
+        const overflowBtnWidth = 80; 
+        let totalWidth = overflowBtnWidth; 
         let visibleCount = 0;
         
-        // Reset all buttons to visible first
+        // Reset all btn
         buttons.forEach(btn => {
             btn.style.display = '';
         });
         overflowMenuContainer.style.display = 'none';
-        overflowMenuDropdown.style.display = 'none';
-        
-        // Calculate how many buttons fit
+        overflowMenuDropdown.style.display = 'none';        
         for (let i = 0; i < buttons.length; i++) {
-            totalWidth += buttons[i].offsetWidth + 8; // 8px gap
+            totalWidth += buttons[i].offsetWidth + 8; 
             if (totalWidth <= containerWidth) {
                 visibleCount++;
             } else {
@@ -735,15 +669,13 @@ function setupSectionNavigation(popupContainer) {
             }
         }
         
-        // If not all buttons fit, show overflow menu
+        // If not all buttons fit
         if (visibleCount < buttons.length) {
-            overflowMenuContainer.style.display = 'block';
-            
-            // Hide buttons that don't fit
+            overflowMenuContainer.style.display = 'block';            
+            // Hide buttons
             const hiddenButtons = buttons.slice(visibleCount);
-            hiddenButtons.forEach(btn => btn.style.display = 'none');
-            
-            // Populate overflow menu
+            hiddenButtons.forEach(btn => btn.style.display = 'none');            
+            // Overflow menu
             const categoryLabels = {
                 'TextFields': 'Text Fields',
                 'ChoiceFields': 'Choice Fields',
@@ -787,23 +719,18 @@ function setupSectionNavigation(popupContainer) {
                 overflowMenuDropdown.appendChild(menuItem);
             });
         }
-    };
-    
-    // Initial check with multiple attempts to ensure DOM is ready
+    };    
     setTimeout(manageOverflow, 50);
     setTimeout(manageOverflow, 200);
-    setTimeout(manageOverflow, 500);
+    setTimeout(manageOverflow, 500);    
     
-    // Re-check on window resize
     let resizeTimeout;
     const handleResize = function() {
         clearTimeout(resizeTimeout);
         resizeTimeout = setTimeout(manageOverflow, 100);
     };
     
-    window.addEventListener('resize', handleResize);
-    
-    // Clean up resize listener when popup is removed
+    window.addEventListener('resize', handleResize);    
     const observer = new MutationObserver(function(mutations) {
         mutations.forEach(function(mutation) {
             mutation.removedNodes.forEach(function(node) {
@@ -813,7 +740,6 @@ function setupSectionNavigation(popupContainer) {
                 }
             });
         });
-    });
-    
+    });    
     observer.observe(document.body, { childList: true });
 }
