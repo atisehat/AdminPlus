@@ -2,9 +2,12 @@
 
 // User API calls
 function fetchUsers(callback) {
-    // Filter: enabled users only (includes Read-Write, Administrative, and other access modes)
-    // Excludes application users and disabled accounts
-    Xrm.WebApi.retrieveMultipleRecords('systemuser', '?$select=systemuserid,firstname,lastname,fullname,_businessunitid_value&$filter=(isdisabled eq false) and (accessmode ne 3)').then(callback);
+    // Filter: 
+    // - Status equals Enabled (isdisabled eq false)
+    // - Access Mode Does not equal Support User (accessmode ne 4)
+    // - Access Mode Does not equal Delegated Admin (accessmode ne 3)
+    // - Application ID Does not contain data (applicationid eq null)
+    Xrm.WebApi.retrieveMultipleRecords('systemuser', '?$select=systemuserid,firstname,lastname,fullname,_businessunitid_value,applicationid&$filter=(isdisabled eq false) and (accessmode ne 4) and (accessmode ne 3) and (applicationid eq null)').then(callback);
 }
 
 function fetchBusinessUnitName(userId, callback) {
