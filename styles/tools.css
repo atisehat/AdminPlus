@@ -1,12 +1,12 @@
-/* Tool-Specific Styles for AdminPlus */
+/* Tool-Specific Styles */
 
-/* ========== Show Dirty Fields ========== */
+/* Show Dirty Fields */
 .scrollable-section { 
     height: 52%; 
     overflow-y: auto; 
 }
 
-/* ========== Entity Info ========== */
+/* Entity Info */
 .content-section { 
     text-align: left; 
     height: 100%; 
@@ -23,7 +23,7 @@
     overflow-y: auto; 
 }
 
-/* ========== Copy Security ========== */
+/* Copy Security */
 .securityPopup-row {
     display: flex;
     width: 100%;
@@ -99,7 +99,7 @@
     padding-bottom: 15px;
 }
 
-/* ========== Assign Security ========== */
+/* Assign Security */
 .assignPopup { 
     background-color: #f9f9f9; 
     border: 3px solid #102e55; 
@@ -137,7 +137,7 @@
     font-size: 14px;
 }
 
-/* Specific width for Current User Security search input */
+/* Current User Security search input */
 .leftUser-section .section-header-with-search {
     gap: 8px;
 }
@@ -147,7 +147,7 @@
     min-width: 0;
 }
 
-/* Align Change Business Unit input */
+/* Change Business Unit input */
 .rightBuss-section .section-header-with-search {
     gap: 8px;
 }
@@ -332,7 +332,7 @@
     transform: translateY(0);
 }
 
-/* ========== Date Calculator ========== */
+/* Date Calculator */
 .holidaysList { 
     max-height: 74%; 
     overflow-y: auto; 
@@ -621,7 +621,7 @@
     transform: translateY(0);
 }
 
-/* ========== Date Calculator Specific Overrides ========== */
+/* Date Calculator Overrides */
 .dateCalculatorPopup #section1 {
     border-right: 2px solid #e0e0e0;
     padding-right: 15px;

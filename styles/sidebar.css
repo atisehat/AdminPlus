@@ -1,4 +1,4 @@
-/* AdminPlus Sidebar Styles */
+/* Sidebar Styles */
 
 /* Main sidebar container */
 #MenuPopup {
@@ -29,7 +29,7 @@
     box-sizing: border-box !important;
 }
 
-/* Remove rounded corners from sidebar header */
+/* Rounded corners */
 #MenuPopup .commonPopup-header {
     border-radius: 0 !important;
     padding: 11px 4px !important;
@@ -44,24 +44,24 @@
     transition: background-color 0.2s ease !important;
 }
 
-/* Header hover state - turn red like browser close button */
+/* Header hover state */
 #MenuPopup .commonPopup-header:hover {
     background-color: #e81123 !important;
 }
 
-/* Header text - visible by default */
+/* Header text */
 #MenuPopup .commonPopup-header .header-text {
     display: inline;
 }
 
-/* Header close X - hidden by default */
+/* Header close X */
 #MenuPopup .commonPopup-header .header-close {
     display: none;
     font-size: 20px;
     font-weight: bold;
 }
 
-/* On hover: hide text, show X */
+/* Hide text, show X */
 #MenuPopup .commonPopup-header:hover .header-text {
     display: none;
 }
@@ -70,7 +70,7 @@
     display: inline;
 }
 
-/* Superscript styling for + symbol */
+/* Styling for + symbol */
 #MenuPopup .commonPopup-header sup {
     font-size: 0.9em;
     font-weight: bold;
@@ -85,7 +85,7 @@
     box-sizing: border-box;
 }
 
-/* App grid layout - 1 column */
+/* App grid layout */
 #MenuPopup .app-grid {
     display: flex;
     flex-direction: column;
@@ -94,7 +94,7 @@
     margin-bottom: 5px;
 }
 
-/* App button - icon only */
+/* App button */
 #MenuPopup .app-button {
     display: flex;
     align-items: center;
@@ -125,15 +125,13 @@
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
-/* App icon - emoji/symbol centered */
+/* App icon */
 #MenuPopup .app-icon {
     font-size: 22px;
     display: block;
     line-height: 1;
 }
 
-/* Page content adjustment when sidebar is open */
-/* Note: Positioning is set dynamically via JavaScript for accurate calculations */
 body.adminplus-sidebar-open {
     box-sizing: border-box !important;
 }

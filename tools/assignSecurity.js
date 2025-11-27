@@ -1,5 +1,5 @@
 function editSecurity() {
-	// Check if user has System Administrator role
+	// Check if user Sys Admin
 	if (!checkSystemAdministratorRole()) {
 		Xrm.Navigation.openAlertDialog({ text: "You do not have permission to execute this action. System Administrator role required." });
 		return;
@@ -106,20 +106,20 @@ function editSecurity() {
 	    </div>
 	  `;
 	  
-	  // Close any existing popups (from other tools)
+	  // Close existing popups
 	  const existingPopups = document.querySelectorAll('.commonPopup');
 	  existingPopups.forEach(popup => popup.remove());
 	  
 	  newContainer.setAttribute('data-popup-id', 'assignSecurity');
 	  document.body.appendChild(newContainer);
 	  
-	  // Setup close button functionality
+	  // Close button functionality
 	  const closeButton = newContainer.querySelector('.close-button');
 	  closeButton.addEventListener('click', () => {
 	    newContainer.remove();
 	  });
 	  
-	  // Add hover effect for close button
+	  // Hover for close button
 	  closeButton.addEventListener('mouseenter', function() {
 	    this.style.backgroundColor = '#e81123';
 	  });
@@ -570,7 +570,7 @@ function editSecurity() {
 	    }
 	}
 	
-	// Add radio buttons
+	// Radio buttons
 	function addRadioButtonsToSection(options) {	    
 	    const { sectionId, headingText, radioName, radioData, inputIds, inputId, radioButtonClassName } = options;
 	    const sectionElement = document.getElementById(sectionId); 
@@ -579,8 +579,7 @@ function editSecurity() {
 	        return;
 	    }	
 	    sectionElement.setAttribute('data-hasRadioButtons', 'true');	    
-		
-	    // Create header wrapper with heading and search input on the same line
+			    
 	    const headerWrapper = document.createElement('div');
 	    headerWrapper.className = 'section-header-with-search';
 	    

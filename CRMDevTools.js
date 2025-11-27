@@ -1,13 +1,6 @@
-// ============================================================================
-// AdminPlus - D365 CE Admin Tools
-// ============================================================================
-
 const baseUrl = 'https://atisehat.github.io/AdminPlus/';
 const cacheBuster = '?v=' + new Date().getTime(); // Force refresh - dateCalc fix
 
-// ============================================================================
-// Resource Loading
-// ============================================================================
 
 function loadCSS(href) {
   const link = document.createElement('link');
@@ -24,19 +17,18 @@ function loadScript(src, callback) {
   document.head.appendChild(script);
 }
 
-// Load stylesheets
+// Load styles
 loadCSS('styles/common.css');
 loadCSS('styles/tools.css');
 loadCSS('styles/sidebar.css');
 
-// Load utility scripts first (with proper sequencing)
+// Load util
 let utilScriptsLoaded = 0;
 const totalUtilScripts = 2;
 
 function onUtilScriptLoaded() {
   utilScriptsLoaded++;
-  if (utilScriptsLoaded === totalUtilScripts) {
-    // All utilities loaded, now load tool scripts
+  if (utilScriptsLoaded === totalUtilScripts) {    
     loadScript('tools/advancedFind.js');
     loadScript('tools/entityInfo.js');
     loadScript('tools/entityAutomations.js');
@@ -57,32 +49,22 @@ function onUtilScriptLoaded() {
 loadScript('utils/api.js', onUtilScriptLoaded);
 loadScript('utils/ui.js', onUtilScriptLoaded);
 
-// ============================================================================
-// Sidebar Management
-// ============================================================================
-
-// Helper function to check if running within Dynamics 365 (not Power Pages or other contexts)
+// Helper function for D365
 function isD365Context() {
-  try {
-    // Check if Xrm exists
+  try {    
     if (typeof Xrm === 'undefined' || !Xrm.Utility || !Xrm.Utility.getGlobalContext) {
       return false;
     }
-    
-    // Check if we have access to Xrm.Page (specific to D365 forms/views)
-    // Power Pages has Xrm but not Xrm.Page or other D365-specific APIs
+        
     if (typeof Xrm.Page === 'undefined' || !Xrm.Page.context) {
       return false;
     }
-    
-    // Additional check: Ensure we can get client URL (D365 specific)
+        
     var clientUrl = Xrm.Page.context.getClientUrl();
     if (!clientUrl) {
       return false;
     }
-    
-    // Check that URL contains dynamics.com or typical D365 patterns
-    // Power Pages URLs are different (powerappsportals.com, microsoftcrmportals.com, etc.)
+        
     var url = window.location.href.toLowerCase();
     var isD365Url = url.includes('dynamics.com') || 
                     url.includes('crm.dynamics.com') ||
@@ -96,7 +78,7 @@ function isD365Context() {
   }
 }
 
-// Helper function to check if user has System Administrator role
+// Helper function for Sys Admin
 function checkSystemAdministratorRole() {
   try {
     var roles = Xrm.Utility.getGlobalContext().userSettings.roles;
@@ -112,14 +94,11 @@ function checkSystemAdministratorRole() {
   }
 }
 
-function openPopup() {
-  // Check if running within Dynamics 365
-  if (!isD365Context()) {
-    // Wait a moment for showToast to be available, then show message
+function openPopup() {  
+  if (!isD365Context()) {    
     if (typeof showToast === 'function') {
       showToast('AdminPlus can only run inside Dynamics 365. Please open this tool from within your D365 environment.', 'warning', 4000);
-    } else {
-      // If showToast not loaded yet, wait and try again
+    } else {      
       setTimeout(function() {
         if (typeof showToast === 'function') {
           showToast('AdminPlus can only run inside Dynamics 365. Please open this tool from within your D365 environment.', 'warning', 4000);
@@ -127,9 +106,8 @@ function openPopup() {
       }, 100);
     }
     return;
-  }
+  }  
   
-  // Toggle: Close sidebar if already open
   if (document.getElementById('MenuPopup')) {
     closePopup();
     return;
@@ -194,52 +172,36 @@ function openPopup() {
 	</div>
    </div>
   `;	  
-  
-  // Sidebar configuration
-  var sidebarWidth = 60;
-  
-  // Create sidebar container
+    
+  var sidebarWidth = 60;  
   var newContainer = document.createElement('div');
   newContainer.id = 'MenuPopup';
   newContainer.innerHTML = popupHtml;
   document.body.appendChild(newContainer);
   
-  // Find all D365 containers that need to be adjusted
   function findD365Containers() {
     var containers = [];
-    var vw = window.innerWidth;
-    
-    // Priority selectors for D365 containers (in order of specificity)
-    // We want to target the top-level containers only, not nested ones
-    var prioritySelectors = [
-      // Shell/App level containers (highest priority - typically contain everything)
+    var vw = window.innerWidth;    
+    var prioritySelectors = [      
       'div[id*="shell-container"]',
-      'div[data-id="AppLandingPage"]',
-      
-      // Main app container
+      'div[data-id="AppLandingPage"]',      
       'div[id*="ApplicationShell"]',
-      'div[id*="app-host"]',
-      
-      // Navigation/Header (should be adjusted independently)
+      'div[id*="app-host"]',      
       'header[role="banner"]',
       'div[id*="navbar"]',
       'div[id*="navigation"]',
       'nav[role="navigation"]'
     ];
     
-    var processedAncestors = new Set();
-    
-    // Find containers using priority selectors
+    var processedAncestors = new Set();        
     prioritySelectors.forEach(function(selector) {
       try {
         var elements = document.querySelectorAll(selector);
         elements.forEach(function(el) {
           if (!el || containers.includes(el)) return;
           
-          var rect = el.getBoundingClientRect();
-          // Include if it spans most of the viewport width and isn't already included
-          if (rect.width >= vw * 0.8) {
-            // Check if this element is a child of an already selected container
+          var rect = el.getBoundingClientRect();          
+          if (rect.width >= vw * 0.8) {            
             var isNested = false;
             for (var i = 0; i < containers.length; i++) {
               if (containers[i].contains(el)) {
@@ -247,10 +209,8 @@ function openPopup() {
                 break;
               }
             }
-            
-            // Only add if not nested in another container we're already targeting
-            if (!isNested) {
-              // Remove any containers that are children of this element
+                        
+            if (!isNested) {              
               containers = containers.filter(function(existing) {
                 return !el.contains(existing);
               });
@@ -258,21 +218,17 @@ function openPopup() {
             }
           }
         });
-      } catch (e) {
-        // Skip invalid selectors
+      } catch (e) {        
       }
-    });
+    });    
     
-    // If no containers found, target body's direct children that are large enough
     if (containers.length === 0) {
       document.querySelectorAll('body > *').forEach(function(el) {
         if (!(el instanceof HTMLElement)) return;
-        if (el.id === 'MenuPopup') return; // Skip our sidebar
+        if (el.id === 'MenuPopup') return;
         
         var rect = el.getBoundingClientRect();
-        var style = getComputedStyle(el);
-        
-        // Look for containers that span most of viewport width
+        var style = getComputedStyle(el);        
         if (rect.width >= vw * 0.8 && 
             ['fixed', 'absolute', 'relative'].includes(style.position)) {
           containers.push(el);
@@ -281,26 +237,17 @@ function openPopup() {
     }
     
     return containers;
-  }
+  }  
   
-  // Adjust content positioning for sidebar
-  function adjustContentPosition() {
-    // Try to get existing targets first
+  function adjustContentPosition() {    
     var existingContainers = window.adminPlusTargetElements;
-    
-    // If not stored yet, find them
     if (!existingContainers || existingContainers.length === 0) {
-      existingContainers = findD365Containers();
-      
-      // Store globally for reliable access during close
+      existingContainers = findD365Containers();      
       window.adminPlusTargetElements = existingContainers;
-    }
+    }    
     
-    // Apply positioning to all containers
     existingContainers.forEach(function(container) {
-      if (!container || !document.body.contains(container)) return;
-      
-      // Store original styles only once
+      if (!container || !document.body.contains(container)) return;      
       if (!container.getAttribute('data-adminplus-original-right')) {
         var cs = getComputedStyle(container);
         container.setAttribute('data-adminplus-original-right', container.style.right || '');
@@ -312,28 +259,20 @@ function openPopup() {
         container.setAttribute('data-adminplus-target', 'true');
       }
       
-      var computedPosition = container.getAttribute('data-adminplus-computed-position');
-      
-      // Apply positioning based on element type
+      var computedPosition = container.getAttribute('data-adminplus-computed-position');      
       container.style.boxSizing = 'border-box';
-      
-      // For fixed/absolute positioned elements - adjust using right property
-      if (computedPosition === 'fixed' || computedPosition === 'absolute') {
-        // Keep original position type
+            
+      if (computedPosition === 'fixed' || computedPosition === 'absolute') {        
         if (computedPosition === 'static') {
           container.style.position = 'relative';
         }
         
-        container.style.right = sidebarWidth + 'px';
-        
-        // Only set left if it wasn't explicitly set
+        container.style.right = sidebarWidth + 'px';                
         var originalLeft = container.getAttribute('data-adminplus-original-left');
         if (!originalLeft || originalLeft === '' || originalLeft === 'auto') {
           container.style.left = '0';
         }
-      } else {
-        // For relative/static elements - don't change position, just reduce effective width
-        // by adding a right margin instead of changing width directly
+      } else {        
         container.style.marginRight = sidebarWidth + 'px';
       }
     });
@@ -351,28 +290,22 @@ function openPopup() {
 }
 
 function closePopup() {
-    document.body.classList.remove('adminplus-sidebar-open');
-    
-    // Try to get target elements from stored reference first
-    var targetElements = window.adminPlusTargetElements;
-    
-    // Fallback to query if reference doesn't exist
+    document.body.classList.remove('adminplus-sidebar-open');    
+    var targetElements = window.adminPlusTargetElements;    
     if (!targetElements || targetElements.length === 0) {
         targetElements = Array.from(document.querySelectorAll('[data-adminplus-target="true"]'));
     }
     
-    // Restore all target elements
+    
     targetElements.forEach(function(targetElement) {
-        if (!targetElement || !document.body.contains(targetElement)) return;
+        if (!targetElement || !document.body.contains(targetElement)) return;        
         
-        // Get original styles
         var originalRight = targetElement.getAttribute('data-adminplus-original-right');
         var originalLeft = targetElement.getAttribute('data-adminplus-original-left');
         var originalPosition = targetElement.getAttribute('data-adminplus-original-position');
         var originalBoxSizing = targetElement.getAttribute('data-adminplus-original-boxsizing');
         var originalWidth = targetElement.getAttribute('data-adminplus-original-width');
-        
-        // Restore or remove properties
+                
         if (originalRight !== null) {
             if (originalRight === '') {
                 targetElement.style.removeProperty('right');
@@ -416,23 +349,17 @@ function closePopup() {
                 targetElement.style.width = originalWidth;
             }
             targetElement.removeAttribute('data-adminplus-original-width');
-        }
+        }        
         
-        // Remove margin-right if it was added
-        targetElement.style.removeProperty('margin-right');
-        
-        // Clean up attributes
+        targetElement.style.removeProperty('margin-right');        
         targetElement.removeAttribute('data-adminplus-target');
         targetElement.removeAttribute('data-adminplus-computed-position');
-        
-        // Force reflow to ensure styles are updated
+                
         void targetElement.offsetHeight;
-    });
+    });    
     
-    // Clean up global reference
-    window.adminPlusTargetElements = null;
+    window.adminPlusTargetElements = null;   
     
-    // Clean up event listener
     if (window.adminPlusResizeHandler) {
         window.removeEventListener('resize', window.adminPlusResizeHandler);
         window.adminPlusResizeHandler = null;
@@ -457,9 +384,7 @@ function closeSubPopups() {
     });
 }
 
-// ============================================================================
 // Global Exports
-// ============================================================================
 window.isD365Context = isD365Context;
 window.checkSystemAdministratorRole = checkSystemAdministratorRole;
 window.fetchEntityFields = fetchEntityFields;

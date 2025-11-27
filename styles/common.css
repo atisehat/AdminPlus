@@ -1,6 +1,6 @@
-/* Common Shared Styles for AdminPlus */
+/* Common Shared Styles */
 
-/* Popup Base Styles */
+/* Popup Styles */
 .commonPopup { 
     background-color: #f9f9f9; 
     border: 3px solid #102e55; 
@@ -46,7 +46,7 @@
     overflow-y: auto; 
 }
 
-/* Common Layout Styles */
+/* Layout Styles */
 .iframe-container { 
     overflow: hidden; 
 }
@@ -55,7 +55,7 @@
     display: flex; 
 }
 
-/* Common User Selection Styles */
+/* User Selection Styles */
 .selected, .userSelected { 
     background-color: #e0e0e0; 
 }
@@ -71,7 +71,7 @@
     background-color: #f0f0f0; 
 }
 
-/* Common Button Styles */
+/* Button Styles */
 #submitButton { 
     padding: 12px 32px; 
     font-size: 15px; 
@@ -99,7 +99,7 @@
     transform: translateY(0);
 }
 
-/* Common Checkbox/Radio Styles */
+/* Checkbox/Radio Styles */
 .sectionWrapper { 
     display: flex; 
 }
