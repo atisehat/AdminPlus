@@ -260,14 +260,27 @@ function editSecurity() {
 	
 	function addSearchFunctionality(array, inputElementId, displayFunction, targetElement) {
 	    const searchInput = document.getElementById(inputElementId);
-	
+	    if (!searchInput) return;
+
 	    searchInput.addEventListener('input', function() {
-	        const query = this.value.toLowerCase();
+	        const query = this.value.toLowerCase().trim();
+	        
+	        // If empty, show all
+	        if (!query) {
+	            displayFunction(array, targetElement);
+	            return;
+	        }
+	        
+	        // Split search into words for flexible matching
+	        const searchWords = query.split(/\s+/).filter(word => word.length > 0);
+	        
 	        const filteredArray = array.filter(item => {
 	            let name = item.hasOwnProperty('name') ? item.name : '';
-	            let businessUnitName = item.hasOwnProperty('businessUnitName') ? `(${item.businessUnitName})` : '';
-	            const itemInfo = `${name} ${businessUnitName}`.toLowerCase().trim();
-	            return itemInfo.includes(query);
+	            let businessUnitName = item.hasOwnProperty('businessUnitName') ? item.businessUnitName : '';
+	            const itemInfo = `${name} ${businessUnitName}`.toLowerCase();
+	            
+	            // Check if all search words are found in the text (in any order)
+	            return searchWords.every(word => itemInfo.includes(word));
 	        });	
 	        displayFunction(filteredArray, targetElement);
 	    });
@@ -353,6 +366,89 @@ function editSecurity() {
 	    // Manage checkbox states
 	    toggleCheckboxes('disable', ['assignCheckbox', 'teamsCheckbox', 'teamsRadioButtons', 'rolesCheckbox', 'rolesRadioButtons']);
 	    toggleCheckboxes('enable', ['assignCheckbox', 'teamsRadioButtons','rolesRadioButtons']);
+	}
+	
+	function refreshUserSecurity(userId) {
+		// Refresh the current user's security display without losing the selection
+		if (!userId) return;
+		
+		fetchBusinessUnitName(userId, function(response) {
+			try {
+				const businessUnitAndTeamsList = document.getElementById('section3')?.querySelector('ul');
+				if (!businessUnitAndTeamsList) return;
+				
+				businessUnitAndTeamsList.innerHTML = '';
+				
+				if (response && response.entities && response.entities[0] && response.entities[0].businessunitid) {
+					const businessUnitName = response.entities[0].businessunitid.name;
+					const businessUnitListItem = document.createElement('li');
+					businessUnitListItem.innerHTML = '<strong>Business Unit:</strong> ' + businessUnitName;
+					businessUnitAndTeamsList.appendChild(businessUnitListItem);
+					businessUnitAndTeamsList.appendChild(document.createElement('br'));
+				}
+			} catch (error) {
+				console.error('Error refreshing business unit:', error);
+			}
+		});
+		
+		fetchTeamsForUser(userId, function(response) {
+			try {
+				const businessUnitAndTeamsList = document.getElementById('section3')?.querySelector('ul');
+				if (!businessUnitAndTeamsList) return;
+				
+				if (response && response.entities && response.entities[0]) {
+					const teams = response.entities[0].teammembership_association || [];
+					const teamListItems = teams.map(team => {
+						const listItem = document.createElement('li');
+						const teamTypeText = team['teamtype@OData.Community.Display.V1.FormattedValue'] || 'Unknown';
+						listItem.innerHTML = '<strong>Team:</strong> ' + team.name + ' (Type: ' + teamTypeText + ')';
+						return listItem;
+					});
+					
+					teamListItems.sort((a, b) => {
+						const nameA = a.innerHTML.replace('Team: ', '');
+						const nameB = b.innerHTML.replace('Team: ', '');
+						return nameA.localeCompare(nameB);
+					});
+					
+					teamListItems.forEach(item => businessUnitAndTeamsList.appendChild(item));
+				}
+			} catch (error) {
+				console.error('Error refreshing teams:', error);
+			}
+		});
+		
+		fetchRolesForUser(userId, function(roles) {
+			try {
+				const rolesList = document.getElementById('section4')?.querySelector('ul');
+				if (!rolesList) return;
+				
+				rolesList.innerHTML = '';
+				
+				if (roles && roles.entities) {
+					const roleDetailsArr = [];
+					const rolePromises = roles.entities.map(role => {
+						const roleId = role['roleid'];
+						return Xrm.WebApi.retrieveRecord("role", roleId, "?$select=name,roleid").then(function(roleDetail) {
+							roleDetailsArr.push(roleDetail);
+						}).catch(function(error) {
+							console.error('Error fetching role details:', error);
+						});
+					});
+					
+					Promise.all(rolePromises).then(() => {
+						roleDetailsArr.sort((a, b) => a.name.localeCompare(b.name));
+						roleDetailsArr.forEach(roleDetail => {
+							const listItem = document.createElement('li');
+							listItem.textContent = roleDetail.name || 'Unnamed Role';
+							rolesList.appendChild(listItem);
+						});
+					});
+				}
+			} catch (error) {
+				console.error('Error refreshing roles:', error);
+			}
+		});
 	}
 	
 	function selectUser(user, sectionPrefix) {
@@ -781,11 +877,18 @@ function editSecurity() {
 			}
 		    }
 		    
-		    // Clear the display sections
-		    const section3Ul = document.getElementById('section3')?.querySelector('ul');
-		    const section4Ul = document.getElementById('section4')?.querySelector('ul');
-		    if (section3Ul) section3Ul.innerHTML = '';
-		    if (section4Ul) section4Ul.innerHTML = '';
+		    // Refresh the current user's security display
+		    if (selectedUserId) {
+		        refreshUserSecurity(selectedUserId);
+		    }
+		    
+		    // Clear search inputs in all sections
+		    const searchInput2 = document.getElementById('searchInput2');
+		    const searchInput3 = document.getElementById('searchInput3');
+		    const searchInput4 = document.getElementById('searchInput4');
+		    if (searchInput2) searchInput2.value = '';
+		    if (searchInput3) searchInput3.value = '';
+		    if (searchInput4) searchInput4.value = '';
 		    
 		    closeLoadingDialog();
 		    showCustomAlert(`Security updated successfully for ${selectedUserFullName || 'user'}`);
