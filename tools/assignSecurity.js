@@ -1,142 +1,115 @@
 /**
- * Assign Security Tool
+ * Assign Security Tool (Redesigned)
  * Allows System Administrators to manage user security including:
  * - Changing user's business unit
  * - Adding/removing teams
  * - Adding/removing security roles
  * 
  * Features:
- * - Full error handling and validation
- * - State persistence during filtering/searching
- * - Real-time checkbox state management
- * - Loading indicators and user feedback
+ * - Modern tabbed interface for better organization
+ * - Visual comparison of current vs new security settings
+ * - Improved user feedback and validation
+ * - Clear action buttons for each category
  * 
  * @requires System Administrator role
  * @requires Xrm.WebApi, fetchUsers, fetchBusinessUnits, fetchTeamsForUser, fetchRolesForUser, fetchSecurityRoles
  * @requires updateUserDetails function from securityOperations.js
  */
 function editSecurity() {
-	// Check if user Sys Admin
+	// Check if user is Sys Admin
 	if (!checkSystemAdministratorRole()) {
 		showToast("You do not have permission to execute this action. System Administrator role required.", 'error', 4000);
 		return;
 	}
 	
-	let businessUnits = null;
+	// State management
 	let selectedUserId = null;
 	let selectedUserFullName = null;	
 	let selectedBusinessUnitId = null;
-	let teamsRadioSelected = null;
-	let rolesRadioSelected = null;
-	let businessUnitRadioSelected = null;
-	let selectedTeamIds = [];
-	let selectedRoleIds = [];
-	let teamsCheckedValues = [];
-	let rolesCheckedValues = [];	
-	let stateArray = { 'team': [], 'role': [] }; 
+	let currentBusinessUnitName = null;
 	
-	function createAppendSecurityPopup() {		
-	  var newContainer = document.createElement('div');		
-	  newContainer.className = 'commonPopup';
-	  newContainer.style.border = '3px solid #1a1a1a';
-	  newContainer.style.borderRadius = '12px';
-	  newContainer.style.width = '75%';
-	  newContainer.style.minWidth = '900px';
-	  newContainer.style.maxHeight = '90vh';
-	  
-	  newContainer.innerHTML =  `
+	// Tab states
+	let activeTab = 'businessunit';
+	
+	// Business Unit state
+	let newBusinessUnitId = null;
+	let businessUnitAction = null; // 'change' or 'nochange'
+	
+	// Teams state
+	let currentTeamIds = [];
+	let teamsToAdd = [];
+	let teamsToRemove = [];
+	let teamAction = null; // 'add', 'remove', 'replace', 'nochange'
+	
+	// Roles state
+	let currentRoleIds = [];
+	let rolesToAdd = [];
+	let rolesToRemove = [];
+	let roleAction = null; // 'add', 'remove', 'replace', 'nochange'
+	
+	// Data cache
+	let allBusinessUnits = [];
+	let allTeams = [];
+	let allRoles = [];
+	
+	/**
+	 * Create the main popup with modern tabbed interface
+	 */
+	function createSecurityPopup() {
+		const popup = document.createElement('div');
+		popup.className = 'commonPopup assignSecurity-redesign';
+		popup.style.width = '85%';
+		popup.style.maxWidth = '1400px';
+		popup.style.height = '90vh';
+		popup.style.border = '3px solid #1a1a1a';
+		popup.style.borderRadius = '12px';
+		
+		popup.innerHTML = `
 	    <div class="commonPopup-header" style="background-color: #2b2b2b; position: relative; cursor: move; border-radius: 9px 9px 0 0; margin: 0; border-bottom: 2px solid #1a1a1a;">
 	      <span style="color: white;">Assign User Security</span>
 	      <span class="close-button" style="position: absolute; right: 0; top: 0; bottom: 0; width: 45px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 20px; color: white; font-weight: bold; transition: background-color 0.2s ease; border-radius: 0 9px 0 0;">&times;</span>
 	    </div>
-	    <div class="popup-body" style="padding: 0; overflow: hidden;">
-	      <div class="commonSection content-section" style="padding: 0; border-right: 0; height: 100%;">
-	        <div class="scroll-section" style="padding: 20px; overflow: visible; max-height: none;">
-	          <div class="assignSecurityPopup-row">
-	            <div class="assignSection leftUser-section" id="section1">
-	              <div class="section-header-with-search">
-	                <h3>Current User Security:</h3>
-	                <input type="text" id="searchInput1" placeholder="Search Users">
+			<div class="popup-body" style="padding: 0; overflow: hidden; height: calc(100% - 50px);">
+				<div class="assignSecurity-layout">
+					<!-- User Selection Panel -->
+					<div class="user-selection-panel">
+						<div class="panel-header">
+							<h3>Select User</h3>
+							<input type="text" id="userSearchInput" placeholder="Search users..." class="search-input">
 	              </div>
-	              <div class="leftUser-list-container">
-	                <div id="userList1"></div>
+						<div class="user-list-scroll" id="userList"></div>
+						<div class="selected-user-info" id="selectedUserInfo" style="display: none;">
+							<div class="info-label">Selected User:</div>
+							<div class="info-value" id="selectedUserName"></div>
 	              </div>
 	            </div> 
-	            <div class="assignSection rightBuss-section" id="section2">
-	              <div class="section-header-with-search">
-	                <h3 id="bUh3" style="display: none;" >Change Business Unit:</h3>
-	                <input type="text" id="searchInput2" placeholder="Search Business Units" style="display: none;">
-	              </div>
-	              <div class="businessUnit-list-container">
-	                <div id="businessUnitList"></div>
-	              </div>
-	            </div>
-	          </div>
-	          <div id="sectionsRow1" class="assignSecurityPopup-row">
-	            <div class="assignSection leftDetails-section-row" id="section3">
-	              <h3>Current Business Unit & Teams:</h3>
-	              <div class="leftRoles-and-teams-list-row">
-	                <ul></ul>
-	              </div>
-	            </div>
-	            <div class="assignSection rightTeam-section" id="section5">	        
-	              <div class="teams-wrapper">
-	                <div id="teamsH3" style="display: flex; align-items: center; justify-content: center; width: 100%; text-align: center; padding: 10px 20px; color: #444; font-size: 18px; margin-top: -100px;">
-	                  <span style="margin-right: 15px; line-height: 1; display: flex; align-items: center;">
-	                    <svg width="60" height="30" viewBox="0 0 60 30" fill="none" xmlns="http://www.w3.org/2000/svg">
-	                      <path d="M0 15L15 5L15 25L0 15Z" fill="#444"/>
-	                      <rect x="15" y="10" width="45" height="10" fill="#444"/>
+					
+					<!-- Security Management Panel -->
+					<div class="security-panel">
+						<div id="securityContent" class="security-empty-state">
+							<div class="empty-state-icon">
+								<svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="#ccc" stroke-width="1.5">
+									<path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z"/>
+									<path d="M8 11V7a4 4 0 118 0v4"/>
 	                    </svg>
-	                  </span>
-	                  <span style="line-height: 1.5; font-weight: bold;">To modify user security, please choose a user from the list of users.</span>
 	                </div>
-	                <div class="teamsRoles-list-container">	          
-	                  <div id="teamsList"></div>		   
-	                </div>	  
-	              </div>
-	            </div>
-	          </div>
-	          <div id="sectionsRow2" class="assignSecurityPopup-row">
-	            <div class="assignSection leftDetails-section-row" id="section4">
-	              <h3>Current Security Roles:</h3>
-	              <div class="leftRoles-and-teams-list-row">
-	                <ul></ul>
-	              </div>		
-	            </div>
-	            <div class="assignSection rightTeam-section" id="section6">	        
-	              <div class="teams-wrapper">	        
-	                <div class="teamsRoles-list-container">
-	                  <div id="securityRolesList"></div>	          		 
-	                </div>
-	              </div>
-	            </div>
-	          </div>
-	          <div class="assignSecurityPopup-row" style="margin-top: -25px;">
-	            <div class="assignSection" style="width: 38%;"></div>
-	            <div class="assignSection" style="width: 62%; display: flex; flex-direction: column; align-items: center; gap: 10px; padding-top: 0;">
-	              <p style="margin: 0; font-size: 13px; color: #666;"><strong>**Note: </strong> Only 'Owner' or 'Access' type teams are assignable.</p>
-	              <button id="assignSubmitButton" style="display: none;">Submit</button>
-	            </div>
+							<h3>Select a User to Manage Security</h3>
+							<p>Choose a user from the list to view and modify their security settings</p>
 	          </div>
 	        </div>
 	      </div>
 	    </div>
 	  `;
 	  
-	  // Close existing popups
-	  const existingPopups = document.querySelectorAll('.commonPopup');
-	  existingPopups.forEach(popup => popup.remove());
-	  
-	  newContainer.setAttribute('data-popup-id', 'assignSecurity');
-	  document.body.appendChild(newContainer);
-	  
-	  // Close button functionality
-	  const closeButton = newContainer.querySelector('.close-button');
-	  closeButton.addEventListener('click', () => {
-	    newContainer.remove();
-	  });
-	  
-	  // Hover for close button
+		// Remove existing popups
+		document.querySelectorAll('.commonPopup').forEach(p => p.remove());
+		
+		popup.setAttribute('data-popup-id', 'assignSecurity');
+		document.body.appendChild(popup);
+		
+		// Close button
+		const closeButton = popup.querySelector('.close-button');
+		closeButton.addEventListener('click', () => popup.remove());
 	  closeButton.addEventListener('mouseenter', function() {
 	    this.style.backgroundColor = '#e81123';
 	  });
@@ -144,928 +117,892 @@ function editSecurity() {
 	    this.style.backgroundColor = 'transparent';
 	  });
 	  
-	  makePopupMovable(newContainer);	
-	}
- 
-	function toggleChangeBuInputAndHeading() {
-	  const bUh3 = document.getElementById('bUh3');
-	  const searchInput2 = document.getElementById('searchInput2');
-	  const teamsH3 = document.getElementById('teamsH3');
-	  
-	  // Show business unit heading and search
-	  if (bUh3 && bUh3.style.display === 'none') {
-	    bUh3.style.display = 'block';
-	  }
-	  if (searchInput2 && searchInput2.style.display === 'none') {
-	    searchInput2.style.display = 'inline-block';
-	  }
-	  
-	  // Always hide the arrow message when a user is selected
-	  if (teamsH3) {
-	    teamsH3.style.display = 'none';
-	  }
-	}
-	
-	function toggleCheckboxes(action, classNames) {	  
-	  const classes = Array.isArray(classNames) ? classNames : [classNames];
-	  classes.forEach(className => {
-	    const checkboxes = document.querySelectorAll(`.${className}`);	    
-	    checkboxes.forEach(checkbox => {
-	      if (action === 'disable') {
-	        checkbox.checked = false;
-	      }
-	      checkbox.disabled = (action === 'disable');
-	    });
-	  });
-	}	
-	
-	function renderGenericList(entities, selectCallback, sectionId, searchInputId, classNamePrefix, textProperty, idProperty, skipSectionWrapper = false) {
-	    const listDiv = document.getElementById(sectionId);
-	    if (!listDiv) {
-	        console.error('List container not found:', sectionId);
-	        return;
-	    }
-	    
-	    listDiv.innerHTML = '';
-	    
-	    if (!entities || !Array.isArray(entities)) {
-	        console.error('Invalid entities array provided to renderGenericList');
-	        return;
-	    }
-	    
-	    if (classNamePrefix === 'businessUnit') {
-	        addNoChangeRadioButton(listDiv, sectionId);
-	    }
-
-	    entities.forEach(entity => {
-	        if (!entity) return;
-	        const entityDiv = document.createElement('div');
-	        entityDiv.className = `${classNamePrefix}${sectionId.charAt(sectionId.length - 1)}`;	
-	        const wrapperDiv = document.createElement('div');
-	        if (!skipSectionWrapper) {
-	            wrapperDiv.className = 'sectionWrapper';
-	        }
-	
-	        if (classNamePrefix === 'businessUnit') {
-	            const inputElement = document.createElement('input');
-	            inputElement.type = 'radio';
-	            inputElement.name = 'businessUnit';
-	            inputElement.className = 'businessUnitRadioButtons';
-	            inputElement.value = entity['businessunitid']; 
-	            wrapperDiv.appendChild(inputElement);
-		    
-		    inputElement.addEventListener('change', function() {
-	               toggleCheckboxes('disable', ['assignCheckbox', 'teamsCheckbox', 'teamsRadioButtons', 'rolesCheckbox', 'rolesRadioButtons']);
-                       businessUnitRadioSelected = this.value; 
-                    });			
-	        }
-	
-	        const textDiv = document.createElement('div');
-	        textDiv.dataset.id = entity[idProperty];
-	        textDiv.dataset.searchText = entity[textProperty];
-	        textDiv.onclick = () => selectCallback(entity);
-	        textDiv.textContent = entity[textProperty] || 'N/A';
-	
-	        wrapperDiv.appendChild(textDiv);
-	        entityDiv.appendChild(wrapperDiv);	
-	        listDiv.appendChild(entityDiv);
-	    });
-	}
-	
-	function addNoChangeRadioButton(listDiv, sectionId) {
-	    const noChangeDiv = document.createElement('div');
-	    noChangeDiv.className = 'businessUnit' + sectionId.charAt(sectionId.length - 1);
-	
-	    const wrapperDiv = document.createElement('div');
-	    wrapperDiv.className = 'sectionWrapper';
-	
-	    const noChangeRadio = document.createElement('input');
-	    noChangeRadio.type = 'radio';
-	    noChangeRadio.name = 'businessUnit';
-	    noChangeRadio.value = 'noChange';
-	    noChangeRadio.className = 'businessUnitRadioButtons';
-	    wrapperDiv.appendChild(noChangeRadio);
-	
-	    const textDiv = document.createElement('div');
-	    textDiv.textContent = 'No Change';
-	    wrapperDiv.appendChild(textDiv);	
-	    noChangeDiv.appendChild(wrapperDiv);
-	    listDiv.appendChild(noChangeDiv);
-	    
-	    noChangeRadio.addEventListener('change', function() {
-	      toggleCheckboxes('enable', ['assignCheckbox', 'teamsRadioButtons', 'rolesRadioButtons']);
-              businessUnitRadioSelected = this.value; 
-           });
-	}
-	
-	function addSearchFunctionality(array, inputElementId, displayFunction, targetElement) {
-	    const searchInput = document.getElementById(inputElementId);
-	    if (!searchInput) return;
-
-	    searchInput.addEventListener('input', function() {
-	        const query = this.value.toLowerCase().trim();
-	        
-	        // If empty, show all
-	        if (!query) {
-	            displayFunction(array, targetElement);
-	            return;
-	        }
-	        
-	        // Split search into words for flexible matching
-	        const searchWords = query.split(/\s+/).filter(word => word.length > 0);
-	        
-	        const filteredArray = array.filter(item => {
-	            let name = item.hasOwnProperty('name') ? item.name : '';
-	            let businessUnitName = item.hasOwnProperty('businessUnitName') ? item.businessUnitName : '';
-	            const itemInfo = `${name} ${businessUnitName}`.toLowerCase();
-	            
-	            // Check if all search words are found in the text (in any order)
-	            return searchWords.every(word => itemInfo.includes(word));
-	        });	
-	        displayFunction(filteredArray, targetElement);
-	    });
-	}
-	
-	function createAndAppendItems(itemArray, targetElement, valueType, valueKey, textKeys, additionalClassNames, itemType) {	    
-	    if (!targetElement) {
-	        console.error('Target element not found in createAndAppendItems');
-	        return;
-	    }
-	    
-	    targetElement.innerHTML = '';	    
-	    
-	    // Initialize stateArray for this itemType if it doesn't exist
-	    if (!stateArray[itemType]) {
-	        stateArray[itemType] = [];
-	    }
-	    
-	    const relevantStateArray = stateArray[itemType];    
-	    
-	    itemArray.forEach(item => {
-	        const wrapperDiv = document.createElement('div');
-	        wrapperDiv.className = 'sectionWrapper';
-
-	        if (itemType === 'team') {
-	            wrapperDiv.classList.add('teamClass'); 
-	        } else if (itemType === 'role') {
-	            wrapperDiv.classList.add('roleClass'); 
-	        }
-
-	        const assignCheckbox = document.createElement('input');
-	        assignCheckbox.type = valueType;
-	        assignCheckbox.value = item[valueKey];
-	        assignCheckbox.className = additionalClassNames;
-	        
-	        // Add data attribute for item name for easier debugging
-	        assignCheckbox.setAttribute('data-item-name', textKeys.map(key => item[key]).join(' '));
-
-	        // Preserve checked state from stateArray
-	        if (relevantStateArray.includes(assignCheckbox.value)) {
-	            assignCheckbox.checked = true;
-	        }
-
-	        assignCheckbox.addEventListener('change', function() {
-	            const value = this.value;
-	            const isChecked = this.checked;
-	            
-	            // Update stateArray
-	            if (isChecked) {
-	                if (!relevantStateArray.includes(value)) {
-	                    relevantStateArray.push(value);
-	                }
-	            } else {
-	                const index = relevantStateArray.indexOf(value);
-	                if (index > -1) {
-	                    relevantStateArray.splice(index, 1);
-	                }
-	            }	            
-	            
-	            // Update the checked values array (for submit)
-	            const arrayToUse = (itemType === 'team') ? teamsCheckedValues : rolesCheckedValues;
-	            if (isChecked) {
-	                if (!arrayToUse.includes(value)) {
-	                    arrayToUse.push(value);
-	                }
-	            } else {
-	                const arrayIndex = arrayToUse.indexOf(value);
-	                if (arrayIndex > -1) {
-	                    arrayToUse.splice(arrayIndex, 1);
-	                }
-	            }
-	        });       
-
-		const label = document.createElement('label');
-		label.appendChild(assignCheckbox);
-		label.appendChild(document.createTextNode(textKeys.map(key => item[key]).join(' ')));
-		label.style.cursor = 'pointer';
-		    
-	        wrapperDiv.appendChild(label);	
-	        targetElement.appendChild(wrapperDiv);
-	    });	    
-	    
-	    // Manage checkbox states
-	    toggleCheckboxes('disable', ['assignCheckbox', 'teamsCheckbox', 'teamsRadioButtons', 'rolesCheckbox', 'rolesRadioButtons']);
-	    toggleCheckboxes('enable', ['assignCheckbox', 'teamsRadioButtons','rolesRadioButtons']);
-	}
-	
-	function refreshUserSecurity(userId) {
-		// Refresh the current user's security display without losing the selection
-		if (!userId) return;
+		makePopupMovable(popup);
 		
-		const businessUnitAndTeamsList = document.getElementById('section3')?.querySelector('ul');
-		if (!businessUnitAndTeamsList) return;
+		return popup;
+	}
+	
+	/**
+	 * Load and display users in the left panel
+	 */
+	function loadUsers(users) {
+		const userList = document.getElementById('userList');
+		if (!userList || !users || !users.entities) return;
 		
-		// Clear the list once
-		businessUnitAndTeamsList.innerHTML = '';
-		
-		// Fetch business unit and teams together to avoid race condition
-		Promise.all([
-			new Promise(resolve => fetchBusinessUnitName(userId, resolve)),
-			new Promise(resolve => fetchTeamsForUser(userId, resolve))
-		]).then(([buResponse, teamsResponse]) => {
-			try {
-				// Add business unit
-				if (buResponse && buResponse.entities && buResponse.entities[0] && buResponse.entities[0].businessunitid) {
-					const businessUnitName = buResponse.entities[0].businessunitid.name;
-					const businessUnitListItem = document.createElement('li');
-					businessUnitListItem.innerHTML = '<strong>Business Unit:</strong> ' + businessUnitName;
-					businessUnitAndTeamsList.appendChild(businessUnitListItem);
-				}
-				
-				// Add teams (no <br> between BU and teams)
-				if (teamsResponse && teamsResponse.entities && teamsResponse.entities[0]) {
-					const teams = teamsResponse.entities[0].teammembership_association || [];
-					const teamListItems = teams.map(team => {
-						const listItem = document.createElement('li');
-						const teamTypeText = team['teamtype@OData.Community.Display.V1.FormattedValue'] || 'Unknown';
-						listItem.innerHTML = '<strong>Team:</strong> ' + team.name + ' (Type: ' + teamTypeText + ')';
-						return listItem;
-					});
-					
-					teamListItems.sort((a, b) => {
-						const nameA = a.innerHTML.replace('Team: ', '');
-						const nameB = b.innerHTML.replace('Team: ', '');
-						return nameA.localeCompare(nameB);
-					});
-					
-					teamListItems.forEach(item => businessUnitAndTeamsList.appendChild(item));
-				}
-			} catch (error) {
-				console.error('Error refreshing business unit and teams:', error);
-			}
-		}).catch(error => {
-			console.error('Error fetching user security data:', error);
+		// Format and sort users
+		users.entities.forEach(user => {
+			const firstName = user.firstname || '';
+			const lastName = user.lastname || '';
+			user.displayName = `${firstName} ${lastName}`.trim() || user.fullname || 'Unknown User';
 		});
 		
-		fetchRolesForUser(userId, function(roles) {
-			try {
-				const rolesList = document.getElementById('section4')?.querySelector('ul');
-				if (!rolesList) return;
-				
-				rolesList.innerHTML = '';
-				
-				if (roles && roles.entities) {
-					const roleDetailsArr = [];
-					const rolePromises = roles.entities.map(role => {
-						const roleId = role['roleid'];
-						return Xrm.WebApi.retrieveRecord("role", roleId, "?$select=name,roleid").then(function(roleDetail) {
-							roleDetailsArr.push(roleDetail);
-						}).catch(function(error) {
-							console.error('Error fetching role details:', error);
-						});
-					});
-					
-					Promise.all(rolePromises).then(() => {
-						roleDetailsArr.sort((a, b) => a.name.localeCompare(b.name));
-						roleDetailsArr.forEach(roleDetail => {
-							const listItem = document.createElement('li');
-							listItem.textContent = roleDetail.name || 'Unnamed Role';
-							rolesList.appendChild(listItem);
-						});
-					});
-				}
-			} catch (error) {
-				console.error('Error refreshing roles:', error);
-			}
+		users.entities.sort((a, b) => a.displayName.localeCompare(b.displayName));
+		
+		// Render user list
+		userList.innerHTML = '';
+		users.entities.forEach(user => {
+			const userDiv = document.createElement('div');
+			userDiv.className = 'user-item';
+			userDiv.dataset.userId = user.systemuserid;
+			userDiv.dataset.searchText = user.displayName.toLowerCase();
+			userDiv.innerHTML = `
+				<div class="user-name">${user.displayName}</div>
+			`;
+			
+			userDiv.addEventListener('click', () => selectUser(user));
+			userList.appendChild(userDiv);
+		});
+		
+		// Search functionality
+		const searchInput = document.getElementById('userSearchInput');
+		searchInput.addEventListener('input', function() {
+			const query = this.value.toLowerCase().trim();
+			document.querySelectorAll('.user-item').forEach(item => {
+				const matches = item.dataset.searchText.includes(query);
+				item.style.display = matches ? 'flex' : 'none';
+			});
 		});
 	}
 	
-	function selectUser(user, sectionPrefix) {
+	/**
+	 * Handle user selection
+	 */
+	async function selectUser(user, preserveTab = false) {
+		// Update UI
+		document.querySelectorAll('.user-item').forEach(el => el.classList.remove('selected'));
+		const userDiv = document.querySelector(`[data-user-id="${user.systemuserid}"]`);
+		if (userDiv) userDiv.classList.add('selected');
+		
+		// Update state
+		selectedUserId = user.systemuserid;
+		selectedUserFullName = user.displayName || user.fullname;
+		selectedBusinessUnitId = user._businessunitid_value;
+		
+		// Show selected user info
+		document.getElementById('selectedUserInfo').style.display = 'block';
+		document.getElementById('selectedUserName').textContent = selectedUserFullName;
+		
+		// Store current tab if preserving
+		const currentTab = preserveTab ? activeTab : null;
+		
+		// Reset all states
+		resetAllStates();
+		
+		// Restore tab if preserving
+		if (currentTab) {
+			activeTab = currentTab;
+		}
+		
+		// Load user security data
+		showLoadingDialog('Loading user security information...');
+		
 		try {
-			const messageDiv = document.getElementById('updateMessage');
-			if (messageDiv) {
-				messageDiv.style.display = 'none';
-			}		
+			await Promise.all([
+				loadUserBusinessUnit(user.systemuserid),
+				loadUserTeams(user.systemuserid),
+				loadUserRoles(user.systemuserid)
+			]);
 			
-			document.querySelectorAll('.userSelected').forEach(el => el.classList.remove('userSelected'));		
-		        const userDiv = document.getElementById('userList' + sectionPrefix).querySelector(`[data-id='${user.systemuserid}']`);
-		        if (userDiv) {
-		            userDiv.classList.add('userSelected');
-		        }		
-		        
-		        if (sectionPrefix === '1') {
-		            selectedUserId = user.systemuserid;
-		            selectedBusinessUnitId = user._businessunitid_value;
-			    selectedUserFullName = user.displayName || user.fullname;
+			closeLoadingDialog();
+			
+			// Show security management interface
+			renderSecurityManagement();
+		} catch (error) {
+			closeLoadingDialog();
+			console.error('Error loading user security:', error);
+			showToast('Error loading user security information', 'error', 3000);
+		}
+	}
+	
+	/**
+	 * Reset all state variables
+	 */
+	function resetAllStates() {
+		activeTab = 'businessunit';
+		newBusinessUnitId = null;
+		businessUnitAction = null;
+		// Don't reset currentTeamIds - these are the user's actual current teams
+		teamsToAdd = [];
+		teamsToRemove = [];
+		teamAction = null;
+		// Don't reset currentRoleIds - these are the user's actual current roles
+		rolesToAdd = [];
+		rolesToRemove = [];
+		roleAction = null;
+	}
+	
+	/**
+	 * Reset only the modification selections (for Reset button)
+	 */
+	function resetModifications() {
+		// Reset Business Unit modifications
+		newBusinessUnitId = null;
+		businessUnitAction = null;
+		
+		// Reset Team modifications
+		teamsToAdd = [];
+		teamsToRemove = [];
+		teamAction = null;
+		
+		// Reset Role modifications
+		rolesToAdd = [];
+		rolesToRemove = [];
+		roleAction = null;
+		
+		// Clear visual selections
+		document.querySelectorAll('.bu-item').forEach(el => el.classList.remove('selected'));
+		document.querySelectorAll('.team-item').forEach(el => el.classList.remove('selected'));
+		document.querySelectorAll('.role-item').forEach(el => el.classList.remove('selected'));
+		
+		// Uncheck all radio buttons
+		document.querySelectorAll('input[name="buAction"]').forEach(radio => radio.checked = false);
+		document.querySelectorAll('input[name="teamAction"]').forEach(radio => radio.checked = false);
+		document.querySelectorAll('input[name="roleAction"]').forEach(radio => radio.checked = false);
+		
+		// Update counters
+		updateSelectionCounter('teams');
+		updateSelectionCounter('roles');
+	}
+	
+	/**
+	 * Load user's business unit
+	 */
+	function loadUserBusinessUnit(userId) {
+		return new Promise((resolve) => {
+			fetchBusinessUnitName(userId, function(response) {
+				if (response && response.entities && response.entities[0]) {
+					currentBusinessUnitName = response.entities[0].businessunitid?.name || 'N/A';
+				}
+				resolve();
+			});
+		});
+	}
+	
+	/**
+	 * Load user's teams
+	 */
+	function loadUserTeams(userId) {
+		return new Promise((resolve) => {
+			fetchTeamsForUser(userId, function(response) {
+				currentTeamIds = [];
+				if (response && response.entities && response.entities[0]) {
+					const teams = response.entities[0].teammembership_association || [];
+					currentTeamIds = teams.map(team => ({
+						id: team.teamid,
+						name: team.name,
+						type: team['teamtype@OData.Community.Display.V1.FormattedValue'] || 'Unknown'
+					}));
+				}
+				resolve();
+			});
+		});
+	}
+	
+	/**
+	 * Load user's roles
+	 */
+	function loadUserRoles(userId) {
+		return new Promise((resolve) => {
+			fetchRolesForUser(userId, async function(response) {
+				currentRoleIds = [];
+				if (response && response.entities) {
+					const rolePromises = response.entities.map(role => {
+						return Xrm.WebApi.retrieveRecord("role", role.roleid, "?$select=name,roleid")
+							.then(roleDetail => {
+								currentRoleIds.push({
+									id: roleDetail.roleid,
+									name: roleDetail.name
+								});
+							});
+					});
+					await Promise.all(rolePromises);
+					currentRoleIds.sort((a, b) => a.name.localeCompare(b.name));
+				}
+				resolve();
+			});
+		});
+	}
+	
+	/**
+	 * Render the main security management interface with tabs
+	 */
+	function renderSecurityManagement() {
+		const securityContent = document.getElementById('securityContent');
+		
+		// Check if tabs already exist (to preserve handlers)
+		const existingTabs = securityContent.querySelector('.tab-navigation');
+		
+		if (!existingTabs) {
+			// First time rendering - create full structure
+			securityContent.className = 'security-content';
+			
+			securityContent.innerHTML = `
+			<!-- Tab Navigation -->
+			<div class="tab-navigation">
+				<div class="tabs-left">
+					<button class="tab-btn ${activeTab === 'businessunit' ? 'active' : ''}" data-tab="businessunit">
+						<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+							<path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+						</svg>
+						Business Unit
+					</button>
+					<button class="tab-btn ${activeTab === 'teams' ? 'active' : ''}" data-tab="teams">
+						<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+							<path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+							<circle cx="9" cy="7" r="4"/>
+							<path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/>
+						</svg>
+						Teams
+					</button>
+					<button class="tab-btn ${activeTab === 'roles' ? 'active' : ''}" data-tab="roles">
+						<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+							<path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z"/>
+							<path d="M8 11V7a4 4 0 118 0v4"/>
+						</svg>
+						Security Roles
+					</button>
+				</div>
+				<div class="update-indicator" id="updateIndicator" style="display: none;">
+					<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+						<polyline points="20 6 9 17 4 12"/>
+					</svg>
+					<span id="updateIndicatorText">Updated</span>
+				</div>
+			</div>
 				
-   			    //clear 
-			    stateArray['team'] = [];
-			    stateArray['role'] = [];
-		        }
-			const businessUnitAndTeamsList = document.getElementById('section' + (3 + (sectionPrefix - 1) * 2)).querySelector('ul');
-		        businessUnitAndTeamsList.innerHTML = '';
-			let businessUnitListItem = null;
-		        let teamListItems = [];
+				<!-- Tab Content -->
+				<div class="tab-content" id="tabContent"></div>
+				
+				<!-- Action Buttons -->
+				<div class="action-buttons">
+					<button id="applyChangesBtn" class="btn-primary" style="display: none;">
+						<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+							<polyline points="20 6 9 17 4 12"/>
+						</svg>
+						Apply Changes
+					</button>
+					<button id="resetChangesBtn" class="btn-secondary" style="display: none;">
+						<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+							<path d="M3 12a9 9 0 019-9 9.75 9.75 0 016.74 2.74L21 8"/>
+							<path d="M21 3v5h-5"/>
+						</svg>
+						Reset
+					</button>
+				</div>
+			`;
 			
-			const appendLists = () => {
-		            if (businessUnitListItem) {
-		                businessUnitAndTeamsList.appendChild(businessUnitListItem);
-		            }
-		            teamListItems.forEach(item => businessUnitAndTeamsList.appendChild(item));
-		        };
-			fetchBusinessUnitName(user.systemuserid, function(response) {
-				try {
-					if (!response || !response.entities || !response.entities[0] || !response.entities[0].businessunitid || !response.entities[0].businessunitid.name) {
-						console.error('Business unit not found for user:', user.systemuserid);
-						businessUnitListItem = document.createElement('li');
-						businessUnitListItem.innerHTML = '<strong>Business Unit:</strong> (Not Available)';
-						appendLists();
-						return;
+			// Attach tab click handlers
+			securityContent.querySelectorAll('.tab-btn').forEach(btn => {
+				btn.addEventListener('click', () => {
+					activeTab = btn.dataset.tab;
+					updateActiveTab();
+						});
+					});
+					
+			// Attach button handlers
+			document.getElementById('applyChangesBtn').addEventListener('click', handleApplyChanges);
+			document.getElementById('resetChangesBtn').addEventListener('click', handleResetChanges);
+		}
+		
+		// Render/update the active tab
+		updateActiveTab();
+	}
+	
+	/**
+	 * Update the active tab display
+	 */
+	function updateActiveTab() {
+		// Update tab buttons
+		document.querySelectorAll('.tab-btn').forEach(btn => {
+			btn.classList.toggle('active', btn.dataset.tab === activeTab);
+		});
+		
+		// Render tab content
+		const tabContent = document.getElementById('tabContent');
+		switch (activeTab) {
+			case 'businessunit':
+				renderBusinessUnitTab(tabContent);
+				break;
+			case 'teams':
+				renderTeamsTab(tabContent);
+				break;
+			case 'roles':
+				renderRolesTab(tabContent);
+				break;
+		}
+		
+		updateActionButtons();
+	}
+	
+	/**
+	 * Render Business Unit tab
+	 */
+	function renderBusinessUnitTab(container) {
+		container.innerHTML = `
+			<div class="tab-panel">
+				<div class="panel-section current-section-inline">
+					<h4>Current Business Unit: <span class="current-value-inline">${currentBusinessUnitName || 'N/A'}</span></h4>
+				</div>
+				
+				<div class="panel-section">
+					<h4>Change Business Unit</h4>
+					<input type="text" id="buSearchInput" placeholder="Search business units..." class="search-input">
+					<div class="selection-list" id="buList"></div>
+				</div>
+			</div>
+		`;
+		
+		// Always set action to 'change' since it's the only option
+		businessUnitAction = 'change';
+		
+		// Load business units - clear cache to force fresh data
+		allBusinessUnits = [];
+		fetchBusinessUnits(function(response) {
+			if (response && response.entities) {
+				allBusinessUnits = response.entities.sort((a, b) => a.name.localeCompare(b.name));
+				renderBusinessUnitList();
+			}
+		});
+	}
+	
+	/**
+	 * Render business unit list
+	 */
+	function renderBusinessUnitList() {
+		const buList = document.getElementById('buList');
+		if (!buList) return;
+		
+		buList.innerHTML = '';
+		allBusinessUnits.forEach(bu => {
+			const buDiv = document.createElement('div');
+			buDiv.className = 'bu-item selectable-item';
+			if (newBusinessUnitId === bu.businessunitid) {
+				buDiv.classList.add('selected');
+			}
+			buDiv.dataset.searchText = bu.name.toLowerCase();
+			buDiv.innerHTML = `<span>${bu.name}</span>`;
+			
+			buDiv.addEventListener('click', () => {
+				newBusinessUnitId = bu.businessunitid;
+				document.querySelectorAll('.bu-item').forEach(el => el.classList.remove('selected'));
+				buDiv.classList.add('selected');
+				updateActionButtons();
+			});
+			
+			buList.appendChild(buDiv);
+		});
+		
+		// Search functionality
+		const searchInput = document.getElementById('buSearchInput');
+		if (searchInput) {
+			searchInput.addEventListener('input', function() {
+				const query = this.value.toLowerCase().trim();
+				document.querySelectorAll('.bu-item').forEach(item => {
+					const matches = item.dataset.searchText.includes(query);
+					item.style.display = matches ? 'flex' : 'none';
+				});
+			});
+		}
+	}
+	
+	/**
+	 * Render Teams tab
+	 */
+	function renderTeamsTab(container) {
+		container.innerHTML = `
+			<div class="tab-panel">
+				<div class="panel-section current-section">
+					<h4>Current Teams</h4>
+					<div class="current-items-list">
+						${currentTeamIds.length > 0 
+							? currentTeamIds.map(team => `
+								<div class="current-item">
+									<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2">
+										<polyline points="20 6 9 17 4 12"/>
+									</svg>
+									<span>${team.name} <em>(${team.type})</em></span>
+								</div>
+							`).join('')
+							: '<div class="empty-message">No teams assigned</div>'
+						}
+					</div>
+				</div>
+				
+				<div class="panel-section">
+					<div class="section-title-with-actions">
+						<h4>Modify Teams</h4>
+						<div class="action-selector inline">
+							<label class="radio-option">
+								<input type="radio" name="teamAction" value="add" ${teamAction === 'add' ? 'checked' : ''}>
+								<span>Add</span>
+							</label>
+							<label class="radio-option">
+								<input type="radio" name="teamAction" value="remove" ${teamAction === 'remove' ? 'checked' : ''}>
+								<span>Remove</span>
+							</label>
+							<label class="radio-option">
+								<input type="radio" name="teamAction" value="replace" ${teamAction === 'replace' ? 'checked' : ''}>
+								<span>Replace All</span>
+							</label>
+						</div>
+						<div class="selection-counter" id="teamsCounter" style="display: none;">
+							<span id="teamsCounterText">0 selected</span>
+						</div>
+					</div>
+					
+					<div id="teamSelectionArea" style="display: ${teamAction ? 'block' : 'none'};">
+						<input type="text" id="teamSearchInput" placeholder="Search teams..." class="search-input">
+						<div class="selection-list" id="teamList"></div>
+					</div>
+				</div>
+			</div>
+		`;
+		
+		// Load teams - clear cache to force fresh data
+		allTeams = [];
+		fetchTeams(function(response) {
+			if (response && response.entities) {
+				allTeams = response.entities
+					.map(team => ({
+						id: team.teamid,
+						name: team.name,
+						businessUnit: team.businessunitid?.name || 'N/A'
+					}))
+					.sort((a, b) => a.name.localeCompare(b.name));
+				renderTeamList();
+			}
+		});
+		
+		// Attach event handlers
+		container.querySelectorAll('input[name="teamAction"]').forEach(radio => {
+			radio.addEventListener('change', function() {
+				teamAction = this.value;
+				const selectionArea = document.getElementById('teamSelectionArea');
+				selectionArea.style.display = 'block';
+				teamsToAdd = [];
+				teamsToRemove = [];
+				document.querySelectorAll('.team-item').forEach(el => el.classList.remove('selected'));
+				renderTeamList(); // Re-render to clear selections
+				updateSelectionCounter('teams');
+				updateActionButtons();
+			});
+		});
+	}
+	
+	/**
+	 * Render team list
+	 */
+	function renderTeamList() {
+		const teamList = document.getElementById('teamList');
+		if (!teamList) return;
+		
+		teamList.innerHTML = '';
+		allTeams.forEach(team => {
+			const teamDiv = document.createElement('div');
+			teamDiv.className = 'team-item selectable-item';
+			teamDiv.dataset.teamId = team.id;
+			teamDiv.dataset.searchText = `${team.name} ${team.businessUnit}`.toLowerCase();
+			
+			// Determine if selected
+			const isAddSelected = teamsToAdd.includes(team.id);
+			const isRemoveSelected = teamsToRemove.includes(team.id);
+			if (isAddSelected || isRemoveSelected) {
+				teamDiv.classList.add('selected');
+			}
+			
+			teamDiv.innerHTML = `
+				<span>${team.name}</span>
+				<small>BU: ${team.businessUnit}</small>
+			`;
+			
+			teamDiv.addEventListener('click', () => {
+				if (teamAction === 'add' || teamAction === 'replace') {
+					const index = teamsToAdd.indexOf(team.id);
+					if (index > -1) {
+						teamsToAdd.splice(index, 1);
+						teamDiv.classList.remove('selected');
+					} else {
+						teamsToAdd.push(team.id);
+						teamDiv.classList.add('selected');
 					}
-					const businessUnitName = response.entities[0].businessunitid.name;
-					if (sectionPrefix === '1') {
-						selectedBusinessUnitId = user._businessunitid_value;
+				} else if (teamAction === 'remove') {
+					const index = teamsToRemove.indexOf(team.id);
+					if (index > -1) {
+						teamsToRemove.splice(index, 1);
+						teamDiv.classList.remove('selected');
+					} else {
+						teamsToRemove.push(team.id);
+						teamDiv.classList.add('selected');
 					}
-					businessUnitListItem = document.createElement('li');
-					businessUnitListItem.innerHTML = '<strong>Business Unit:</strong> ' + businessUnitName;
-					appendLists();
-				} catch (error) {
-					console.error('Error fetching business unit:', error);
-					businessUnitListItem = document.createElement('li');
-					businessUnitListItem.innerHTML = '<strong>Business Unit:</strong> (Error)';
-					appendLists();
+				}
+				updateSelectionCounter('teams');
+				updateActionButtons();
+			});
+			
+			teamList.appendChild(teamDiv);
+		});
+		
+		// Search functionality
+		const searchInput = document.getElementById('teamSearchInput');
+		if (searchInput) {
+			searchInput.addEventListener('input', function() {
+				const query = this.value.toLowerCase().trim();
+				document.querySelectorAll('.team-item').forEach(item => {
+					const matches = item.dataset.searchText.includes(query);
+					item.style.display = matches ? 'flex' : 'none';
+				});
+			});
+		}
+	}
+	
+	/**
+	 * Render Roles tab
+	 */
+	function renderRolesTab(container) {
+		container.innerHTML = `
+			<div class="tab-panel">
+				<div class="panel-section current-section">
+					<h4>Current Security Roles</h4>
+					<div class="current-items-list">
+						${currentRoleIds.length > 0 
+							? currentRoleIds.map(role => `
+								<div class="current-item">
+									<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2">
+										<polyline points="20 6 9 17 4 12"/>
+									</svg>
+									<span>${role.name}</span>
+								</div>
+							`).join('')
+							: '<div class="empty-message">No roles assigned</div>'
+						}
+					</div>
+				</div>
+				
+				<div class="panel-section">
+					<div class="section-title-with-actions">
+						<h4>Modify Security Roles</h4>
+						<div class="action-selector inline">
+							<label class="radio-option">
+								<input type="radio" name="roleAction" value="add" ${roleAction === 'add' ? 'checked' : ''}>
+								<span>Add</span>
+							</label>
+							<label class="radio-option">
+								<input type="radio" name="roleAction" value="remove" ${roleAction === 'remove' ? 'checked' : ''}>
+								<span>Remove</span>
+							</label>
+							<label class="radio-option">
+								<input type="radio" name="roleAction" value="replace" ${roleAction === 'replace' ? 'checked' : ''}>
+								<span>Replace All</span>
+							</label>
+						</div>
+						<div class="selection-counter" id="rolesCounter" style="display: none;">
+							<span id="rolesCounterText">0 selected</span>
+						</div>
+					</div>
+					
+					<div id="roleSelectionArea" style="display: ${roleAction ? 'block' : 'none'};">
+						<input type="text" id="roleSearchInput" placeholder="Search roles..." class="search-input">
+						<div class="selection-list" id="roleList"></div>
+					</div>
+				</div>
+			</div>
+		`;
+		
+		// Load roles based on current or new business unit
+		const targetBU = newBusinessUnitId || selectedBusinessUnitId;
+		if (targetBU) {
+			// Clear the cache to force fresh data
+			allRoles = [];
+			
+			fetchSecurityRoles(targetBU, function(response) {
+				if (response && response.entities) {
+					allRoles = response.entities
+						.map(role => ({
+							id: role.roleid,
+							name: role.name
+						}))
+						.sort((a, b) => a.name.localeCompare(b.name));
+					renderRoleList();
 				}
 			});
-			fetchTeamsForUser(user.systemuserid, function(response) {
-				try {
-					if (!response || !response.entities || !response.entities[0]) {
-						console.error('Teams not found for user:', user.systemuserid);
-						teamListItems = [];
-						appendLists();
-						return;
-					}
-					
-					const teams = response.entities[0].teammembership_association || [];
-					
-					if (sectionPrefix === '1') {
-						selectedTeamIds = [];
-					}
-					teamListItems = teams.map(team => {
-					   if (sectionPrefix === '1') {
-						selectedTeamIds.push(team.teamid);
-					   }				
-					   const listItem = document.createElement('li');
-					   const teamTypeText = team['teamtype@OData.Community.Display.V1.FormattedValue'] || 'Unknown'; 
-					   listItem.innerHTML = '<strong>Team:</strong> ' + team.name + ' (Type: ' + teamTypeText + ')';
-					   return listItem;
-					});
-					teamListItems.sort((a, b) => {
-					   const nameA = a.innerHTML.replace('Team: ', '');
-					   const nameB = b.innerHTML.replace('Team: ', '');
-					   return nameA.localeCompare(nameB);
-					});
-					appendLists();
-				} catch (error) {
-					console.error('Error fetching teams:', error);
-					teamListItems = [];
-					appendLists();
-				}
-			});						
-		        const teamsList = document.getElementById('teamsList');
-		        teamsList.innerHTML = '';
+		}
 		
-		       // Fetch teams
-			fetchTeams(function(teams) {
-			    try {
-				    if (!teams || !teams.entities) {
-				        console.error('Teams not found');
-				        showToast('Unable to load teams. Please try again.', 'error', 3000);
-				        return;
-				    }			
-				    const teamsList = document.getElementById('teamsList');
-				    if (!teamsList) {
-				        console.error('Teams list container not found');
-				        return;
-				    }
-				    teamsList.innerHTML = '';			
-				    const teamDetailsArr = teams.entities.map(team => ({
-					    name: team.name || 'Unnamed Team', 
-					    teamid: team.teamid, 
-					    businessUnitName: team.businessunitid ? `(BU: ${team.businessunitid.name})` : '(BU: N/A)'
-				    }));						
-			            teamDetailsArr.sort((a, b) => {
-				            return a.name.localeCompare(b.name);
-				    });						    	
-				    addSearchFunctionality(teamDetailsArr, 'searchInput3', (filteredItems) => {
-				    	const teamsList = document.getElementById('teamsList');
-				    	if (teamsList) {
-					   	 createAndAppendItems(filteredItems, teamsList, 'checkbox', 'teamid', ['name', 'businessUnitName'], 'teamsCheckbox', 'team');
+		// Attach event handlers
+		container.querySelectorAll('input[name="roleAction"]').forEach(radio => {
+			radio.addEventListener('change', function() {
+				roleAction = this.value;
+				const selectionArea = document.getElementById('roleSelectionArea');
+				selectionArea.style.display = 'block';
+				rolesToAdd = [];
+				rolesToRemove = [];
+				document.querySelectorAll('.role-item').forEach(el => el.classList.remove('selected'));
+				renderRoleList(); // Re-render to clear selections
+				updateSelectionCounter('roles');
+				updateActionButtons();
+			});
+		});
+	}
+	
+	/**
+	 * Render role list
+	 */
+	function renderRoleList() {
+		const roleList = document.getElementById('roleList');
+		if (!roleList) return;
+		
+		roleList.innerHTML = '';
+		allRoles.forEach(role => {
+			const roleDiv = document.createElement('div');
+			roleDiv.className = 'role-item selectable-item';
+			roleDiv.dataset.roleId = role.id;
+			roleDiv.dataset.searchText = role.name.toLowerCase();
+			
+			// Determine if selected
+			const isAddSelected = rolesToAdd.includes(role.id);
+			const isRemoveSelected = rolesToRemove.includes(role.id);
+			if (isAddSelected || isRemoveSelected) {
+				roleDiv.classList.add('selected');
+			}
+			
+			roleDiv.innerHTML = `<span>${role.name}</span>`;
+			
+			roleDiv.addEventListener('click', () => {
+				if (roleAction === 'add' || roleAction === 'replace') {
+					const index = rolesToAdd.indexOf(role.id);
+					if (index > -1) {
+						rolesToAdd.splice(index, 1);
+						roleDiv.classList.remove('selected');
+					} else {
+						rolesToAdd.push(role.id);
+						roleDiv.classList.add('selected');
 					}
-					});				
-					createAndAppendItems(teamDetailsArr, teamsList, 'checkbox', 'teamid', ['name', 'businessUnitName'], 'teamsCheckbox', 'team');
-			    } catch (error) {
-			        console.error('Error processing teams:', error);
-			        showToast('Error loading teams. Please try again.', 'error', 3000);
-			    }
-			   });
-			
-			if (sectionPrefix === '1') { 
-			    // Fetch user roles
-			    const rolesListUser = document.getElementById('section4');
-			    if (!rolesListUser) {
-			        console.error('Roles section not found');
-			        return;
-			    }
-			    const rolesUl = rolesListUser.querySelector('ul');
-			    if (rolesUl) {
-			        rolesUl.innerHTML = '';
-			    }
-			
-			    fetchRolesForUser(user.systemuserid, function(roles) {
-			        try {
-				        if (!roles || !roles.entities) {
-				            console.error('Roles not found for user:', user.systemuserid);
-				            showToast('Unable to load user roles. Please try again.', 'error', 3000);
-				            return;
-				        }
-				        if (sectionPrefix === '1') {
-				            selectedRoleIds = [];
-				        }
-				        const rolesList = document.getElementById('section' + (4 + (sectionPrefix - 1) * 2));
-				        if (!rolesList) {
-				            console.error('Roles list section not found');
-				            return;
-				        }
-				        const rolesUl = rolesList.querySelector('ul');
-				        if (rolesUl) {
-				            rolesUl.innerHTML = '';
-				        }
-				        const roleDetailsArr = [];
-				        const rolePromises = roles.entities.map(role => {
-				            const roleId = role['roleid'];
-				            if (sectionPrefix === '1') {
-				                selectedRoleIds.push(roleId);
-				            }
-				            return Xrm.WebApi.retrieveRecord("role", roleId, "?$select=name,roleid").then(function(roleDetail) {
-				                roleDetailsArr.push(roleDetail);
-				            }).catch(function(error) {
-				                console.error('Error fetching role details for roleId:', roleId, error);
-				            });
-				        });								
-					    
-				        Promise.all(rolePromises).then(() => {			            
-				            roleDetailsArr.sort((a, b) => {
-				                return a.name.localeCompare(b.name);
-				            });
-				            
-				            // Display roles in left section
-				            if (rolesUl) {
-					            roleDetailsArr.forEach(roleDetail => {
-					                const listItem = document.createElement('li');
-					                listItem.textContent = roleDetail.name || 'Unnamed Role';
-					                rolesUl.appendChild(listItem);
-					            });
-					        }
-					        
-					        // Populate checkboxes in right section
-					        const rolesListUserCheckbox = document.getElementById('section4').querySelector('ul');
-					        if (rolesListUserCheckbox) {
-						        createAndAppendItems(roleDetailsArr, rolesListUserCheckbox, 'checkbox', 'roleid', ['name'], 'rolesCheckbox', 'role');
-						    }
-				        }).catch(function(error) {
-				            console.error('Error processing roles:', error);
-				            showToast('Error loading roles. Please try again.', 'error', 3000);
-				        });
-				    } catch (error) {
-				        console.error('Error in fetchRolesForUser callback:', error);
-				        showToast('Error loading roles. Please try again.', 'error', 3000);
-				    }
-			    });     	 		    			
-			     
-			    // Fetch roles based on BU
-			    const rolesSection = document.getElementById('section6');
-			    if (!rolesSection) {
-			        console.error('Security roles section not found');
-			        return;
-			    }
-			    const rolesListBusinessUnit = rolesSection.querySelector('#securityRolesList');
-			    if (!rolesListBusinessUnit) {
-			        console.error('Security roles list not found');
-			        return;
-			    }
-				rolesListBusinessUnit.innerHTML = '';
-				
-				if (!selectedBusinessUnitId) {
-				    console.error('No business unit selected');
-				    showToast('Unable to load roles - no business unit selected', 'error', 3000);
-				    return;
+				} else if (roleAction === 'remove') {
+					const index = rolesToRemove.indexOf(role.id);
+					if (index > -1) {
+						rolesToRemove.splice(index, 1);
+						roleDiv.classList.remove('selected');
+					} else {
+						rolesToRemove.push(role.id);
+						roleDiv.classList.add('selected');
+					}
 				}
-				
-				fetchSecurityRoles(selectedBusinessUnitId, function(response) {
-				    try {
-					    if (!response || !response.entities) {
-					        console.error('Roles not found for business unit:', selectedBusinessUnitId);
-					        showToast('Unable to load security roles. Please try again.', 'error', 3000);
-					        return;
-					    }		        
-					    const roleDetailsArr = response.entities.map(role => ({
-					        name: role.name || 'Unnamed Role', 
-					        roleid: role.roleid
-					    }));				    				    
-					    roleDetailsArr.sort((a, b) => {
-					        return a.name.localeCompare(b.name);
-					    });				
-					       addSearchFunctionality(roleDetailsArr, 'searchInput4', (filteredItems) => {
-					           const rolesListBusinessUnit = document.getElementById('section6').querySelector('#securityRolesList');
-					           if (rolesListBusinessUnit) {
-						       createAndAppendItems(filteredItems, rolesListBusinessUnit, 'checkbox', 'roleid', ['name'], 'rolesCheckbox', 'role');
-						   }
-					       });
-					       createAndAppendItems(roleDetailsArr, rolesListBusinessUnit, 'checkbox', 'roleid', ['name'], 'rolesCheckbox', 'role');
-					} catch (error) {
-					    console.error('Error processing security roles:', error);
-					    showToast('Error loading security roles. Please try again.', 'error', 3000);
-					}
-				});				
-				
-				toggleChangeBuInputAndHeading();      			
-				if (businessUnits && businessUnits.entities && businessUnits.entities.length > 0) {
-				    // Business units don't need a select callback - they use radio buttons
-				    renderGenericList(businessUnits.entities, () => {}, 'businessUnitList', 'searchInput2', 'businessUnit', 'name', 'businessunitid');
-				    setupSearchFilter('searchInput2', `businessUnit${'businessUnitList'.charAt('businessUnitList'.length - 1)}`);
+				updateSelectionCounter('roles');
+				updateActionButtons();
+			});
+			
+			roleList.appendChild(roleDiv);
+		});
+		
+		// Search functionality
+		const searchInput = document.getElementById('roleSearchInput');
+		if (searchInput) {
+			searchInput.addEventListener('input', function() {
+				const query = this.value.toLowerCase().trim();
+				document.querySelectorAll('.role-item').forEach(item => {
+					const matches = item.dataset.searchText.includes(query);
+					item.style.display = matches ? 'flex' : 'none';
+				});
+			});
+		}
+	}
+	
+	/**
+	 * Show update indicator
+	 */
+	function showUpdateIndicator(updatedItems) {
+		const indicator = document.getElementById('updateIndicator');
+		const indicatorText = document.getElementById('updateIndicatorText');
+		
+		if (!indicator || !indicatorText) return;
+		
+		// Create specific message
+		let message = 'Updated';
+		if (updatedItems.length > 0) {
+			message = `${updatedItems.join(' & ')} Updated`;
+		}
+		
+		indicatorText.textContent = message;
+		indicator.style.display = 'flex';
+		
+		// Add animation class
+		indicator.classList.add('show-indicator');
+		
+		// Hide after 4 seconds
+		setTimeout(() => {
+			indicator.classList.remove('show-indicator');
+			setTimeout(() => {
+				indicator.style.display = 'none';
+			}, 300);
+		}, 4000);
+	}
+	
+	/**
+	 * Update selection counter
+	 */
+	function updateSelectionCounter(type) {
+		if (type === 'teams') {
+			const counter = document.getElementById('teamsCounter');
+			const counterText = document.getElementById('teamsCounterText');
+			if (counter && counterText) {
+				const count = teamsToAdd.length + teamsToRemove.length;
+				if (count > 0) {
+					counterText.textContent = `${count} selected`;
+					counter.style.display = 'flex';
 				} else {
-				    console.warn('No business units available for selection');
-				    const businessUnitList = document.getElementById('businessUnitList');
-				    if (businessUnitList) {
-				        businessUnitList.innerHTML = '<div style="padding: 10px; color: #666;">No business units available</div>';
-				    }
-				}				
-				
-				addRadioButtonsToSection({
-				    sectionId: 'section5',
-				    headingText: 'Change Team(s):',
-				    radioName: 'teamAction',
-				    radioData: [
-				        { id: 'noTeamUpdate', label: 'No Change', value: 'noTeamUpdates' },
-				        { id: 'addTeam', label: 'Add', value: 'addTeam' },
-				        { id: 'removeTeam', label: 'Remove', value: 'removeTeam' },
-				        { id: 'addAndRemoveTeam', label: 'Add + Remove Existing', value: 'addAndRemoveTeam' }
-				    ],				    
-				    inputIds: 'Search Teams',
-				    inputId: 'searchInput3',
-				    radioButtonClassName: 'teamsRadioButtons'
-				});				
-				
-				addRadioButtonsToSection({
-				    sectionId: 'section6',
-				    headingText: 'Change Security Role(s):',
-				    radioName: 'roleAction',
-				    radioData: [
-				        { id: 'noRoleUpdate', label: 'No Change', value: 'noRoleUpdates' },
-				        { id: 'addRole', label: 'Add', value: 'addRole' },
-				        { id: 'removeRole', label: 'Remove', value: 'removeRole' },
-				        { id: 'addAndRemoveRole', label: 'Add + Remove Existing', value: 'addAndRemoveRole' }
-				    ],				    
-				    inputIds: 'Search Security Role',
-				    inputId: 'searchInput4',
-				    radioButtonClassName: 'rolesRadioButtons'
-				});				
-				initSubmitButton();				
-			}			
-		} catch (e) {
-			console.error('Error in selectUser function', e);
-		}		
-	}		
-	function createElementWithAttributes(tag, attributes = {}) {
-	    const element = document.createElement(tag);
-	    Object.entries(attributes).forEach(([key, value]) => {
-		element[key] = value;
-	    });
-	    return element;
-	}	
-	
-	function toggleElementDisplay(element, state = 'none') {
-	    if (element) element.style.display = state;
-	}
-	
-	async function handleSubmitButtonClick(event) {
-	    // Validate user is selected
-	    if (!selectedUserId) {
-	        showToast('Please select a user first.', 'warning', 3000);
-	        return;
-	    }
-	    
-	    // Check if updateUserDetails function exists
-	    if (typeof updateUserDetails !== "function") {
-	        console.error('updateUserDetails function not found');
-	        showToast('Security update function not available. Please refresh and try again.', 'error', 3000);
-	        return;
-	    }
-	    
-	    try {
-	        // Disable all controls during update
-	        toggleCheckboxes('disable', ['assignCheckbox', 'teamsCheckbox', 'teamsRadioButtons', 'rolesCheckbox', 'rolesRadioButtons', 'businessUnitRadioButtons']);
-	        
-	        // Perform the update
-	        await handleConditions(businessUnitRadioSelected, teamsRadioSelected, teamsCheckedValues, rolesRadioSelected, rolesCheckedValues);
-	        
-	        // Re-enable controls after update
-	        toggleCheckboxes('enable', ['teamsRadioButtons', 'rolesRadioButtons', 'businessUnitRadioButtons']);
-	        
-	        // Clear selections after successful update
-	        teamsCheckedValues = [];
-	        rolesCheckedValues = [];
-	        teamsRadioSelected = null;
-	        rolesRadioSelected = null;
-	        businessUnitRadioSelected = null;
-	        
-	        // Reset radio buttons
-	        const radioButtons = document.querySelectorAll('.teamsRadioButtons, .rolesRadioButtons, .businessUnitRadioButtons');
-	        radioButtons.forEach(radio => {
-	            radio.checked = false;
-	        });
-	        
-	        // Clear checkboxes
-	        const checkboxes = document.querySelectorAll('.teamsCheckbox, .rolesCheckbox');
-	        checkboxes.forEach(checkbox => {
-	            checkbox.checked = false;
-	        });
-	        
-	        // Reset state arrays
-	        stateArray['team'] = [];
-	        stateArray['role'] = [];
-	    } catch (error) {
-	        console.error('Error during security update:', error);
-	        showToast('An error occurred during the security update. Please try again.', 'error', 3000);
-	        
-	        // Re-enable controls on error
-	        toggleCheckboxes('enable', ['teamsRadioButtons', 'rolesRadioButtons', 'businessUnitRadioButtons']);
-	    }
-	}	
-	
-	function initSubmitButton() {
-	    const submitButton = document.getElementById('assignSubmitButton');
-	    if (submitButton) {
-	        toggleElementDisplay(submitButton, 'block');
-	        submitButton.addEventListener('click', handleSubmitButtonClick);
-	    }
-	}
-	
-	async function handleConditions(businessUnitRadioSelected, teamsRadioSelected, teamsCheckedValues, rolesRadioSelected, rolesCheckedValues) {
-	    // Validate that at least one change is selected
-	    const hasBusinessUnitChange = businessUnitRadioSelected && businessUnitRadioSelected !== "noChange";
-	    const hasTeamChange = teamsRadioSelected && teamsRadioSelected !== "noTeamUpdates" && teamsCheckedValues.length > 0;
-	    const hasRoleChange = rolesRadioSelected && rolesRadioSelected !== "noRoleUpdates" && rolesCheckedValues.length > 0;
-	    
-	    if (!hasBusinessUnitChange && !hasTeamChange && !hasRoleChange) {
-		    showToast('To update user security, please select from one of the following categories: Business Unit, Team, or Security Role.', 'warning', 4000);
-		    return;
-	    }
-	    
-	    // Additional validation
-	    if (teamsRadioSelected && teamsRadioSelected !== "noTeamUpdates" && teamsCheckedValues.length === 0) {
-	        showToast('Please select at least one team to modify.', 'warning', 3000);
-	        return;
-	    }
-	    
-	    if (rolesRadioSelected && rolesRadioSelected !== "noRoleUpdates" && rolesCheckedValues.length === 0) {
-	        showToast('Please select at least one role to modify.', 'warning', 3000);
-	        return;
-	    }
-	    
-	    try {
-		    showLoadingDialog("Your update is in progress, please be patient...");
-		    
-		    // Business Unit Change
-		    if (hasBusinessUnitChange) {
-		        await updateUserDetails(selectedUserId, businessUnitRadioSelected, teamsCheckedValues, rolesCheckedValues, "ChangeBU");		        
-		    }
-		    
-		    // Team Changes
-		    if (hasTeamChange) {
-		        if (teamsRadioSelected === "addTeam") {
-			    await updateUserDetails(selectedUserId, businessUnitRadioSelected, teamsCheckedValues, rolesCheckedValues, "AddTeams");
-			} else if (teamsRadioSelected === "removeTeam") {
-			    await updateUserDetails(selectedUserId, businessUnitRadioSelected, teamsCheckedValues, rolesCheckedValues, "RemoveTeams");
-		        } else if (teamsRadioSelected === "addAndRemoveTeam") {
-			    await updateUserDetails(selectedUserId, businessUnitRadioSelected, teamsCheckedValues, rolesCheckedValues, "RemoveAllTeams");
-			    await updateUserDetails(selectedUserId, businessUnitRadioSelected, teamsCheckedValues, rolesCheckedValues, "AddTeams");
+					counter.style.display = 'none';
+				}
 			}
-		    }
-		    
-		    // Role Changes
-		    if (hasRoleChange) {
-		        if (rolesRadioSelected === "addRole") {
-			    await updateUserDetails(selectedUserId, businessUnitRadioSelected, teamsCheckedValues, rolesCheckedValues, "AddRoles");
-			} else if (rolesRadioSelected === "removeRole") {
-			    await updateUserDetails(selectedUserId, businessUnitRadioSelected, teamsCheckedValues, rolesCheckedValues, "RemoveRoles");
-		        } else if (rolesRadioSelected === "addAndRemoveRole") {
-			    await updateUserDetails(selectedUserId, businessUnitRadioSelected, teamsCheckedValues, rolesCheckedValues, "RemoveAllRoles");
-			    await updateUserDetails(selectedUserId, businessUnitRadioSelected, teamsCheckedValues, rolesCheckedValues, "AddRoles");
+		} else if (type === 'roles') {
+			const counter = document.getElementById('rolesCounter');
+			const counterText = document.getElementById('rolesCounterText');
+			if (counter && counterText) {
+				const count = rolesToAdd.length + rolesToRemove.length;
+				if (count > 0) {
+					counterText.textContent = `${count} selected`;
+					counter.style.display = 'flex';
+				} else {
+					counter.style.display = 'none';
+				}
 			}
-		    }
-		    
-		    // Refresh the current user's security display
-		    if (selectedUserId) {
-		        refreshUserSecurity(selectedUserId);
-		    }
-		    
-		    // Clear search inputs in all sections
-		    const searchInput2 = document.getElementById('searchInput2');
-		    const searchInput3 = document.getElementById('searchInput3');
-		    const searchInput4 = document.getElementById('searchInput4');
-		    if (searchInput2) searchInput2.value = '';
-		    if (searchInput3) searchInput3.value = '';
-		    if (searchInput4) searchInput4.value = '';
-		    
-		    // Reset the lists - reload teams and roles to show full lists
-		    // Re-fetch and display teams
-		    fetchTeams(function(teams) {
-		        try {
-		            if (teams && teams.entities) {
-		                const teamsList = document.getElementById('teamsList');
-		                if (teamsList) {
-		                    const teamDetailsArr = teams.entities.map(team => ({
-		                        name: team.name || 'Unnamed Team',
-		                        teamid: team.teamid,
-		                        businessUnitName: team.businessunitid ? `(BU: ${team.businessunitid.name})` : '(BU: N/A)'
-		                    }));
-		                    teamDetailsArr.sort((a, b) => a.name.localeCompare(b.name));
-		                    createAndAppendItems(teamDetailsArr, teamsList, 'checkbox', 'teamid', ['name', 'businessUnitName'], 'teamsCheckbox', 'team');
-		                }
-		            }
-		        } catch (error) {
-		            console.error('Error resetting teams list:', error);
-		        }
-		    });
-		    
-		    // Re-fetch and display security roles
-		    if (selectedBusinessUnitId) {
-		        fetchSecurityRoles(selectedBusinessUnitId, function(response) {
-		            try {
-		                if (response && response.entities) {
-		                    const rolesListBusinessUnit = document.getElementById('section6')?.querySelector('#securityRolesList');
-		                    if (rolesListBusinessUnit) {
-		                        const roleDetailsArr = response.entities.map(role => ({
-		                            name: role.name || 'Unnamed Role',
-		                            roleid: role.roleid
-		                        }));
-		                        roleDetailsArr.sort((a, b) => a.name.localeCompare(b.name));
-		                        createAndAppendItems(roleDetailsArr, rolesListBusinessUnit, 'checkbox', 'roleid', ['name'], 'rolesCheckbox', 'role');
-		                    }
-		                }
-		            } catch (error) {
-		                console.error('Error resetting roles list:', error);
-		            }
-		        });
-		    }
-		    
-		    closeLoadingDialog();
-		    showToast(`Security updated successfully for ${selectedUserFullName || 'user'}`, 'success', 3000);
-		    
-	    } catch (error) {
-	        console.error('Error updating user security:', error);
-	        closeLoadingDialog();
-	        showToast(`Error updating security: ${error.message || 'Unknown error'}. Please try again.`, 'error', 4000);
-	        throw error; // Re-throw to be caught by handleSubmitButtonClick
-	    }
+		}
 	}
 	
-	// Radio buttons
-	function addRadioButtonsToSection(options) {	    
-	    const { sectionId, headingText, radioName, radioData, inputIds, inputId, radioButtonClassName } = options;
-	    const sectionElement = document.getElementById(sectionId); 
-
-	    if (sectionElement.getAttribute('data-hasRadioButtons') === 'true') {
-	        return;
-	    }	
-	    sectionElement.setAttribute('data-hasRadioButtons', 'true');	    
-			    
-	    const headerWrapper = document.createElement('div');
-	    headerWrapper.className = 'section-header-with-search';
-	    
-	    if (headingText) {
-	        const heading = document.createElement('h3');
-	        heading.appendChild(document.createTextNode(headingText));
-	        headerWrapper.appendChild(heading);
-	    }
-
-	    if (inputIds) {
-	        const searchInput = document.createElement('input');
-	        searchInput.type = 'text';
-	        searchInput.id = inputId;
-	        searchInput.placeholder = inputIds;
-	        headerWrapper.appendChild(searchInput);
-	    }
-	    
-	    sectionElement.appendChild(headerWrapper);
+	/**
+	 * Update action buttons visibility
+	 */
+	function updateActionButtons() {
+		const applyBtn = document.getElementById('applyChangesBtn');
+		const resetBtn = document.getElementById('resetChangesBtn');
 		
-	    // If no radioData
-	    if (!radioData || !Array.isArray(radioData)) {
+		if (!applyBtn || !resetBtn) return;
+		
+		const hasChanges = 
+			(businessUnitAction === 'change' && newBusinessUnitId) ||
+			(teamAction === 'add' && teamsToAdd.length > 0) ||
+			(teamAction === 'remove' && teamsToRemove.length > 0) ||
+			(teamAction === 'replace' && teamsToAdd.length > 0) ||
+			(roleAction === 'add' && rolesToAdd.length > 0) ||
+			(roleAction === 'remove' && rolesToRemove.length > 0) ||
+			(roleAction === 'replace' && rolesToAdd.length > 0);
+		
+		applyBtn.style.display = hasChanges ? 'flex' : 'none';
+		resetBtn.style.display = hasChanges ? 'flex' : 'none';
+	}
+	
+	/**
+	 * Handle apply changes
+	 */
+	async function handleApplyChanges() {
+		if (!selectedUserId) {
+			showToast('Please select a user first.', 'warning', 3000);
+			return;
+		}
+		
+		// Validate changes
+		const hasValidChanges = validateChanges();
+		if (!hasValidChanges) {
+			showToast('Please select at least one valid change to apply.', 'warning', 3000);
 	        return;
 	    }
 		
-	    let teamsWrapper = sectionElement.querySelector('.teams-wrapper');
-	    if (!teamsWrapper) {
-	        teamsWrapper = document.createElement('div');
-	        teamsWrapper.className = 'teams-wrapper';
-	        sectionElement.appendChild(teamsWrapper);
-	    }
-	
-	    const container = document.createElement('div');
-	    container.className = 'team-action-checkboxes';
-	    container.innerHTML = '';
-	
-	    const actionMap = {
-	      'noTeamUpdates': { action: 'disable', classes: ['teamsCheckbox'] },
-	      'addTeam': { action: 'enable', classes: ['teamsCheckbox'] },
-	      'removeTeam': { action: 'enable', classes: ['teamsCheckbox'] },
-	      'addRole': { action: 'enable', classes: ['rolesCheckbox'] },
-	      'removeRole': { action: 'enable', classes: ['rolesCheckbox'] },
-	      'addAndRemoveTeam': { action: 'enable', classes: ['teamsCheckbox'] },
-	      'noRoleUpdates': { action: 'disable', classes: ['rolesCheckbox'] },
-	    };
-	
-	    radioData.forEach(({ id, label, value }) => {
-	        const radioButton = document.createElement('input');
-	        radioButton.type = 'radio';
-	        radioButton.id = id;
-	        radioButton.className = radioButtonClassName;
-	        radioButton.name = radioName;
-	        radioButton.value = value;
-	
-	        radioButton.addEventListener('change', function() {		
-	            const selectedAction = actionMap[this.value] || { action: 'enable', classes: ['teamsCheckbox', 'rolesCheckbox'] };		    
-	            toggleCheckboxes(selectedAction.action, selectedAction.classes);
-	
-	            if (radioName === 'teamAction') {
-	                teamsRadioSelected = this.value;		            
-	            } else if (radioName === 'roleAction') {
-	                rolesRadioSelected = this.value;		            
-	            }
-	        });
-	
-	        const labelElement = document.createElement('label');
-	        labelElement.htmlFor = id;
-	        labelElement.appendChild(document.createTextNode(label));
-	
-	        const wrapperDiv = document.createElement('div');
-	        wrapperDiv.className = 'sectionWrapper';
-	        wrapperDiv.appendChild(radioButton);
-	        wrapperDiv.appendChild(labelElement);
-	
-	        container.appendChild(wrapperDiv);
-	    });
-	
-	    teamsWrapper.appendChild(container);
-	    sectionElement.appendChild(teamsWrapper);	    
+		try {
+			showLoadingDialog('Applying security changes...');
+			
+			// Track what was updated for specific message
+			let updatedItems = [];
+			
+			// Apply business unit change
+			if (businessUnitAction === 'change' && newBusinessUnitId) {
+				await updateUserDetails(selectedUserId, newBusinessUnitId, [], [], 'ChangeBU');
+				updatedItems.push('Business Unit');
+			}
+			
+			// Apply team changes
+			if (teamAction === 'add' && teamsToAdd.length > 0) {
+				await updateUserDetails(selectedUserId, null, teamsToAdd, [], 'AddTeams');
+				updatedItems.push('Teams');
+			} else if (teamAction === 'remove' && teamsToRemove.length > 0) {
+				await updateUserDetails(selectedUserId, null, teamsToRemove, [], 'RemoveTeams');
+				updatedItems.push('Teams');
+			} else if (teamAction === 'replace' && teamsToAdd.length > 0) {
+				await updateUserDetails(selectedUserId, null, [], [], 'RemoveAllTeams');
+				await updateUserDetails(selectedUserId, null, teamsToAdd, [], 'AddTeams');
+				updatedItems.push('Teams');
+			}
+			
+			// Apply role changes
+			if (roleAction === 'add' && rolesToAdd.length > 0) {
+				await updateUserDetails(selectedUserId, null, [], rolesToAdd, 'AddRoles');
+				updatedItems.push('Security Roles');
+			} else if (roleAction === 'remove' && rolesToRemove.length > 0) {
+				await updateUserDetails(selectedUserId, null, [], rolesToRemove, 'RemoveRoles');
+				updatedItems.push('Security Roles');
+			} else if (roleAction === 'replace' && rolesToAdd.length > 0) {
+				await updateUserDetails(selectedUserId, null, [], [], 'RemoveAllRoles');
+				await updateUserDetails(selectedUserId, null, [], rolesToAdd, 'AddRoles');
+				updatedItems.push('Security Roles');
+			}
+			
+			closeLoadingDialog();
+			
+			// Show inline update indicator
+			showUpdateIndicator(updatedItems);
+			
+			// Reload user data while preserving the current tab
+			const user = { 
+				systemuserid: selectedUserId, 
+				displayName: selectedUserFullName,
+				_businessunitid_value: selectedBusinessUnitId
+			};
+			await selectUser(user, true); // true = preserve current tab
+			
+		} catch (error) {
+			closeLoadingDialog();
+			console.error('Error applying changes:', error);
+			showToast('Error applying security changes. Please try again.', 'error', 4000);
+		}
 	}
 	
-	function displayPopup(users, businessUnits) {
-	    if (users && users.entities) {
-	        // Format user names to "FirstName LastName" and add to displayName property
-	        users.entities.forEach(user => {
-	            const firstName = user.firstname || '';
-	            const lastName = user.lastname || '';
-	            user.displayName = `${firstName} ${lastName}`.trim() || user.fullname || 'Unknown User';
-	        });
-	        // Sort by the new display name
-	        sortByProperty(users.entities, 'displayName');
-	    }	
-	    createAppendSecurityPopup();
-
-	    if (businessUnits && businessUnits.entities) {
-	        sortByProperty(businessUnits.entities, 'name');
-	    }
-	    if (users && users.entities) {		    
-		renderGenericList(users.entities, user => selectUser(user, '1'), 'userList1', 'searchInput1', 'user', 'displayName', 'systemuserid', true);		
-	    }			
-	      setupSearchFilter('searchInput1', `user${'userList1'.charAt('userList1'.length - 1)}`);	     
-	}	
+	/**
+	 * Validate changes before applying
+	 */
+	function validateChanges() {
+		if (businessUnitAction === 'change' && newBusinessUnitId) return true;
+		if (teamAction === 'add' && teamsToAdd.length > 0) return true;
+		if (teamAction === 'remove' && teamsToRemove.length > 0) return true;
+		if (teamAction === 'replace' && teamsToAdd.length > 0) return true;
+		if (roleAction === 'add' && rolesToAdd.length > 0) return true;
+		if (roleAction === 'remove' && rolesToRemove.length > 0) return true;
+		if (roleAction === 'replace' && rolesToAdd.length > 0) return true;
+		return false;
+	}
 	
+	/**
+	 * Handle reset changes
+	 */
+	function handleResetChanges() {
+		resetModifications();
+		updateActiveTab();
+	}
+	
+	// Initialize the popup
+	createSecurityPopup();
+	
+	// Load initial data
 	 Promise.all([
 	    new Promise(resolve => fetchUsers(resolve)),
-	    new Promise(resolve => fetchBusinessUnits(resolve)),	    
-	 ]).then(([users, fetchedBusinessUnits]) => {
+		new Promise(resolve => fetchBusinessUnits(resolve))
+	]).then(([users, businessUnits]) => {
 	    if (!users || !users.entities || users.entities.length === 0) {
 	        showToast('No users found. Please check your permissions.', 'error', 3000);
 	        return;
 	    }
-	    if (!fetchedBusinessUnits || !fetchedBusinessUnits.entities || fetchedBusinessUnits.entities.length === 0) {
-	        showToast('No business units found. Proceeding with limited functionality.', 'warning', 3000);
-	    }
-	    displayPopup(users, fetchedBusinessUnits);
-	    businessUnits = fetchedBusinessUnits;
+		
+		loadUsers(users);
+		
+		if (businessUnits && businessUnits.entities) {
+			allBusinessUnits = businessUnits.entities.sort((a, b) => a.name.localeCompare(b.name));
+		}
 	 }).catch(error => {
 	    console.error('Error initializing Assign Security:', error);
 	    showToast('Failed to load security data. Please check your permissions and try again.', 'error', 4000);
