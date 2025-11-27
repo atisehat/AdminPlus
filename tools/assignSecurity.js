@@ -74,7 +74,7 @@ function editSecurity() {
 	          </div>
 	          <div id="sectionsRow1" class="assignSecurityPopup-row">
 	            <div class="assignSection leftDetails-section-row" id="section3">
-	              <h3>Business Unit & Teams:</h3>
+	              <h3>Current Business Unit & Teams:</h3>
 	              <div class="leftRoles-and-teams-list-row">
 	                <ul></ul>
 	              </div>
@@ -98,7 +98,7 @@ function editSecurity() {
 	          </div>
 	          <div id="sectionsRow2" class="assignSecurityPopup-row">
 	            <div class="assignSection leftDetails-section-row" id="section4">
-	              <h3>Security Roles:</h3>
+	              <h3>Current Security Roles:</h3>
 	              <div class="leftRoles-and-teams-list-row">
 	                <ul></ul>
 	              </div>		
@@ -148,23 +148,22 @@ function editSecurity() {
 	}
  
 	function toggleChangeBuInputAndHeading() {
-	  const idsToToggle = ['bUh3', 'searchInput2', 'teamsH3'];
-	  idsToToggle.forEach(elementId => {
-	    const element = document.getElementById(elementId);
-	    if (element) {
-	      if (elementId === 'bUh3' && element.style.display === 'none') {
-	        element.style.display = 'block';
-	      } else if (elementId === 'searchInput2' && element.style.display === 'none') {
-	        element.style.display = 'inline-block';
-	      } else if (elementId === 'teamsH3') {
-	        if (element.style.display === 'none' || element.style.display === '') {
-	          element.style.display = 'flex';
-	        } else if (element.style.display === 'block' || element.style.display === 'flex') {
-	          element.style.display = 'none';
-	        }
-	      }
-	    }
-	  });
+	  const bUh3 = document.getElementById('bUh3');
+	  const searchInput2 = document.getElementById('searchInput2');
+	  const teamsH3 = document.getElementById('teamsH3');
+	  
+	  // Show business unit heading and search
+	  if (bUh3 && bUh3.style.display === 'none') {
+	    bUh3.style.display = 'block';
+	  }
+	  if (searchInput2 && searchInput2.style.display === 'none') {
+	    searchInput2.style.display = 'inline-block';
+	  }
+	  
+	  // Always hide the arrow message when a user is selected
+	  if (teamsH3) {
+	    teamsH3.style.display = 'none';
+	  }
 	}
 	
 	function toggleCheckboxes(action, classNames) {	  
