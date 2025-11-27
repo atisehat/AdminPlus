@@ -167,7 +167,7 @@ function editSecurityCopy() {
 	/**
 	 * Handle user selection
 	 */
-	async function selectUser(user) {
+	async function selectUser(user, preserveTab = false) {
 		// Update UI
 		document.querySelectorAll('.user-item').forEach(el => el.classList.remove('selected'));
 		const userDiv = document.querySelector(`[data-user-id="${user.systemuserid}"]`);
@@ -182,8 +182,16 @@ function editSecurityCopy() {
 		document.getElementById('selectedUserInfo').style.display = 'block';
 		document.getElementById('selectedUserName').textContent = selectedUserFullName;
 		
+		// Store current tab if preserving
+		const currentTab = preserveTab ? activeTab : null;
+		
 		// Reset all states
 		resetAllStates();
+		
+		// Restore tab if preserving
+		if (currentTab) {
+			activeTab = currentTab;
+		}
 		
 		// Load user security data
 		showLoadingDialog('Loading user security information...');
@@ -287,68 +295,75 @@ function editSecurityCopy() {
 	 */
 	function renderSecurityManagement() {
 		const securityContent = document.getElementById('securityContent');
-		securityContent.className = 'security-content';
 		
-		securityContent.innerHTML = `
-			<!-- Tab Navigation -->
-			<div class="tab-navigation">
-				<button class="tab-btn ${activeTab === 'businessunit' ? 'active' : ''}" data-tab="businessunit">
-					<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-						<path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
-					</svg>
-					Business Unit
-				</button>
-				<button class="tab-btn ${activeTab === 'teams' ? 'active' : ''}" data-tab="teams">
-					<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-						<path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
-						<circle cx="9" cy="7" r="4"/>
-						<path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/>
-					</svg>
-					Teams
-				</button>
-				<button class="tab-btn ${activeTab === 'roles' ? 'active' : ''}" data-tab="roles">
-					<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-						<path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z"/>
-						<path d="M8 11V7a4 4 0 118 0v4"/>
-					</svg>
-					Security Roles
-				</button>
-			</div>
-			
-			<!-- Tab Content -->
-			<div class="tab-content" id="tabContent"></div>
-			
-			<!-- Action Buttons -->
-			<div class="action-buttons">
-				<button id="applyChangesBtn" class="btn-primary" style="display: none;">
-					<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-						<polyline points="20 6 9 17 4 12"/>
-					</svg>
-					Apply Changes
-				</button>
-				<button id="resetChangesBtn" class="btn-secondary" style="display: none;">
-					<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-						<path d="M3 12a9 9 0 019-9 9.75 9.75 0 016.74 2.74L21 8"/>
-						<path d="M21 3v5h-5"/>
-					</svg>
-					Reset
-				</button>
-			</div>
-		`;
+		// Check if tabs already exist (to preserve handlers)
+		const existingTabs = securityContent.querySelector('.tab-navigation');
 		
-		// Attach tab click handlers
-		securityContent.querySelectorAll('.tab-btn').forEach(btn => {
-			btn.addEventListener('click', () => {
-				activeTab = btn.dataset.tab;
-				updateActiveTab();
+		if (!existingTabs) {
+			// First time rendering - create full structure
+			securityContent.className = 'security-content';
+			
+			securityContent.innerHTML = `
+				<!-- Tab Navigation -->
+				<div class="tab-navigation">
+					<button class="tab-btn ${activeTab === 'businessunit' ? 'active' : ''}" data-tab="businessunit">
+						<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+							<path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+						</svg>
+						Business Unit
+					</button>
+					<button class="tab-btn ${activeTab === 'teams' ? 'active' : ''}" data-tab="teams">
+						<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+							<path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+							<circle cx="9" cy="7" r="4"/>
+							<path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/>
+						</svg>
+						Teams
+					</button>
+					<button class="tab-btn ${activeTab === 'roles' ? 'active' : ''}" data-tab="roles">
+						<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+							<path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z"/>
+							<path d="M8 11V7a4 4 0 118 0v4"/>
+						</svg>
+						Security Roles
+					</button>
+				</div>
+				
+				<!-- Tab Content -->
+				<div class="tab-content" id="tabContent"></div>
+				
+				<!-- Action Buttons -->
+				<div class="action-buttons">
+					<button id="applyChangesBtn" class="btn-primary" style="display: none;">
+						<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+							<polyline points="20 6 9 17 4 12"/>
+						</svg>
+						Apply Changes
+					</button>
+					<button id="resetChangesBtn" class="btn-secondary" style="display: none;">
+						<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+							<path d="M3 12a9 9 0 019-9 9.75 9.75 0 016.74 2.74L21 8"/>
+							<path d="M21 3v5h-5"/>
+						</svg>
+						Reset
+					</button>
+				</div>
+			`;
+			
+			// Attach tab click handlers
+			securityContent.querySelectorAll('.tab-btn').forEach(btn => {
+				btn.addEventListener('click', () => {
+					activeTab = btn.dataset.tab;
+					updateActiveTab();
+				});
 			});
-		});
+			
+			// Attach button handlers
+			document.getElementById('applyChangesBtn').addEventListener('click', handleApplyChanges);
+			document.getElementById('resetChangesBtn').addEventListener('click', handleResetChanges);
+		}
 		
-		// Attach button handlers
-		document.getElementById('applyChangesBtn').addEventListener('click', handleApplyChanges);
-		document.getElementById('resetChangesBtn').addEventListener('click', handleResetChanges);
-		
-		// Render initial tab
+		// Render/update the active tab
 		updateActiveTab();
 	}
 	
@@ -399,17 +414,14 @@ function editSecurityCopy() {
 		// Always set action to 'change' since it's the only option
 		businessUnitAction = 'change';
 		
-		// Load business units
-		if (allBusinessUnits.length === 0) {
-			fetchBusinessUnits(function(response) {
-				if (response && response.entities) {
-					allBusinessUnits = response.entities.sort((a, b) => a.name.localeCompare(b.name));
-					renderBusinessUnitList();
-				}
-			});
-		} else {
-			renderBusinessUnitList();
-		}
+		// Load business units - clear cache to force fresh data
+		allBusinessUnits = [];
+		fetchBusinessUnits(function(response) {
+			if (response && response.entities) {
+				allBusinessUnits = response.entities.sort((a, b) => a.name.localeCompare(b.name));
+				renderBusinessUnitList();
+			}
+		});
 	}
 	
 	/**
@@ -502,23 +514,20 @@ function editSecurityCopy() {
 			</div>
 		`;
 		
-		// Load teams
-		if (allTeams.length === 0) {
-			fetchTeams(function(response) {
-				if (response && response.entities) {
-					allTeams = response.entities
-						.map(team => ({
-							id: team.teamid,
-							name: team.name,
-							businessUnit: team.businessunitid?.name || 'N/A'
-						}))
-						.sort((a, b) => a.name.localeCompare(b.name));
-					renderTeamList();
-				}
-			});
-		} else {
-			renderTeamList();
-		}
+		// Load teams - clear cache to force fresh data
+		allTeams = [];
+		fetchTeams(function(response) {
+			if (response && response.entities) {
+				allTeams = response.entities
+					.map(team => ({
+						id: team.teamid,
+						name: team.name,
+						businessUnit: team.businessunitid?.name || 'N/A'
+					}))
+					.sort((a, b) => a.name.localeCompare(b.name));
+				renderTeamList();
+			}
+		});
 		
 		// Attach event handlers
 		container.querySelectorAll('input[name="teamAction"]').forEach(radio => {
@@ -529,6 +538,7 @@ function editSecurityCopy() {
 				teamsToAdd = [];
 				teamsToRemove = [];
 				document.querySelectorAll('.team-item').forEach(el => el.classList.remove('selected'));
+				renderTeamList(); // Re-render to clear selections
 				updateActionButtons();
 			});
 		});
@@ -652,6 +662,9 @@ function editSecurityCopy() {
 		// Load roles based on current or new business unit
 		const targetBU = newBusinessUnitId || selectedBusinessUnitId;
 		if (targetBU) {
+			// Clear the cache to force fresh data
+			allRoles = [];
+			
 			fetchSecurityRoles(targetBU, function(response) {
 				if (response && response.entities) {
 					allRoles = response.entities
@@ -674,6 +687,7 @@ function editSecurityCopy() {
 				rolesToAdd = [];
 				rolesToRemove = [];
 				document.querySelectorAll('.role-item').forEach(el => el.classList.remove('selected'));
+				renderRoleList(); // Re-render to clear selections
 				updateActionButtons();
 			});
 		});
@@ -808,11 +822,15 @@ function editSecurityCopy() {
 			}
 			
 			closeLoadingDialog();
-			showToast(`Security updated successfully for ${selectedUserFullName}`, 'success', 3000);
+			showToast(`Security updated successfully for ${selectedUserFullName || 'user'}`, 'success', 3000);
 			
-			// Reload user data
-			const user = { systemuserid: selectedUserId, displayName: selectedUserFullName };
-			await selectUser(user);
+			// Reload user data while preserving the current tab
+			const user = { 
+				systemuserid: selectedUserId, 
+				displayName: selectedUserFullName,
+				_businessunitid_value: selectedBusinessUnitId
+			};
+			await selectUser(user, true); // true = preserve current tab
 			
 		} catch (error) {
 			closeLoadingDialog();
