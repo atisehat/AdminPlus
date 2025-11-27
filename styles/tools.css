@@ -794,10 +794,43 @@
 /* Tab Navigation */
 .tab-navigation {
     display: flex;
+    justify-content: space-between;
+    align-items: center;
     gap: 8px;
     padding: 12px 20px 0 20px;
     border-bottom: 2px solid #e0e0e0;
     background: white;
+}
+
+.tabs-left {
+    display: flex;
+    gap: 8px;
+}
+
+.update-indicator {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background: #d1fae5;
+    border: 2px solid #10b981;
+    border-radius: 8px;
+    color: #10b981;
+    font-size: 14px;
+    font-weight: 600;
+    opacity: 0;
+    transform: translateX(20px);
+    transition: all 0.3s ease;
+    margin-bottom: 8px;
+}
+
+.update-indicator.show-indicator {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.update-indicator svg {
+    flex-shrink: 0;
 }
 
 .tab-btn {

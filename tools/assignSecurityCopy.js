@@ -304,8 +304,9 @@ function editSecurityCopy() {
 			securityContent.className = 'security-content';
 			
 			securityContent.innerHTML = `
-				<!-- Tab Navigation -->
-				<div class="tab-navigation">
+			<!-- Tab Navigation -->
+			<div class="tab-navigation">
+				<div class="tabs-left">
 					<button class="tab-btn ${activeTab === 'businessunit' ? 'active' : ''}" data-tab="businessunit">
 						<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
 							<path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
@@ -328,6 +329,13 @@ function editSecurityCopy() {
 						Security Roles
 					</button>
 				</div>
+				<div class="update-indicator" id="updateIndicator" style="display: none;">
+					<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+						<polyline points="20 6 9 17 4 12"/>
+					</svg>
+					<span id="updateIndicatorText">Updated</span>
+				</div>
+			</div>
 				
 				<!-- Tab Content -->
 				<div class="tab-content" id="tabContent"></div>
@@ -766,6 +774,36 @@ function editSecurityCopy() {
 	}
 	
 	/**
+	 * Show update indicator
+	 */
+	function showUpdateIndicator(updatedItems) {
+		const indicator = document.getElementById('updateIndicator');
+		const indicatorText = document.getElementById('updateIndicatorText');
+		
+		if (!indicator || !indicatorText) return;
+		
+		// Create specific message
+		let message = 'Updated';
+		if (updatedItems.length > 0) {
+			message = `${updatedItems.join(' & ')} Updated`;
+		}
+		
+		indicatorText.textContent = message;
+		indicator.style.display = 'flex';
+		
+		// Add animation class
+		indicator.classList.add('show-indicator');
+		
+		// Hide after 4 seconds
+		setTimeout(() => {
+			indicator.classList.remove('show-indicator');
+			setTimeout(() => {
+				indicator.style.display = 'none';
+			}, 300);
+		}, 4000);
+	}
+	
+	/**
 	 * Update selection counter
 	 */
 	function updateSelectionCounter(type) {
@@ -874,12 +912,8 @@ function editSecurityCopy() {
 			
 			closeLoadingDialog();
 			
-			// Create specific success message
-			let message = 'User Security Updated';
-			if (updatedItems.length > 0) {
-				message = `User ${updatedItems.join(' & ')} Updated`;
-			}
-			showToast(message, 'success', 3000);
+			// Show inline update indicator
+			showUpdateIndicator(updatedItems);
 			
 			// Reload user data while preserving the current tab
 			const user = { 
