@@ -1,4 +1,4 @@
-//CommonFetch - API Functions for Dynamics 365
+//CommonFetch - API Functions
 
 // User API calls
 function fetchUsers(callback) {
