@@ -504,6 +504,9 @@ function editSecurityCopy() {
 								<span>Replace All</span>
 							</label>
 						</div>
+						<div class="selection-counter" id="teamsCounter" style="display: none;">
+							<span id="teamsCounterText">0 selected</span>
+						</div>
 					</div>
 					
 					<div id="teamSelectionArea" style="display: ${teamAction ? 'block' : 'none'};">
@@ -539,6 +542,7 @@ function editSecurityCopy() {
 				teamsToRemove = [];
 				document.querySelectorAll('.team-item').forEach(el => el.classList.remove('selected'));
 				renderTeamList(); // Re-render to clear selections
+				updateSelectionCounter('teams');
 				updateActionButtons();
 			});
 		});
@@ -590,6 +594,7 @@ function editSecurityCopy() {
 						teamDiv.classList.add('selected');
 					}
 				}
+				updateSelectionCounter('teams');
 				updateActionButtons();
 			});
 			
@@ -649,6 +654,9 @@ function editSecurityCopy() {
 								<span>Replace All</span>
 							</label>
 						</div>
+						<div class="selection-counter" id="rolesCounter" style="display: none;">
+							<span id="rolesCounterText">0 selected</span>
+						</div>
 					</div>
 					
 					<div id="roleSelectionArea" style="display: ${roleAction ? 'block' : 'none'};">
@@ -688,6 +696,7 @@ function editSecurityCopy() {
 				rolesToRemove = [];
 				document.querySelectorAll('.role-item').forEach(el => el.classList.remove('selected'));
 				renderRoleList(); // Re-render to clear selections
+				updateSelectionCounter('roles');
 				updateActionButtons();
 			});
 		});
@@ -736,6 +745,7 @@ function editSecurityCopy() {
 						roleDiv.classList.add('selected');
 					}
 				}
+				updateSelectionCounter('roles');
 				updateActionButtons();
 			});
 			
@@ -752,6 +762,37 @@ function editSecurityCopy() {
 					item.style.display = matches ? 'flex' : 'none';
 				});
 			});
+		}
+	}
+	
+	/**
+	 * Update selection counter
+	 */
+	function updateSelectionCounter(type) {
+		if (type === 'teams') {
+			const counter = document.getElementById('teamsCounter');
+			const counterText = document.getElementById('teamsCounterText');
+			if (counter && counterText) {
+				const count = teamsToAdd.length + teamsToRemove.length;
+				if (count > 0) {
+					counterText.textContent = `${count} selected`;
+					counter.style.display = 'flex';
+				} else {
+					counter.style.display = 'none';
+				}
+			}
+		} else if (type === 'roles') {
+			const counter = document.getElementById('rolesCounter');
+			const counterText = document.getElementById('rolesCounterText');
+			if (counter && counterText) {
+				const count = rolesToAdd.length + rolesToRemove.length;
+				if (count > 0) {
+					counterText.textContent = `${count} selected`;
+					counter.style.display = 'flex';
+				} else {
+					counter.style.display = 'none';
+				}
+			}
 		}
 	}
 	
@@ -796,33 +837,49 @@ function editSecurityCopy() {
 		try {
 			showLoadingDialog('Applying security changes...');
 			
+			// Track what was updated for specific message
+			let updatedItems = [];
+			
 			// Apply business unit change
 			if (businessUnitAction === 'change' && newBusinessUnitId) {
 				await updateUserDetails(selectedUserId, newBusinessUnitId, [], [], 'ChangeBU');
+				updatedItems.push('Business Unit');
 			}
 			
 			// Apply team changes
 			if (teamAction === 'add' && teamsToAdd.length > 0) {
 				await updateUserDetails(selectedUserId, null, teamsToAdd, [], 'AddTeams');
+				updatedItems.push('Teams');
 			} else if (teamAction === 'remove' && teamsToRemove.length > 0) {
 				await updateUserDetails(selectedUserId, null, teamsToRemove, [], 'RemoveTeams');
+				updatedItems.push('Teams');
 			} else if (teamAction === 'replace' && teamsToAdd.length > 0) {
 				await updateUserDetails(selectedUserId, null, [], [], 'RemoveAllTeams');
 				await updateUserDetails(selectedUserId, null, teamsToAdd, [], 'AddTeams');
+				updatedItems.push('Teams');
 			}
 			
 			// Apply role changes
 			if (roleAction === 'add' && rolesToAdd.length > 0) {
 				await updateUserDetails(selectedUserId, null, [], rolesToAdd, 'AddRoles');
+				updatedItems.push('Security Roles');
 			} else if (roleAction === 'remove' && rolesToRemove.length > 0) {
 				await updateUserDetails(selectedUserId, null, [], rolesToRemove, 'RemoveRoles');
+				updatedItems.push('Security Roles');
 			} else if (roleAction === 'replace' && rolesToAdd.length > 0) {
 				await updateUserDetails(selectedUserId, null, [], [], 'RemoveAllRoles');
 				await updateUserDetails(selectedUserId, null, [], rolesToAdd, 'AddRoles');
+				updatedItems.push('Security Roles');
 			}
 			
 			closeLoadingDialog();
-			showToast(`Security updated successfully for ${selectedUserFullName || 'user'}`, 'success', 3000);
+			
+			// Create specific success message
+			let message = 'User Security Updated';
+			if (updatedItems.length > 0) {
+				message = `User ${updatedItems.join(' & ')} Updated`;
+			}
+			showToast(message, 'success', 3000);
 			
 			// Reload user data while preserving the current tab
 			const user = { 

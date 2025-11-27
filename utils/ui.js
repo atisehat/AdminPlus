@@ -263,9 +263,8 @@ function showToast(message, type, duration) {
         style.innerHTML = `
             .adminplus-toast {
                 position: fixed;
-                top: 50%;
-                left: 50%;
-                transform: translate(-50%, -50%);
+                top: 20px;
+                right: 20px;
                 background: white;
                 padding: 16px 24px;
                 border-radius: 8px;
@@ -338,21 +337,21 @@ function showToast(message, type, duration) {
             @keyframes adminplus-toast-in {
                 from {
                     opacity: 0;
-                    transform: translate(-50%, -50%) scale(0.9);
+                    transform: translateX(100%);
                 }
                 to {
                     opacity: 1;
-                    transform: translate(-50%, -50%) scale(1);
+                    transform: translateX(0);
                 }
             }            
             @keyframes adminplus-toast-out {
                 from {
                     opacity: 1;
-                    transform: translate(-50%, -50%) scale(1);
+                    transform: translateX(0);
                 }
                 to {
                     opacity: 0;
-                    transform: translate(-50%, -50%) scale(0.9);
+                    transform: translateX(100%);
                 }
             }
         `;

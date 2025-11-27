@@ -969,12 +969,30 @@
     gap: 16px;
     margin-bottom: 16px;
     flex-wrap: wrap;
+    position: relative;
 }
 
 .section-title-with-actions h4 {
     margin: 0;
     flex-shrink: 0;
     min-width: 0;
+}
+
+.selection-counter {
+    display: flex;
+    align-items: center;
+    margin-left: auto;
+    padding: 6px 14px;
+    background: #e8f4f8;
+    border: 2px solid #2b2b2b;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #2b2b2b;
+}
+
+.selection-counter span {
+    white-space: nowrap;
 }
 
 .radio-option {
