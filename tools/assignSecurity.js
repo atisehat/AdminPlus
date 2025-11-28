@@ -58,9 +58,8 @@ function editSecurity() {
 	function createSecurityPopup() {
 		const popup = document.createElement('div');
 		popup.className = 'commonPopup assignSecurity-redesign';
-		popup.style.width = '85%';
-		popup.style.maxWidth = '1400px';
-		popup.style.height = '90vh';
+		popup.style.width = '75%';
+		popup.style.maxHeight = '90vh';
 		popup.style.border = '3px solid #1a1a1a';
 		popup.style.borderRadius = '12px';
 		
