@@ -156,81 +156,84 @@ function copySecurityCopy() {
 		securityContent.innerHTML = `
 			<div class="comparison-header">
 				<div class="comparison-title">
-					<h2>Security Comparison</h2>
-					<p>Copying from <strong>${selectedUserName}</strong> to <strong>${selectedUserName2}</strong></p>
+					<h2>Security to Copy</h2>
+					<p>From <strong>${selectedUserName}</strong> to <strong>${selectedUserName2}</strong></p>
 				</div>
 			</div>
 			
 			<div class="comparison-content">
-				<div class="comparison-section">
-					<h3>
-						<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+				<!-- Business Unit Section -->
+				<div class="comparison-section compact-section">
+					<div class="section-title-bar">
+						<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
 							<path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
 						</svg>
-						Business Unit
-					</h3>
-					<div class="comparison-grid">
-						<div class="comparison-card from-card">
-							<div class="card-header">FROM</div>
-							<div class="card-content compact" id="fromBusinessUnit">
+						<span>Business Unit</span>
+					</div>
+					<div class="vertical-comparison">
+						<div class="comparison-row">
+							<div class="comparison-label from-label">FROM</div>
+							<div class="comparison-value from-value" id="fromBusinessUnit">
 								<div class="loading-spinner">Loading...</div>
 							</div>
 						</div>
-						<div class="arrow-divider">→</div>
-						<div class="comparison-card to-card">
-							<div class="card-header">TO</div>
-							<div class="card-content compact" id="toBusinessUnit">
+						<div class="arrow-down">↓</div>
+						<div class="comparison-row">
+							<div class="comparison-label to-label">TO</div>
+							<div class="comparison-value to-value" id="toBusinessUnit">
 								<div class="loading-spinner">Loading...</div>
 							</div>
 						</div>
 					</div>
 				</div>
 				
+				<!-- Teams Section -->
 				<div class="comparison-section">
-					<h3>
-						<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+					<div class="section-title-bar">
+						<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
 							<path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
 							<circle cx="9" cy="7" r="4"/>
 							<path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/>
 						</svg>
-						Teams
-					</h3>
-					<div class="comparison-grid">
-						<div class="comparison-card from-card">
-							<div class="card-header">FROM</div>
-							<div class="card-content scrollable columns" id="fromTeams">
+						<span>Teams</span>
+					</div>
+					<div class="vertical-comparison">
+						<div class="comparison-row">
+							<div class="comparison-label from-label">FROM</div>
+							<div class="comparison-value from-value scrollable-multi" id="fromTeams">
 								<div class="loading-spinner">Loading...</div>
 							</div>
 						</div>
-						<div class="arrow-divider">→</div>
-						<div class="comparison-card to-card">
-							<div class="card-header">TO</div>
-							<div class="card-content scrollable columns" id="toTeams">
+						<div class="arrow-down">↓</div>
+						<div class="comparison-row">
+							<div class="comparison-label to-label">TO</div>
+							<div class="comparison-value to-value scrollable-multi" id="toTeams">
 								<div class="loading-spinner">Loading...</div>
 							</div>
 						</div>
 					</div>
 				</div>
 				
+				<!-- Security Roles Section -->
 				<div class="comparison-section">
-					<h3>
-						<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+					<div class="section-title-bar">
+						<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
 							<path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z"/>
 							<path d="M8 11V7a4 4 0 118 0v4"/>
 						</svg>
-						Security Roles
-					</h3>
-					<div class="comparison-grid">
-						<div class="comparison-card from-card">
-							<div class="card-header">FROM</div>
-							<div class="card-content scrollable columns" id="fromRoles">
+						<span>Security Roles</span>
+					</div>
+					<div class="vertical-comparison">
+						<div class="comparison-row">
+							<div class="comparison-label from-label">FROM</div>
+							<div class="comparison-value from-value scrollable-multi" id="fromRoles">
 								<div class="loading-spinner">Loading...</div>
 							</div>
 						</div>
-						<div class="arrow-divider">→</div>
-						<div class="comparison-card to-card">
-							<div class="card-header">TO</div>
-							<div class="card-content scrollable columns" id="toRoles">
+						<div class="arrow-down">↓</div>
+						<div class="comparison-row">
+							<div class="comparison-label to-label">TO</div>
+							<div class="comparison-value to-value scrollable-multi" id="toRoles">
 								<div class="loading-spinner">Loading...</div>
 							</div>
 						</div>
@@ -245,7 +248,7 @@ function copySecurityCopy() {
 						<line x1="12" y1="16" x2="12" y2="12"/>
 						<line x1="12" y1="8" x2="12.01" y2="8"/>
 					</svg>
-					<span>Only 'Owner' or 'Access' type teams will be copied. The TO user's existing security will be replaced.</span>
+					<span>Only 'Owner' or 'Access' type teams will be copied. TO user's existing security will be replaced.</span>
 				</div>
 				<button id="submitButton" class="btn-primary" style="display: none;">
 					<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -280,26 +283,26 @@ function copySecurityCopy() {
 		fetchBusinessUnitName(userId, function(response) {
 			const buDiv = document.getElementById(prefix + 'BusinessUnit');
 			if (!response || !response.entities[0] || !response.entities[0].businessunitid) {
-				buDiv.innerHTML = '<div class="empty-message">Not found</div>';
+				buDiv.innerHTML = '<span style="color: #999; font-style: italic;">Not found</span>';
 				return;
 			}
 			const businessUnitName = response.entities[0].businessunitid.name;
-			buDiv.innerHTML = `<div class="value-item">${businessUnitName}</div>`;
+			buDiv.innerHTML = `<span style="font-weight: 500;">${businessUnitName}</span>`;
 		});
 		
 		// Load Teams
 		fetchTeamsForUser(userId, function(response) {
 			const teamsDiv = document.getElementById(prefix + 'Teams');
 			if (!response || !response.entities || !response.entities[0]?.teammembership_association) {
-				teamsDiv.innerHTML = '<div class="empty-message">No teams assigned</div>';
-				teamsDiv.classList.remove('columns');
+				teamsDiv.innerHTML = '<span style="color: #999; font-style: italic;">No teams assigned</span>';
+				teamsDiv.classList.remove('scrollable-multi');
 				return;
 			}
 			
 			const teams = response.entities[0].teammembership_association;
 			if (teams.length === 0) {
-				teamsDiv.innerHTML = '<div class="empty-message">No teams assigned</div>';
-				teamsDiv.classList.remove('columns');
+				teamsDiv.innerHTML = '<span style="color: #999; font-style: italic;">No teams assigned</span>';
+				teamsDiv.classList.remove('scrollable-multi');
 				return;
 			}
 			
@@ -318,7 +321,7 @@ function copySecurityCopy() {
 				return `
 					<div class="value-item ${!isAssignable ? 'disabled' : ''}">
 						<span style="color: ${iconColor}; font-weight: bold;">${icon}</span>
-						<span style="flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis;">${team.name}</span>
+						<span style="flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis;" title="${team.name}">${team.name}</span>
 						<small>(${teamType})</small>
 					</div>
 				`;
@@ -329,8 +332,8 @@ function copySecurityCopy() {
 		fetchRolesForUser(userId, function(roles) {
 			const rolesDiv = document.getElementById(prefix + 'Roles');
 			if (!roles || !roles.entities || roles.entities.length === 0) {
-				rolesDiv.innerHTML = '<div class="empty-message">No roles assigned</div>';
-				rolesDiv.classList.remove('columns');
+				rolesDiv.innerHTML = '<span style="color: #999; font-style: italic;">No roles assigned</span>';
+				rolesDiv.classList.remove('scrollable-multi');
 				return;
 			}
 			
@@ -352,7 +355,7 @@ function copySecurityCopy() {
 				rolesDiv.innerHTML = roleDetails.map(role => `
 					<div class="value-item">
 						<span style="color: #10b981; font-weight: bold;">✓</span>
-						<span style="flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis;">${role.name}</span>
+						<span style="flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis;" title="${role.name}">${role.name}</span>
 					</div>
 				`).join('');
 			});
