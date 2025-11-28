@@ -170,15 +170,15 @@ function copySecurityCopy() {
 						</svg>
 						<span>Business Unit</span>
 					</div>
-					<div class="vertical-comparison">
-						<div class="comparison-row">
+					<div class="horizontal-comparison">
+						<div class="comparison-column">
 							<div class="comparison-label from-label">FROM</div>
 							<div class="comparison-value from-value" id="fromBusinessUnit">
 								<div class="loading-spinner">Loading...</div>
 							</div>
 						</div>
-						<div class="arrow-down">↓</div>
-						<div class="comparison-row">
+						<div class="arrow-right">→</div>
+						<div class="comparison-column">
 							<div class="comparison-label to-label">TO</div>
 							<div class="comparison-value to-value" id="toBusinessUnit">
 								<div class="loading-spinner">Loading...</div>
@@ -197,15 +197,15 @@ function copySecurityCopy() {
 						</svg>
 						<span>Teams</span>
 					</div>
-					<div class="vertical-comparison">
-						<div class="comparison-row">
+					<div class="horizontal-comparison">
+						<div class="comparison-column">
 							<div class="comparison-label from-label">FROM</div>
 							<div class="comparison-value from-value scrollable-multi" id="fromTeams">
 								<div class="loading-spinner">Loading...</div>
 							</div>
 						</div>
-						<div class="arrow-down">↓</div>
-						<div class="comparison-row">
+						<div class="arrow-right">→</div>
+						<div class="comparison-column">
 							<div class="comparison-label to-label">TO</div>
 							<div class="comparison-value to-value scrollable-multi" id="toTeams">
 								<div class="loading-spinner">Loading...</div>
@@ -223,15 +223,15 @@ function copySecurityCopy() {
 						</svg>
 						<span>Security Roles</span>
 					</div>
-					<div class="vertical-comparison">
-						<div class="comparison-row">
+					<div class="horizontal-comparison">
+						<div class="comparison-column">
 							<div class="comparison-label from-label">FROM</div>
 							<div class="comparison-value from-value scrollable-multi" id="fromRoles">
 								<div class="loading-spinner">Loading...</div>
 							</div>
 						</div>
-						<div class="arrow-down">↓</div>
-						<div class="comparison-row">
+						<div class="arrow-right">→</div>
+						<div class="comparison-column">
 							<div class="comparison-label to-label">TO</div>
 							<div class="comparison-value to-value scrollable-multi" id="toRoles">
 								<div class="loading-spinner">Loading...</div>

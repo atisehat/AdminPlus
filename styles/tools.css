@@ -751,19 +751,18 @@
     flex-shrink: 0;
 }
 
-.vertical-comparison {
+.horizontal-comparison {
+    display: flex;
+    align-items: stretch;
+    gap: 12px;
     padding: 12px;
 }
 
-.comparison-row {
+.comparison-column {
+    flex: 1;
     display: flex;
-    align-items: flex-start;
-    gap: 12px;
-    margin-bottom: 8px;
-}
-
-.comparison-row:last-of-type {
-    margin-bottom: 0;
+    flex-direction: column;
+    gap: 8px;
 }
 
 .comparison-label {
@@ -774,7 +773,6 @@
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    min-width: 60px;
     text-align: center;
 }
 
@@ -815,12 +813,14 @@
     display: block;
 }
 
-.arrow-down {
-    text-align: center;
+.arrow-right {
+    display: flex;
+    align-items: center;
+    justify-content: center;
     font-size: 24px;
     color: #666;
     font-weight: bold;
-    margin: 4px 0;
+    min-width: 30px;
 }
 
 .scrollable-multi {
