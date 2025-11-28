@@ -31,15 +31,15 @@ function copySecurityCopy() {
 		    
 		    <!-- User Selection Row -->
 		    <div class="securityPopup-row" style="gap: 20px; margin-bottom: 20px;">
-		      <div class="user-section" id="section1" style="flex: 1; border: 2px solid #ddd; border-radius: 8px; padding: 15px; background: #fafafa;">
+		      <div class="user-section" id="section1" style="flex: 1; border: 2px solid #ddd; border-radius: 8px; padding: 15px; background: #fafafa; display: flex; flex-direction: column;">
 		        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 10px;">
-		          <h3 style="margin: 0; color: #2b2b2b; font-size: 16px; font-weight: 600; white-space: nowrap;">FROM User</h3>
+		          <h3 style="margin: 0; color: #2b2b2b; font-size: 14px; font-weight: 600; white-space: nowrap;">FROM User</h3>
 		          <input type="text" id="searchInput1" placeholder="🔍 Search..." style="flex: 1; padding: 8px 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 13px; box-sizing: border-box;">
 		        </div>
 		        <div style="margin-bottom: 8px;">
 		          <span id="fromStatus" style="font-size: 12px; color: #999; font-style: italic;">No user selected</span>
 		        </div>
-		        <div class="user-list-container" style="max-height: 220px; overflow-y: auto; border: 1px solid #ddd; border-radius: 6px; background: white;">
+		        <div class="user-list-container" style="flex: 1; max-height: 220px; min-height: 220px; overflow-y: auto; border: 1px solid #ddd; border-radius: 6px; background: white;">
 		          <div id="userList1"></div>
 		        </div>
 		      </div>
@@ -48,15 +48,15 @@ function copySecurityCopy() {
 		        <div style="font-size: 32px; color: #666;">→</div>
 		      </div>
 		      
-		      <div class="user-section" id="section2" style="flex: 1; border: 2px solid #ddd; border-radius: 8px; padding: 15px; background: #fafafa;">
+		      <div class="user-section" id="section2" style="flex: 1; border: 2px solid #ddd; border-radius: 8px; padding: 15px; background: #fafafa; display: flex; flex-direction: column;">
 		        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 10px;">
-		          <h3 style="margin: 0; color: #2b2b2b; font-size: 16px; font-weight: 600; white-space: nowrap;">TO User</h3>
+		          <h3 style="margin: 0; color: #2b2b2b; font-size: 14px; font-weight: 600; white-space: nowrap;">TO User</h3>
 		          <input type="text" id="searchInput2" placeholder="🔍 Search..." style="flex: 1; padding: 8px 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 13px; box-sizing: border-box;">
 		        </div>
 		        <div style="margin-bottom: 8px;">
 		          <span id="toStatus" style="font-size: 12px; color: #999; font-style: italic;">No user selected</span>
 		        </div>
-		        <div class="user-list-container" style="max-height: 220px; overflow-y: auto; border: 1px solid #ddd; border-radius: 6px; background: white;">
+		        <div class="user-list-container" style="flex: 1; max-height: 220px; min-height: 220px; overflow-y: auto; border: 1px solid #ddd; border-radius: 6px; background: white;">
 		          <div id="userList2"></div>
 		        </div>
 		      </div>
@@ -70,17 +70,33 @@ function copySecurityCopy() {
 		      <h3 style="margin: 0 0 15px 0; color: #2b2b2b; font-size: 16px; font-weight: 600;">Security Details</h3>
 		    </div>
 		    
-		    <!-- Business Unit & Teams Row -->
+		    <!-- Business Unit Row -->
 		    <div class="securityPopup-row" style="gap: 20px; margin-bottom: 15px;">
 		      <div class="details-section-row" id="section3" style="flex: 1; border: 1px solid #e0e0e0; border-radius: 8px; padding: 15px; background: white;">
-		        <h4 style="margin: 0 0 12px 0; color: #555; font-size: 14px; font-weight: 600; border-bottom: 2px solid #f0f0f0; padding-bottom: 8px;">FROM - Business Unit & Teams</h4>
-		        <div class="roles-and-teams-list-row" style="max-height: 180px; overflow-y: auto;">
+		        <h4 style="margin: 0 0 12px 0; color: #555; font-size: 14px; font-weight: 600; border-bottom: 2px solid #f0f0f0; padding-bottom: 8px;">FROM - Business Unit</h4>
+		        <div class="roles-and-teams-list-row" style="max-height: 100px; overflow-y: auto;">
 		          <ul style="margin: 0; padding-left: 20px; font-size: 13px; color: #333;"></ul>
 		        </div>
 		      </div>
 		      <div class="details-section-row" id="section5" style="flex: 1; border: 1px solid #e0e0e0; border-radius: 8px; padding: 15px; background: white;">
-		        <h4 style="margin: 0 0 12px 0; color: #555; font-size: 14px; font-weight: 600; border-bottom: 2px solid #f0f0f0; padding-bottom: 8px;">TO - Business Unit & Teams</h4>
-		        <div class="roles-and-teams-list-row" style="max-height: 180px; overflow-y: auto;">
+		        <h4 style="margin: 0 0 12px 0; color: #555; font-size: 14px; font-weight: 600; border-bottom: 2px solid #f0f0f0; padding-bottom: 8px;">TO - Business Unit</h4>
+		        <div class="roles-and-teams-list-row" style="max-height: 100px; overflow-y: auto;">
+		          <ul style="margin: 0; padding-left: 20px; font-size: 13px; color: #333;"></ul>
+		        </div>
+		      </div>
+		    </div>
+		    
+		    <!-- Teams Row -->
+		    <div class="securityPopup-row" style="gap: 20px; margin-bottom: 15px;">
+		      <div class="details-section-row" id="section7" style="flex: 1; border: 1px solid #e0e0e0; border-radius: 8px; padding: 15px; background: white;">
+		        <h4 style="margin: 0 0 12px 0; color: #555; font-size: 14px; font-weight: 600; border-bottom: 2px solid #f0f0f0; padding-bottom: 8px;">FROM - Teams</h4>
+		        <div class="roles-and-teams-list-row" style="max-height: 150px; overflow-y: auto;">
+		          <ul style="margin: 0; padding-left: 20px; font-size: 13px; color: #333;"></ul>
+		        </div>
+		      </div>
+		      <div class="details-section-row" id="section8" style="flex: 1; border: 1px solid #e0e0e0; border-radius: 8px; padding: 15px; background: white;">
+		        <h4 style="margin: 0 0 12px 0; color: #555; font-size: 14px; font-weight: 600; border-bottom: 2px solid #f0f0f0; padding-bottom: 8px;">TO - Teams</h4>
+		        <div class="roles-and-teams-list-row" style="max-height: 150px; overflow-y: auto;">
 		          <ul style="margin: 0; padding-left: 20px; font-size: 13px; color: #333;"></ul>
 		        </div>
 		      </div>
@@ -91,13 +107,13 @@ function copySecurityCopy() {
 		      <div class="details-section-row" id="section4" style="flex: 1; border: 1px solid #e0e0e0; border-radius: 8px; padding: 15px; background: white;">
 		        <h4 style="margin: 0 0 12px 0; color: #555; font-size: 14px; font-weight: 600; border-bottom: 2px solid #f0f0f0; padding-bottom: 8px;">FROM - Security Roles</h4>
 		        <div class="roles-and-teams-list-row" style="max-height: 180px; overflow-y: auto;">
-		          <ul style="margin: 0; padding-left: 20px; font-size: 13px; color: #333;"></ul>
+		          <ul style="margin: 0; padding-left: 20px; font-size: 13px; color: #333; column-count: 2; column-gap: 20px;"></ul>
 		        </div>
 		      </div>
 		      <div class="details-section-row" id="section6" style="flex: 1; border: 1px solid #e0e0e0; border-radius: 8px; padding: 15px; background: white;">
 		        <h4 style="margin: 0 0 12px 0; color: #555; font-size: 14px; font-weight: 600; border-bottom: 2px solid #f0f0f0; padding-bottom: 8px;">TO - Security Roles</h4>
 		        <div class="roles-and-teams-list-row" style="max-height: 180px; overflow-y: auto;">
-		          <ul style="margin: 0; padding-left: 20px; font-size: 13px; color: #333;"></ul>
+		          <ul style="margin: 0; padding-left: 20px; font-size: 13px; color: #333; column-count: 2; column-gap: 20px;"></ul>
 		        </div>
 		      </div>
 		    </div>
@@ -217,28 +233,20 @@ function copySecurityCopy() {
 			}
 			updateSubmitButtonVisibility();
 
-			const businessUnitAndTeamsList = document.getElementById('section' + (3 + (sectionPrefix - 1) * 2)).querySelector('ul');
-			businessUnitAndTeamsList.innerHTML = '<li style="color: #999; font-style: italic;">Loading...</li>';
-			let businessUnitListItem = null;
-			let teamListItems = [];
-			const appendLists = () => {
-			 	businessUnitAndTeamsList.innerHTML = '';
-			 	if (businessUnitListItem) {
-				    businessUnitAndTeamsList.appendChild(businessUnitListItem);
-				    businessUnitAndTeamsList.appendChild(document.createElement('br'));
-				}
-				if (teamListItems.length === 0) {
-					const noTeamsItem = document.createElement('li');
-					noTeamsItem.innerHTML = '<em style="color: #999;">No teams assigned</em>';
-					businessUnitAndTeamsList.appendChild(noTeamsItem);
-				} else {
-					teamListItems.forEach(item => businessUnitAndTeamsList.appendChild(item));
-				}
-			};
+			// Business Unit section (section3 for FROM, section5 for TO)
+			const businessUnitSection = sectionPrefix === '1' ? 'section3' : 'section5';
+			const businessUnitList = document.getElementById(businessUnitSection).querySelector('ul');
+			businessUnitList.innerHTML = '<li style="color: #999; font-style: italic;">Loading...</li>';
+			
+			// Teams section (section7 for FROM, section8 for TO)
+			const teamsSection = sectionPrefix === '1' ? 'section7' : 'section8';
+			const teamsList = document.getElementById(teamsSection).querySelector('ul');
+			teamsList.innerHTML = '<li style="color: #999; font-style: italic;">Loading...</li>';
 
 			fetchBusinessUnitName(user.systemuserid, function(response) {
 				if (!response || !response.entities[0] || !response.entities[0].businessunitid || !response.entities[0].businessunitid.name) {
 					console.error('Business unit not found');
+					businessUnitList.innerHTML = '<li style="color: #999; font-style: italic;">Not found</li>';
 					return;
 				}
 
@@ -247,22 +255,31 @@ function copySecurityCopy() {
 					selectedBusinessUnitId = user._businessunitid_value;
 				}
 
-				businessUnitListItem = document.createElement('li');
-				businessUnitListItem.innerHTML = '<strong style="color: #555;">Business Unit:</strong> <span style="color: #1976d2;">' + businessUnitName + '</span>';
-				businessUnitListItem.style.marginBottom = '8px';
-				appendLists();			
+				businessUnitList.innerHTML = '';
+				const businessUnitListItem = document.createElement('li');
+				businessUnitListItem.innerHTML = '<span style="color: #1976d2; font-weight: 600;">' + businessUnitName + '</span>';
+				businessUnitListItem.style.marginBottom = '4px';
+				businessUnitList.appendChild(businessUnitListItem);
 			});
 
 			fetchTeamsForUser(user.systemuserid, function(response) {
 				if (!response || !response.entities || !response.entities[0].teammembership_association) {
 					console.error('Teams not found');
-					appendLists();
+					teamsList.innerHTML = '<li style="color: #999; font-style: italic;">No teams assigned</li>';
 					return;
 				}
 				if (sectionPrefix === '1') {
 					selectedTeamIds = [];
 				}
-				teamListItems = response.entities[0].teammembership_association.map(team => {
+				
+				const teams = response.entities[0].teammembership_association;
+				if (teams.length === 0) {
+					teamsList.innerHTML = '<li style="color: #999; font-style: italic;">No teams assigned</li>';
+					return;
+				}
+				
+				teamsList.innerHTML = '';
+				const teamListItems = teams.map(team => {
 				   if (sectionPrefix === '1') {
 					selectedTeamIds.push(team.teamid);
 				   }
@@ -271,16 +288,17 @@ function copySecurityCopy() {
 				   const isAssignable = teamTypeText === 'Owner' || teamTypeText === 'Access';
 				   const iconColor = isAssignable ? '#10b981' : '#999';
 				   const icon = isAssignable ? '✓' : '○';
-				   listItem.innerHTML = '<span style="color: ' + iconColor + '; font-weight: bold; margin-right: 5px;">' + icon + '</span><strong style="color: #555;">Team:</strong> ' + team.name + ' <span style="color: #666; font-size: 12px;">(Type: ' + teamTypeText + ')</span>';
+				   listItem.innerHTML = '<span style="color: ' + iconColor + '; font-weight: bold; margin-right: 5px;">' + icon + '</span>' + team.name + ' <span style="color: #666; font-size: 11px;">(Type: ' + teamTypeText + ')</span>';
 				   listItem.style.marginBottom = '4px';
+				   listItem.style.breakInside = 'avoid';
 				   return listItem; 
 				});
 				teamListItems.sort((a, b) => {
-				   const nameA = a.innerHTML.replace('Team: ', '');
-				   const nameB = b.innerHTML.replace('Team: ', '');
+				   const nameA = a.innerHTML.replace(/<[^>]*>/g, '');
+				   const nameB = b.innerHTML.replace(/<[^>]*>/g, '');
 				   return nameA.localeCompare(nameB);
 				});
-				appendLists();
+				teamListItems.forEach(item => teamsList.appendChild(item));
 			});
 
 			const rolesList = document.getElementById('section' + (4 + (sectionPrefix - 1) * 2)).querySelector('ul');
@@ -321,6 +339,7 @@ function copySecurityCopy() {
 							const listItem = document.createElement('li');
 							listItem.innerHTML = '<span style="color: #10b981; font-weight: bold; margin-right: 5px;">✓</span>' + roleDetail.name;
 							listItem.style.marginBottom = '4px';
+							listItem.style.breakInside = 'avoid';
 							rolesList.appendChild(listItem);
 					      });
 					  }
