@@ -98,8 +98,13 @@ function copySecurityCopy() {
 		users.forEach(user => {
 			const userDiv = document.createElement('div');
 			userDiv.className = 'user-item';
-			userDiv.dataset.searchText = user.fullname.toLowerCase();
-			userDiv.textContent = user.fullname;
+			// Format name as First Name + Last Name
+			const firstName = user.firstname || '';
+			const lastName = user.lastname || '';
+			const displayName = `${firstName} ${lastName}`.trim() || user.fullname || 'Unknown User';
+			
+			userDiv.dataset.searchText = displayName.toLowerCase();
+			userDiv.innerHTML = `<div class="user-name">${displayName}</div>`;
 			userDiv.dataset.id = user.systemuserid;
 			userDiv.onclick = () => selectUserCallback(user);
 			userListDiv.appendChild(userDiv);
@@ -322,7 +327,6 @@ function copySecurityCopy() {
 					<div class="value-item ${!isAssignable ? 'disabled' : ''}">
 						<span style="color: ${iconColor}; font-weight: bold;">${icon}</span>
 						<span style="flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis;" title="${team.name}">${team.name}</span>
-						<small>(${teamType})</small>
 					</div>
 				`;
 			}).join('');
@@ -432,13 +436,33 @@ function copySecurityCopy() {
 		}
 	}
 
+	function setupSearchFilterScoped(searchInputId, userListId) {
+		const searchInput = document.getElementById(searchInputId);
+		const userList = document.getElementById(userListId);
+		
+		if (!searchInput || !userList) return;
+		
+		searchInput.addEventListener('input', function() {
+			const query = this.value.toLowerCase().trim();
+			const userItems = userList.querySelectorAll('.user-item');
+			
+			userItems.forEach(item => {
+				const searchText = (item.dataset.searchText || '').toLowerCase();
+				const matches = searchText.includes(query);
+				item.style.display = matches ? 'flex' : 'none';
+			});
+		});
+	}
+	
 	function displayPopup(users) {
 	    sortByProperty(users.entities, 'fullname');
 	    const newContainer = createAppendSecurityPopup();
 	    renderUserList(users.entities, user => selectUser(user, '1'), 'userList1', 'searchInput1');
 	    renderUserList(users.entities, user => selectUser(user, '2'), 'userList2', 'searchInput2');
-	    setupSearchFilter('searchInput1', 'user-item');
-	    setupSearchFilter('searchInput2', 'user-item');
+	    
+	    // Setup search filters with scoped selectors
+	    setupSearchFilterScoped('searchInput1', 'userList1');
+	    setupSearchFilterScoped('searchInput2', 'userList2');
 	}
 	
 	// Fetch users and display
