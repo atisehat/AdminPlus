@@ -965,8 +965,8 @@
 
 /* User Selection Panel */
 .user-selection-panel {
-    width: 220px;
-    min-width: 220px;
+    width: 180px;
+    min-width: 180px;
     background: white;
     border-right: 2px solid #e0e0e0;
     display: flex;

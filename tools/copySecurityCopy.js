@@ -32,7 +32,7 @@ function copySecurityCopy() {
 		      <div class="user-selection-panel from-panel">
 		        <div class="panel-header from-header">
 		          <h3>FROM User</h3>
-		          <input type="text" id="searchInput1" placeholder="🔍 Search users..." class="search-input">
+		          <input type="text" id="searchInput1" placeholder="Search users..." class="search-input">
 		        </div>
 		        <div class="user-list-scroll" id="userList1"></div>
 		        <div class="selected-user-info" id="fromUserInfo" style="display: none;">
@@ -59,7 +59,7 @@ function copySecurityCopy() {
 		      <div class="user-selection-panel to-panel">
 		        <div class="panel-header to-header">
 		          <h3>TO User</h3>
-		          <input type="text" id="searchInput2" placeholder="🔍 Search users..." class="search-input">
+		          <input type="text" id="searchInput2" placeholder="Search users..." class="search-input">
 		        </div>
 		        <div class="user-list-scroll" id="userList2"></div>
 		        <div class="selected-user-info" id="toUserInfo" style="display: none;">
@@ -455,7 +455,14 @@ function copySecurityCopy() {
 	}
 	
 	function displayPopup(users) {
-	    sortByProperty(users.entities, 'fullname');
+	    // Sort users alphabetically by first name then last name
+	    users.entities.forEach(user => {
+			const firstName = user.firstname || '';
+			const lastName = user.lastname || '';
+			user.displayName = `${firstName} ${lastName}`.trim() || user.fullname || 'Unknown User';
+		});
+		users.entities.sort((a, b) => a.displayName.localeCompare(b.displayName));
+		
 	    const newContainer = createAppendSecurityPopup();
 	    renderUserList(users.entities, user => selectUser(user, '1'), 'userList1', 'searchInput1');
 	    renderUserList(users.entities, user => selectUser(user, '2'), 'userList2', 'searchInput2');
