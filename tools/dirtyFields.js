@@ -177,11 +177,7 @@ function appendDirtyFieldsPopupToBody(entityName, recordId, dirtyCount, fieldLis
     
     // Popup Container
     const popupContainer = document.createElement('div');
-    popupContainer.className = 'commonPopup';
-    popupContainer.style.border = '3px solid #1a1a1a';
-    popupContainer.style.borderRadius = '12px';
-    popupContainer.style.width = '75%';
-    popupContainer.style.maxHeight = '90vh';
+    popupContainer.className = 'commonPopup modern-popup';
         
     const contentHtml = `
         <div style="background-color: #f9f9f9; padding: 15px 20px; border-radius: 5px; margin-bottom: 15px;">
@@ -197,9 +193,9 @@ function appendDirtyFieldsPopupToBody(entityName, recordId, dirtyCount, fieldLis
     `;
         
     popupContainer.innerHTML = `
-        <div class="commonPopup-header" style="background-color: #2b2b2b; position: relative; cursor: move; border-radius: 9px 9px 0 0; margin: 0; border-bottom: 2px solid #1a1a1a;">
-            <span style="color: white;">Dirty Fields Info</span>
-            <span class="close-button" style="position: absolute; right: 0; top: 0; bottom: 0; width: 45px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 20px; color: white; font-weight: bold; transition: background-color 0.2s ease; border-radius: 0 9px 0 0;">&times;</span>
+        <div class="commonPopup-header modern-header">
+            <span>Dirty Fields Info</span>
+            <span class="close-button modern-close">&times;</span>
         </div>
         <div class="popup-body">
             <div class="commonSection content-section" style="padding: 0; border-right: 0;">
@@ -213,13 +209,6 @@ function appendDirtyFieldsPopupToBody(entityName, recordId, dirtyCount, fieldLis
     const closeButton = popupContainer.querySelector('.close-button');
     closeButton.addEventListener('click', () => {
         popupContainer.remove();
-    });    
-    // Hover effect
-    closeButton.addEventListener('mouseenter', function() {
-        this.style.backgroundColor = '#e81123';
-    });
-    closeButton.addEventListener('mouseleave', function() {
-        this.style.backgroundColor = 'transparent';
     });    
     // Movable Popup
     if (typeof makePopupMovable === 'function') {

@@ -1,7 +1,8 @@
 /* Common Shared Styles */
 
 /* Popup Styles */
-.commonPopup { 
+/* Legacy popup style - only applies to popups without .modern-popup class */
+.commonPopup:not(.modern-popup) { 
     background-color: #f9f9f9; 
     border: 3px solid #102e55; 
     border-radius: 20px; 
@@ -16,7 +17,19 @@
     transform: translate(-50%, -50%); 
 }
 
-.commonPopup-header { 
+/* Base styles that apply to ALL popups (both legacy and modern) */
+.commonPopup {
+    font-family: Arial, sans-serif;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    overflow: hidden;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+}
+
+/* Legacy header style - kept for backward compatibility with older tools */
+.commonPopup-header:not(.modern-header) { 
     background-color: #102e55; 
     color: white; 
     padding: 10px; 
@@ -126,6 +139,7 @@
     max-height: 90vh;
     border: 3px solid #1a1a1a;
     border-radius: 12px;
+    background-color: #f9f9f9;
 }
 
 /* Modern Header - Standardized Dark Style */
@@ -137,8 +151,6 @@
     margin: 0;
     border-bottom: 2px solid #1a1a1a;
     padding: 10px;
-    height: 50px;
-    box-sizing: border-box;
 }
 
 .commonPopup-header.modern-header > span {
