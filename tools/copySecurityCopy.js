@@ -23,7 +23,7 @@ function copySecurityCopy() {
 		
 		newContainer.innerHTML =  `
 		  <div class="commonPopup-header" style="background-color: #2b2b2b; position: relative; cursor: move; border-radius: 9px 9px 0 0; margin: 0; border-bottom: 2px solid #1a1a1a;">
-		    <span style="color: white; font-size: 18px; font-weight: 600;">Copy Security from User to User</span>
+		    <span style="color: white;">Copy User Security</span>
 		    <span class="close-button" style="position: absolute; right: 0; top: 0; bottom: 0; width: 45px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 20px; color: white; font-weight: bold; transition: background-color 0.2s ease; border-radius: 0 9px 0 0;">&times;</span>
 		  </div>
 		  <div class="popup-body" style="padding: 0; overflow: hidden;">
@@ -253,7 +253,7 @@ function copySecurityCopy() {
 						<line x1="12" y1="16" x2="12" y2="12"/>
 						<line x1="12" y1="8" x2="12.01" y2="8"/>
 					</svg>
-					<span>Only 'Owner' or 'Access' type teams will be copied. TO user's existing security will be replaced.</span>
+					<span><strong>Action:</strong> This will replace the TO user's Business Unit, Teams (Owner/Access only), and Security Roles with those from the FROM user.</span>
 				</div>
 				<button id="submitButton" class="btn-primary" style="display: none;">
 					<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
