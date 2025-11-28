@@ -1392,6 +1392,8 @@
     overflow-y: auto;
     margin-top: 12px;
     padding: 4px;
+    column-count: 2;
+    column-gap: 12px;
 }
 
 .selectable-item {
@@ -1406,6 +1408,8 @@
     cursor: pointer;
     transition: all 0.2s;
     min-width: 0;
+    break-inside: avoid;
+    page-break-inside: avoid;
 }
 
 .selectable-item:hover {
