@@ -36,9 +36,6 @@ function copySecurityCopy() {
 		          <h3 style="margin: 0; color: #2b2b2b; font-size: 14px; font-weight: 600; white-space: nowrap;">FROM User</h3>
 		          <input type="text" id="searchInput1" placeholder="🔍 Search..." style="flex: 1; padding: 8px 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 13px; box-sizing: border-box;">
 		        </div>
-		        <div style="margin-bottom: 8px;">
-		          <span id="fromStatus" style="font-size: 12px; color: #999; font-style: italic;">No user selected</span>
-		        </div>
 		        <div class="user-list-container" style="flex: 1; max-height: 220px; min-height: 220px; overflow-y: auto; border: 1px solid #ddd; border-radius: 6px; background: white;">
 		          <div id="userList1"></div>
 		        </div>
@@ -52,9 +49,6 @@ function copySecurityCopy() {
 		        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 10px;">
 		          <h3 style="margin: 0; color: #2b2b2b; font-size: 14px; font-weight: 600; white-space: nowrap;">TO User</h3>
 		          <input type="text" id="searchInput2" placeholder="🔍 Search..." style="flex: 1; padding: 8px 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 13px; box-sizing: border-box;">
-		        </div>
-		        <div style="margin-bottom: 8px;">
-		          <span id="toStatus" style="font-size: 12px; color: #999; font-style: italic;">No user selected</span>
 		        </div>
 		        <div class="user-list-container" style="flex: 1; max-height: 220px; min-height: 220px; overflow-y: auto; border: 1px solid #ddd; border-radius: 6px; background: white;">
 		          <div id="userList2"></div>
@@ -70,34 +64,36 @@ function copySecurityCopy() {
 		      <h3 style="margin: 0 0 15px 0; color: #2b2b2b; font-size: 16px; font-weight: 600;">Security Details</h3>
 		    </div>
 		    
-		    <!-- Business Unit Row -->
+		    <!-- FROM: Business Unit & Teams Side by Side -->
 		    <div class="securityPopup-row" style="gap: 20px; margin-bottom: 15px;">
-		      <div class="details-section-row" id="section3" style="flex: 1; border: 1px solid #e0e0e0; border-radius: 8px; padding: 15px; background: white;">
-		        <h4 style="margin: 0 0 12px 0; color: #555; font-size: 14px; font-weight: 600; border-bottom: 2px solid #f0f0f0; padding-bottom: 8px;">FROM - Business Unit</h4>
-		        <div class="roles-and-teams-list-row" style="max-height: 100px; overflow-y: auto;">
-		          <ul style="margin: 0; padding-left: 20px; font-size: 13px; color: #333;"></ul>
+		      <div style="flex: 1; display: flex; gap: 15px;">
+		        <div class="details-section-row" id="section3" style="flex: 1; border: 1px solid #e0e0e0; border-radius: 8px; padding: 15px; background: white;">
+		          <h4 style="margin: 0 0 12px 0; color: #555; font-size: 14px; font-weight: 600; border-bottom: 2px solid #f0f0f0; padding-bottom: 8px;">FROM - Business Unit</h4>
+		          <div class="roles-and-teams-list-row" style="max-height: 100px; overflow-y: auto;">
+		            <ul style="margin: 0; padding-left: 20px; font-size: 13px; color: #333;"></ul>
+		          </div>
+		        </div>
+		        <div class="details-section-row" id="section7" style="flex: 1; border: 1px solid #e0e0e0; border-radius: 8px; padding: 15px; background: white;">
+		          <h4 style="margin: 0 0 12px 0; color: #555; font-size: 14px; font-weight: 600; border-bottom: 2px solid #f0f0f0; padding-bottom: 8px;">FROM - Teams</h4>
+		          <div class="roles-and-teams-list-row" style="max-height: 100px; overflow-y: auto;">
+		            <ul style="margin: 0; padding-left: 20px; font-size: 13px; color: #333;"></ul>
+		          </div>
 		        </div>
 		      </div>
-		      <div class="details-section-row" id="section5" style="flex: 1; border: 1px solid #e0e0e0; border-radius: 8px; padding: 15px; background: white;">
-		        <h4 style="margin: 0 0 12px 0; color: #555; font-size: 14px; font-weight: 600; border-bottom: 2px solid #f0f0f0; padding-bottom: 8px;">TO - Business Unit</h4>
-		        <div class="roles-and-teams-list-row" style="max-height: 100px; overflow-y: auto;">
-		          <ul style="margin: 0; padding-left: 20px; font-size: 13px; color: #333;"></ul>
+		      
+		      <!-- TO: Business Unit & Teams Side by Side -->
+		      <div style="flex: 1; display: flex; gap: 15px;">
+		        <div class="details-section-row" id="section5" style="flex: 1; border: 1px solid #e0e0e0; border-radius: 8px; padding: 15px; background: white;">
+		          <h4 style="margin: 0 0 12px 0; color: #555; font-size: 14px; font-weight: 600; border-bottom: 2px solid #f0f0f0; padding-bottom: 8px;">TO - Business Unit</h4>
+		          <div class="roles-and-teams-list-row" style="max-height: 100px; overflow-y: auto;">
+		            <ul style="margin: 0; padding-left: 20px; font-size: 13px; color: #333;"></ul>
+		          </div>
 		        </div>
-		      </div>
-		    </div>
-		    
-		    <!-- Teams Row -->
-		    <div class="securityPopup-row" style="gap: 20px; margin-bottom: 15px;">
-		      <div class="details-section-row" id="section7" style="flex: 1; border: 1px solid #e0e0e0; border-radius: 8px; padding: 15px; background: white;">
-		        <h4 style="margin: 0 0 12px 0; color: #555; font-size: 14px; font-weight: 600; border-bottom: 2px solid #f0f0f0; padding-bottom: 8px;">FROM - Teams</h4>
-		        <div class="roles-and-teams-list-row" style="max-height: 150px; overflow-y: auto;">
-		          <ul style="margin: 0; padding-left: 20px; font-size: 13px; color: #333;"></ul>
-		        </div>
-		      </div>
-		      <div class="details-section-row" id="section8" style="flex: 1; border: 1px solid #e0e0e0; border-radius: 8px; padding: 15px; background: white;">
-		        <h4 style="margin: 0 0 12px 0; color: #555; font-size: 14px; font-weight: 600; border-bottom: 2px solid #f0f0f0; padding-bottom: 8px;">TO - Teams</h4>
-		        <div class="roles-and-teams-list-row" style="max-height: 150px; overflow-y: auto;">
-		          <ul style="margin: 0; padding-left: 20px; font-size: 13px; color: #333;"></ul>
+		        <div class="details-section-row" id="section8" style="flex: 1; border: 1px solid #e0e0e0; border-radius: 8px; padding: 15px; background: white;">
+		          <h4 style="margin: 0 0 12px 0; color: #555; font-size: 14px; font-weight: 600; border-bottom: 2px solid #f0f0f0; padding-bottom: 8px;">TO - Teams</h4>
+		          <div class="roles-and-teams-list-row" style="max-height: 100px; overflow-y: auto;">
+		            <ul style="margin: 0; padding-left: 20px; font-size: 13px; color: #333;"></ul>
+		          </div>
 		        </div>
 		      </div>
 		    </div>
@@ -184,29 +180,11 @@ function copySecurityCopy() {
 
 	function updateSubmitButtonVisibility() {
 		const submitButton = document.getElementById("submitButton");
-		const fromStatus = document.getElementById("fromStatus");
-		const toStatus = document.getElementById("toStatus");
 		
 		if (selectedUserId && selectedUserId2) {
 			submitButton.style.display = 'block';
-			if (fromStatus) fromStatus.textContent = `✓ ${selectedUserName}`;
-			if (fromStatus) fromStatus.style.color = '#10b981';
-			if (fromStatus) fromStatus.style.fontWeight = '600';
-			if (toStatus) toStatus.textContent = `✓ ${selectedUserName2}`;
-			if (toStatus) toStatus.style.color = '#10b981';
-			if (toStatus) toStatus.style.fontWeight = '600';
 		} else {
 			submitButton.style.display = 'none';
-			if (!selectedUserId && fromStatus) {
-				fromStatus.textContent = 'No user selected';
-				fromStatus.style.color = '#999';
-				fromStatus.style.fontWeight = 'normal';
-			}
-			if (!selectedUserId2 && toStatus) {
-				toStatus.textContent = 'No user selected';
-				toStatus.style.color = '#999';
-				toStatus.style.fontWeight = 'normal';
-			}
 		}
 	}
 
