@@ -15,18 +15,14 @@ function copySecurityCopy() {
 	
 	function createAppendSecurityPopup() {		
 		var newContainer = document.createElement('div');		
-		newContainer.className = 'commonPopup copySecurity-redesign';
-		newContainer.style.border = '3px solid #1a1a1a';
-		newContainer.style.borderRadius = '12px';
-		newContainer.style.width = '75%';
-		newContainer.style.maxHeight = '90vh';
+		newContainer.className = 'commonPopup modern-popup copySecurity-redesign';
 		
 		newContainer.innerHTML =  `
-		  <div class="commonPopup-header" style="background-color: #2b2b2b; position: relative; cursor: move; border-radius: 9px 9px 0 0; margin: 0; border-bottom: 2px solid #1a1a1a;">
-		    <span style="color: white;">Copy User Security</span>
-		    <span class="close-button" style="position: absolute; right: 0; top: 0; bottom: 0; width: 45px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 20px; color: white; font-weight: bold; transition: background-color 0.2s ease; border-radius: 0 9px 0 0;">&times;</span>
+		  <div class="commonPopup-header modern-header">
+		    <span>Copy User Security</span>
+		    <span class="close-button modern-close">&times;</span>
 		  </div>
-		  <div class="popup-body" style="padding: 0; overflow: hidden;">
+		  <div class="popup-body modern-body">
 		    <div class="copySecurity-layout">
 		      <!-- FROM User Panel -->
 		      <div class="user-selection-panel from-panel">
@@ -81,14 +77,6 @@ function copySecurityCopy() {
 		const closeButton = newContainer.querySelector('.close-button');
 		closeButton.addEventListener('click', () => {
 		  newContainer.remove();
-		});
-		
-		// Hover effect for Close Btn
-		closeButton.addEventListener('mouseenter', function() {
-		  this.style.backgroundColor = '#e81123';
-		});
-		closeButton.addEventListener('mouseleave', function() {
-		  this.style.backgroundColor = 'transparent';
 		});		
 		makePopupMovable(newContainer);	
 }
