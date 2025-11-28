@@ -649,17 +649,19 @@
 
 .copySecurity-layout {
     display: flex;
-    height: 100%;
+    height: calc(90vh - 50px);
+    max-height: calc(90vh - 50px);
     background-color: #f8f9fa;
 }
 
 .copySecurity-redesign .user-selection-panel {
-    width: 240px;
-    min-width: 240px;
+    width: 220px;
+    min-width: 220px;
     background: white;
     display: flex;
     flex-direction: column;
     overflow: hidden;
+    max-height: calc(90vh - 50px);
 }
 
 .copySecurity-redesign .from-panel {
@@ -690,40 +692,45 @@
 
 /* Comparison Styles */
 .comparison-header {
-    padding: 24px 32px;
+    padding: 16px 24px;
     background: white;
     border-bottom: 2px solid #e0e0e0;
 }
 
 .comparison-title h2 {
-    margin: 0 0 8px 0;
-    font-size: 22px;
+    margin: 0 0 6px 0;
+    font-size: 18px;
     color: #2b2b2b;
     font-weight: 600;
 }
 
 .comparison-title p {
     margin: 0;
-    font-size: 14px;
+    font-size: 13px;
     color: #666;
 }
 
 .comparison-content {
     flex: 1;
     overflow-y: auto;
-    padding: 24px 32px;
+    padding: 16px 24px;
+    max-height: calc(90vh - 200px);
 }
 
 .comparison-section {
-    margin-bottom: 32px;
+    margin-bottom: 20px;
+}
+
+.comparison-section:last-child {
+    margin-bottom: 0;
 }
 
 .comparison-section h3 {
     display: flex;
     align-items: center;
-    gap: 10px;
-    margin: 0 0 16px 0;
-    font-size: 16px;
+    gap: 8px;
+    margin: 0 0 12px 0;
+    font-size: 13px;
     font-weight: 600;
     color: #2b2b2b;
     text-transform: uppercase;
@@ -742,7 +749,7 @@
     border: 2px solid #e0e0e0;
     border-radius: 8px;
     overflow: hidden;
-    min-height: 100px;
+    min-height: 60px;
 }
 
 .comparison-card.from-card {
@@ -754,8 +761,8 @@
 }
 
 .card-header {
-    padding: 10px 16px;
-    font-size: 12px;
+    padding: 8px 12px;
+    font-size: 11px;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.5px;
@@ -775,13 +782,22 @@
 }
 
 .card-content {
-    padding: 16px;
+    padding: 12px;
     background: white;
 }
 
+.card-content.compact {
+    padding: 10px 12px;
+}
+
 .card-content.scrollable {
-    max-height: 250px;
+    max-height: 150px;
     overflow-y: auto;
+}
+
+.card-content.columns {
+    column-count: 2;
+    column-gap: 12px;
 }
 
 .arrow-divider {
@@ -796,14 +812,16 @@
 .value-item {
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 10px 12px;
+    gap: 6px;
+    padding: 8px 10px;
     background: #f8f9fa;
-    border-radius: 6px;
-    margin-bottom: 8px;
-    font-size: 13px;
+    border-radius: 5px;
+    margin-bottom: 6px;
+    font-size: 12px;
     color: #2b2b2b;
-    line-height: 1.4;
+    line-height: 1.3;
+    break-inside: avoid;
+    page-break-inside: avoid;
 }
 
 .value-item.disabled {
@@ -812,33 +830,36 @@
 
 .value-item small {
     color: #666;
-    font-size: 11px;
+    font-size: 10px;
     margin-left: auto;
+    white-space: nowrap;
 }
 
 .loading-spinner {
-    padding: 20px;
+    padding: 15px;
     text-align: center;
     color: #999;
     font-style: italic;
+    font-size: 12px;
 }
 
 .empty-message {
-    padding: 20px;
+    padding: 15px;
     text-align: center;
     color: #999;
     font-style: italic;
+    font-size: 12px;
 }
 
 .action-note {
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding: 14px 18px;
+    gap: 8px;
+    padding: 10px 14px;
     background: #fef3c7;
     border: 2px solid #f59e0b;
-    border-radius: 8px;
-    font-size: 13px;
+    border-radius: 6px;
+    font-size: 12px;
     color: #92400e;
     flex: 1;
 }
