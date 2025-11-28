@@ -15,115 +15,59 @@ function copySecurityCopy() {
 	
 	function createAppendSecurityPopup() {		
 		var newContainer = document.createElement('div');		
-		newContainer.className = 'commonPopup';
+		newContainer.className = 'commonPopup copySecurity-redesign';
 		newContainer.style.border = '3px solid #1a1a1a';
 		newContainer.style.borderRadius = '12px';
-		newContainer.style.width = '85%';
-		newContainer.style.maxWidth = '1400px';
-		newContainer.style.maxHeight = '92vh';
+		newContainer.style.width = '90%';
+		newContainer.style.maxWidth = '1600px';
+		newContainer.style.height = '90vh';
 		
 		newContainer.innerHTML =  `
 		  <div class="commonPopup-header" style="background-color: #2b2b2b; position: relative; cursor: move; border-radius: 9px 9px 0 0; margin: 0; border-bottom: 2px solid #1a1a1a;">
 		    <span style="color: white; font-size: 18px; font-weight: 600;">Copy Security from User to User</span>
 		    <span class="close-button" style="position: absolute; right: 0; top: 0; bottom: 0; width: 45px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 20px; color: white; font-weight: bold; transition: background-color 0.2s ease; border-radius: 0 9px 0 0;">&times;</span>
 		  </div>
-		  <div class="popup-body" style="padding: 20px; overflow-y: auto; max-height: calc(92vh - 80px);">
-		    
-		    <!-- User Selection Row -->
-		    <div class="securityPopup-row" style="gap: 20px; margin-bottom: 20px;">
-		      <div class="user-section" id="section1" style="flex: 1; border: 2px solid #ddd; border-radius: 8px; padding: 15px; background: #fafafa; display: flex; flex-direction: column;">
-		        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 10px;">
-		          <h3 style="margin: 0; color: #2b2b2b; font-size: 14px; font-weight: 600; white-space: nowrap;">FROM User</h3>
-		          <input type="text" id="searchInput1" placeholder="🔍 Search..." style="flex: 1; padding: 8px 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 13px; box-sizing: border-box;">
+		  <div class="popup-body" style="padding: 0; overflow: hidden; height: calc(100% - 50px);">
+		    <div class="copySecurity-layout">
+		      <!-- FROM User Panel -->
+		      <div class="user-selection-panel from-panel">
+		        <div class="panel-header from-header">
+		          <h3>FROM User</h3>
+		          <input type="text" id="searchInput1" placeholder="🔍 Search users..." class="search-input">
 		        </div>
-		        <div class="user-list-container" style="flex: 1; max-height: 220px; min-height: 220px; overflow-y: auto; border: 1px solid #ddd; border-radius: 6px; background: white;">
-		          <div id="userList1"></div>
-		        </div>
-		      </div>
-		      
-		      <div style="display: flex; align-items: center; justify-content: center; padding: 20px 10px;">
-		        <div style="font-size: 32px; color: #666;">→</div>
-		      </div>
-		      
-		      <div class="user-section" id="section2" style="flex: 1; border: 2px solid #ddd; border-radius: 8px; padding: 15px; background: #fafafa; display: flex; flex-direction: column;">
-		        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 10px;">
-		          <h3 style="margin: 0; color: #2b2b2b; font-size: 14px; font-weight: 600; white-space: nowrap;">TO User</h3>
-		          <input type="text" id="searchInput2" placeholder="🔍 Search..." style="flex: 1; padding: 8px 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 13px; box-sizing: border-box;">
-		        </div>
-		        <div class="user-list-container" style="flex: 1; max-height: 220px; min-height: 220px; overflow-y: auto; border: 1px solid #ddd; border-radius: 6px; background: white;">
-		          <div id="userList2"></div>
-		        </div>
-		      </div>
-		    </div>
-		    
-		    <!-- Divider -->
-		    <div style="border-top: 2px solid #ddd; margin: 20px 0;"></div>
-		    
-		    <!-- Security Details Section -->
-		    <div style="margin-bottom: 15px;">
-		      <h3 style="margin: 0 0 15px 0; color: #2b2b2b; font-size: 16px; font-weight: 600;">Security Details</h3>
-		    </div>
-		    
-		    <!-- FROM: Business Unit & Teams Side by Side -->
-		    <div class="securityPopup-row" style="gap: 20px; margin-bottom: 15px;">
-		      <div style="flex: 1; display: flex; gap: 15px;">
-		        <div class="details-section-row" id="section3" style="flex: 1; border: 1px solid #e0e0e0; border-radius: 8px; padding: 15px; background: white;">
-		          <h4 style="margin: 0 0 12px 0; color: #555; font-size: 14px; font-weight: 600; border-bottom: 2px solid #f0f0f0; padding-bottom: 8px;">FROM - Business Unit</h4>
-		          <div class="roles-and-teams-list-row" style="max-height: 100px; overflow-y: auto;">
-		            <ul style="margin: 0; padding-left: 20px; font-size: 13px; color: #333;"></ul>
-		          </div>
-		        </div>
-		        <div class="details-section-row" id="section7" style="flex: 1; border: 1px solid #e0e0e0; border-radius: 8px; padding: 15px; background: white;">
-		          <h4 style="margin: 0 0 12px 0; color: #555; font-size: 14px; font-weight: 600; border-bottom: 2px solid #f0f0f0; padding-bottom: 8px;">FROM - Teams</h4>
-		          <div class="roles-and-teams-list-row" style="max-height: 100px; overflow-y: auto;">
-		            <ul style="margin: 0; padding-left: 20px; font-size: 13px; color: #333;"></ul>
-		          </div>
+		        <div class="user-list-scroll" id="userList1"></div>
+		        <div class="selected-user-info" id="fromUserInfo" style="display: none;">
+		          <div class="info-label">Selected:</div>
+		          <div class="info-value" id="fromUserName"></div>
 		        </div>
 		      </div>
 		      
-		      <!-- TO: Business Unit & Teams Side by Side -->
-		      <div style="flex: 1; display: flex; gap: 15px;">
-		        <div class="details-section-row" id="section5" style="flex: 1; border: 1px solid #e0e0e0; border-radius: 8px; padding: 15px; background: white;">
-		          <h4 style="margin: 0 0 12px 0; color: #555; font-size: 14px; font-weight: 600; border-bottom: 2px solid #f0f0f0; padding-bottom: 8px;">TO - Business Unit</h4>
-		          <div class="roles-and-teams-list-row" style="max-height: 100px; overflow-y: auto;">
-		            <ul style="margin: 0; padding-left: 20px; font-size: 13px; color: #333;"></ul>
+		      <!-- Security Details Panel -->
+		      <div class="security-details-panel">
+		        <div id="securityContent" class="security-empty-state">
+		          <div class="empty-state-icon">
+		            <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="#ccc" stroke-width="1.5">
+		              <path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z"/>
+		              <path d="M8 11V7a4 4 0 118 0v4"/>
+		            </svg>
 		          </div>
-		        </div>
-		        <div class="details-section-row" id="section8" style="flex: 1; border: 1px solid #e0e0e0; border-radius: 8px; padding: 15px; background: white;">
-		          <h4 style="margin: 0 0 12px 0; color: #555; font-size: 14px; font-weight: 600; border-bottom: 2px solid #f0f0f0; padding-bottom: 8px;">TO - Teams</h4>
-		          <div class="roles-and-teams-list-row" style="max-height: 100px; overflow-y: auto;">
-		            <ul style="margin: 0; padding-left: 20px; font-size: 13px; color: #333;"></ul>
-		          </div>
+		          <h3>Select Both Users to Compare Security</h3>
+		          <p>Choose a FROM user and a TO user to view and copy security settings</p>
 		        </div>
 		      </div>
-		    </div>
-		    
-		    <!-- Security Roles Row -->
-		    <div class="securityPopup-row" style="gap: 20px; margin-bottom: 20px;">
-		      <div class="details-section-row" id="section4" style="flex: 1; border: 1px solid #e0e0e0; border-radius: 8px; padding: 15px; background: white;">
-		        <h4 style="margin: 0 0 12px 0; color: #555; font-size: 14px; font-weight: 600; border-bottom: 2px solid #f0f0f0; padding-bottom: 8px;">FROM - Security Roles</h4>
-		        <div class="roles-and-teams-list-row" style="max-height: 180px; overflow-y: auto;">
-		          <ul style="margin: 0; padding-left: 20px; font-size: 13px; color: #333; column-count: 2; column-gap: 20px;"></ul>
+		      
+		      <!-- TO User Panel -->
+		      <div class="user-selection-panel to-panel">
+		        <div class="panel-header to-header">
+		          <h3>TO User</h3>
+		          <input type="text" id="searchInput2" placeholder="🔍 Search users..." class="search-input">
+		        </div>
+		        <div class="user-list-scroll" id="userList2"></div>
+		        <div class="selected-user-info" id="toUserInfo" style="display: none;">
+		          <div class="info-label">Selected:</div>
+		          <div class="info-value" id="toUserName"></div>
 		        </div>
 		      </div>
-		      <div class="details-section-row" id="section6" style="flex: 1; border: 1px solid #e0e0e0; border-radius: 8px; padding: 15px; background: white;">
-		        <h4 style="margin: 0 0 12px 0; color: #555; font-size: 14px; font-weight: 600; border-bottom: 2px solid #f0f0f0; padding-bottom: 8px;">TO - Security Roles</h4>
-		        <div class="roles-and-teams-list-row" style="max-height: 180px; overflow-y: auto;">
-		          <ul style="margin: 0; padding-left: 20px; font-size: 13px; color: #333; column-count: 2; column-gap: 20px;"></ul>
-		        </div>
-		      </div>
-		    </div>
-		    
-		    <!-- Action Section -->
-		    <div style="display: flex; align-items: center; justify-content: center; gap: 15px; padding: 15px; background: #f5f5f5; border-radius: 8px; border: 1px solid #ddd;">
-		      <div style="flex: 1; text-align: center;">
-		        <p style="margin: 0; font-size: 13px; color: #666;">
-		          <strong>Note:</strong> Only 'Owner' or 'Access' type teams will be copied. The TO user's existing security will be replaced.
-		        </p>
-		      </div>
-		      <button id="submitButton" style="display: none; padding: 12px 40px; font-size: 15px; font-weight: 600; background-color: #2b2b2b; color: white; border: none; cursor: pointer; border-radius: 8px; transition: all 0.2s ease; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2); white-space: nowrap;">
-		        Copy Security
-		      </button>
 		    </div>
 		  </div>
 		`;
@@ -154,26 +98,11 @@ function copySecurityCopy() {
 		const userListDiv = document.getElementById(sectionId);
 		users.forEach(user => {
 			const userDiv = document.createElement('div');
-			userDiv.className = `user${sectionId.charAt(sectionId.length - 1)}`;
+			userDiv.className = 'user-item';
+			userDiv.dataset.searchText = user.fullname.toLowerCase();
 			userDiv.textContent = user.fullname;
 			userDiv.dataset.id = user.systemuserid;
 			userDiv.onclick = () => selectUserCallback(user);
-			// Add styling
-			userDiv.style.padding = '8px 12px';
-			userDiv.style.cursor = 'pointer';
-			userDiv.style.fontSize = '13px';
-			userDiv.style.transition = 'all 0.2s ease';
-			userDiv.style.borderBottom = '1px solid #f0f0f0';
-			userDiv.addEventListener('mouseenter', function() {
-				if (!this.classList.contains('selected')) {
-					this.style.backgroundColor = '#f8f8f8';
-				}
-			});
-			userDiv.addEventListener('mouseleave', function() {
-				if (!this.classList.contains('selected')) {
-					this.style.backgroundColor = 'white';
-				}
-			});
 			userListDiv.appendChild(userDiv);
 		});
 	}
@@ -182,149 +111,319 @@ function copySecurityCopy() {
 		const submitButton = document.getElementById("submitButton");
 		
 		if (selectedUserId && selectedUserId2) {
-			submitButton.style.display = 'block';
+			if (submitButton) submitButton.style.display = 'flex';
 		} else {
-			submitButton.style.display = 'none';
+			if (submitButton) submitButton.style.display = 'none';
 		}
 	}
 
 	function selectUser(user, sectionPrefix) {		
 		try {	
-			document.querySelectorAll('.user' + sectionPrefix).forEach(el => {
+			// Update selection visual
+			const listId = 'userList' + sectionPrefix;
+			document.querySelectorAll(`#${listId} .user-item`).forEach(el => {
 				el.classList.remove('selected');
-				el.style.backgroundColor = 'white';
-				el.style.fontWeight = 'normal';
 			});
-			const userDiv = document.getElementById('userList' + sectionPrefix).querySelector(`[data-id='${user.systemuserid}']`);
+			const userDiv = document.getElementById(listId).querySelector(`[data-id='${user.systemuserid}']`);
 			userDiv.classList.add('selected');
-			userDiv.style.backgroundColor = '#e3f2fd';
-			userDiv.style.fontWeight = '600';
-			userDiv.style.color = '#1976d2';
 
+			// Update state
 			if (sectionPrefix === '1') {
 				selectedUserId = user.systemuserid;
 				selectedUserName = user.fullname;
-			}
-			if (sectionPrefix === '2') {
+				selectedBusinessUnitId = user._businessunitid_value;
+				document.getElementById('fromUserInfo').style.display = 'block';
+				document.getElementById('fromUserName').textContent = user.fullname;
+			} else {
 				selectedUserId2 = user.systemuserid;
 				selectedUserName2 = user.fullname;
+				document.getElementById('toUserInfo').style.display = 'block';
+				document.getElementById('toUserName').textContent = user.fullname;
 			}
-			updateSubmitButtonVisibility();
 
-			// Business Unit section (section3 for FROM, section5 for TO)
-			const businessUnitSection = sectionPrefix === '1' ? 'section3' : 'section5';
-			const businessUnitList = document.getElementById(businessUnitSection).querySelector('ul');
-			businessUnitList.innerHTML = '<li style="color: #999; font-style: italic;">Loading...</li>';
-			
-			// Teams section (section7 for FROM, section8 for TO)
-			const teamsSection = sectionPrefix === '1' ? 'section7' : 'section8';
-			const teamsList = document.getElementById(teamsSection).querySelector('ul');
-			teamsList.innerHTML = '<li style="color: #999; font-style: italic;">Loading...</li>';
-
-			fetchBusinessUnitName(user.systemuserid, function(response) {
-				if (!response || !response.entities[0] || !response.entities[0].businessunitid || !response.entities[0].businessunitid.name) {
-					console.error('Business unit not found');
-					businessUnitList.innerHTML = '<li style="color: #999; font-style: italic;">Not found</li>';
-					return;
-				}
-
-				const businessUnitName = response.entities[0].businessunitid.name;
-				if (sectionPrefix === '1') {
-					selectedBusinessUnitId = user._businessunitid_value;
-				}
-
-				businessUnitList.innerHTML = '';
-				const businessUnitListItem = document.createElement('li');
-				businessUnitListItem.innerHTML = '<span style="color: #1976d2; font-weight: 600;">' + businessUnitName + '</span>';
-				businessUnitListItem.style.marginBottom = '4px';
-				businessUnitList.appendChild(businessUnitListItem);
-			});
-
-			fetchTeamsForUser(user.systemuserid, function(response) {
-				if (!response || !response.entities || !response.entities[0].teammembership_association) {
-					console.error('Teams not found');
-					teamsList.innerHTML = '<li style="color: #999; font-style: italic;">No teams assigned</li>';
-					return;
-				}
-				if (sectionPrefix === '1') {
-					selectedTeamIds = [];
-				}
-				
-				const teams = response.entities[0].teammembership_association;
-				if (teams.length === 0) {
-					teamsList.innerHTML = '<li style="color: #999; font-style: italic;">No teams assigned</li>';
-					return;
-				}
-				
-				teamsList.innerHTML = '';
-				const teamListItems = teams.map(team => {
-				   if (sectionPrefix === '1') {
-					selectedTeamIds.push(team.teamid);
-				   }
-				   const listItem = document.createElement('li');
-				   const teamTypeText = team['teamtype@OData.Community.Display.V1.FormattedValue']; 
-				   const isAssignable = teamTypeText === 'Owner' || teamTypeText === 'Access';
-				   const iconColor = isAssignable ? '#10b981' : '#999';
-				   const icon = isAssignable ? '✓' : '○';
-				   listItem.innerHTML = '<span style="color: ' + iconColor + '; font-weight: bold; margin-right: 5px;">' + icon + '</span>' + team.name + ' <span style="color: #666; font-size: 11px;">(Type: ' + teamTypeText + ')</span>';
-				   listItem.style.marginBottom = '4px';
-				   listItem.style.breakInside = 'avoid';
-				   return listItem; 
-				});
-				teamListItems.sort((a, b) => {
-				   const nameA = a.innerHTML.replace(/<[^>]*>/g, '');
-				   const nameB = b.innerHTML.replace(/<[^>]*>/g, '');
-				   return nameA.localeCompare(nameB);
-				});
-				teamListItems.forEach(item => teamsList.appendChild(item));
-			});
-
-			const rolesList = document.getElementById('section' + (4 + (sectionPrefix - 1) * 2)).querySelector('ul');
-			rolesList.innerHTML = '<li style="color: #999; font-style: italic;">Loading...</li>';
-			
-			fetchRolesForUser(user.systemuserid, function(roles) {
-				if (!roles || !roles.entities) {
-					console.error('Roles not found');
-					return;
-				}
-				if (sectionPrefix === '1') {
-					selectedRoleIds = [];
-				}
-				rolesList.innerHTML = '';
-
-				const roleDetailsArr = [];
-				const rolePromises = roles.entities.map(role => {
-				  const roleId = role['roleid'];	
-				  if (sectionPrefix === '1') {
-				     selectedRoleIds.push(roleId);
-				  }
-	                          return Xrm.WebApi.retrieveRecord("role", roleId, "?$select=name,roleid").then(function(roleDetail) {
-				     roleDetailsArr.push(roleDetail);
-				  });
-				});
-				Promise.all(rolePromises).then(() => {
-				  roleDetailsArr.sort((a, b) => {
-				     if (a.name < b.name) return -1;
-					if (a.name > b.name) return 1;
-					return 0;
-				      });
-				      if (roleDetailsArr.length === 0) {
-				      	const noRolesItem = document.createElement('li');
-				      	noRolesItem.innerHTML = '<em style="color: #999;">No roles assigned</em>';
-				      	rolesList.appendChild(noRolesItem);
-				      } else {
-					      roleDetailsArr.forEach(roleDetail => {
-							const listItem = document.createElement('li');
-							listItem.innerHTML = '<span style="color: #10b981; font-weight: bold; margin-right: 5px;">✓</span>' + roleDetail.name;
-							listItem.style.marginBottom = '4px';
-							listItem.style.breakInside = 'avoid';
-							rolesList.appendChild(listItem);
-					      });
-					  }
-				});
-			});
+			// Check if both users selected
+			if (selectedUserId && selectedUserId2) {
+				renderSecurityComparison();
+			}
 		} catch (e) {
 			console.error('Error in selectUser function', e);
+		}
+	}
+	
+	async function renderSecurityComparison() {
+		const securityContent = document.getElementById('securityContent');
+		securityContent.className = 'security-content';
+		
+		securityContent.innerHTML = `
+			<div class="comparison-header">
+				<div class="comparison-title">
+					<h2>Security Comparison</h2>
+					<p>Review the security settings that will be copied from <strong>${selectedUserName}</strong> to <strong>${selectedUserName2}</strong></p>
+				</div>
+			</div>
+			
+			<div class="comparison-content">
+				<div class="comparison-section">
+					<h3>
+						<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+							<path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+						</svg>
+						Business Unit
+					</h3>
+					<div class="comparison-grid">
+						<div class="comparison-card from-card">
+							<div class="card-header">FROM</div>
+							<div class="card-content" id="fromBusinessUnit">
+								<div class="loading-spinner">Loading...</div>
+							</div>
+						</div>
+						<div class="arrow-divider">→</div>
+						<div class="comparison-card to-card">
+							<div class="card-header">TO</div>
+							<div class="card-content" id="toBusinessUnit">
+								<div class="loading-spinner">Loading...</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				
+				<div class="comparison-section">
+					<h3>
+						<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+							<path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+							<circle cx="9" cy="7" r="4"/>
+							<path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/>
+						</svg>
+						Teams
+					</h3>
+					<div class="comparison-grid">
+						<div class="comparison-card from-card">
+							<div class="card-header">FROM</div>
+							<div class="card-content scrollable" id="fromTeams">
+								<div class="loading-spinner">Loading...</div>
+							</div>
+						</div>
+						<div class="arrow-divider">→</div>
+						<div class="comparison-card to-card">
+							<div class="card-header">TO</div>
+							<div class="card-content scrollable" id="toTeams">
+								<div class="loading-spinner">Loading...</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				
+				<div class="comparison-section">
+					<h3>
+						<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+							<path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z"/>
+							<path d="M8 11V7a4 4 0 118 0v4"/>
+						</svg>
+						Security Roles
+					</h3>
+					<div class="comparison-grid">
+						<div class="comparison-card from-card">
+							<div class="card-header">FROM</div>
+							<div class="card-content scrollable" id="fromRoles">
+								<div class="loading-spinner">Loading...</div>
+							</div>
+						</div>
+						<div class="arrow-divider">→</div>
+						<div class="comparison-card to-card">
+							<div class="card-header">TO</div>
+							<div class="card-content scrollable" id="toRoles">
+								<div class="loading-spinner">Loading...</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			
+			<div class="action-buttons">
+				<div class="action-note">
+					<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2">
+						<circle cx="12" cy="12" r="10"/>
+						<line x1="12" y1="16" x2="12" y2="12"/>
+						<line x1="12" y1="8" x2="12.01" y2="8"/>
+					</svg>
+					<span>Only 'Owner' or 'Access' type teams will be copied. The TO user's existing security will be replaced.</span>
+				</div>
+				<button id="submitButton" class="btn-primary" style="display: none;">
+					<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+						<path d="M5 12h14M12 5l7 7-7 7"/>
+					</svg>
+					Copy Security
+				</button>
+			</div>
+		`;
+		
+		// Load data for both users
+		try {
+			await Promise.all([
+				loadUserData(selectedUserId, 'from'),
+				loadUserData(selectedUserId2, 'to')
+			]);
+			updateSubmitButtonVisibility();
+		} catch (error) {
+			console.error('Error loading user data:', error);
+			showToast('Error loading user security data', 'error', 3000);
+		}
+		
+		// Attach submit button handler
+		const submitButton = document.getElementById('submitButton');
+		if (submitButton) {
+			submitButton.addEventListener('click', handleSubmit);
+		}
+	}
+	
+	async function loadUserData(userId, prefix) {
+		// Load Business Unit
+		fetchBusinessUnitName(userId, function(response) {
+			const buDiv = document.getElementById(prefix + 'BusinessUnit');
+			if (!response || !response.entities[0] || !response.entities[0].businessunitid) {
+				buDiv.innerHTML = '<div class="empty-message">Not found</div>';
+				return;
+			}
+			const businessUnitName = response.entities[0].businessunitid.name;
+			buDiv.innerHTML = `<div class="value-item">${businessUnitName}</div>`;
+		});
+		
+		// Load Teams
+		fetchTeamsForUser(userId, function(response) {
+			const teamsDiv = document.getElementById(prefix + 'Teams');
+			if (!response || !response.entities || !response.entities[0]?.teammembership_association) {
+				teamsDiv.innerHTML = '<div class="empty-message">No teams assigned</div>';
+				return;
+			}
+			
+			const teams = response.entities[0].teammembership_association;
+			if (teams.length === 0) {
+				teamsDiv.innerHTML = '<div class="empty-message">No teams assigned</div>';
+				return;
+			}
+			
+			// Store team IDs if FROM user
+			if (prefix === 'from') {
+				selectedTeamIds = teams.map(t => t.teamid);
+			}
+			
+			teams.sort((a, b) => a.name.localeCompare(b.name));
+			
+			teamsDiv.innerHTML = teams.map(team => {
+				const teamType = team['teamtype@OData.Community.Display.V1.FormattedValue'];
+				const isAssignable = teamType === 'Owner' || teamType === 'Access';
+				const icon = isAssignable ? '✓' : '○';
+				const iconColor = isAssignable ? '#10b981' : '#999';
+				return `
+					<div class="value-item ${!isAssignable ? 'disabled' : ''}">
+						<span style="color: ${iconColor}; font-weight: bold; margin-right: 6px;">${icon}</span>
+						<span>${team.name}</span>
+						<small>(${teamType})</small>
+					</div>
+				`;
+			}).join('');
+		});
+		
+		// Load Roles
+		fetchRolesForUser(userId, function(roles) {
+			const rolesDiv = document.getElementById(prefix + 'Roles');
+			if (!roles || !roles.entities || roles.entities.length === 0) {
+				rolesDiv.innerHTML = '<div class="empty-message">No roles assigned</div>';
+				return;
+			}
+			
+			// Store role IDs if FROM user
+			if (prefix === 'from') {
+				selectedRoleIds = [];
+			}
+			
+			const rolePromises = roles.entities.map(role => {
+				const roleId = role['roleid'];
+				if (prefix === 'from') {
+					selectedRoleIds.push(roleId);
+				}
+				return Xrm.WebApi.retrieveRecord("role", roleId, "?$select=name,roleid");
+			});
+			
+			Promise.all(rolePromises).then(roleDetails => {
+				roleDetails.sort((a, b) => a.name.localeCompare(b.name));
+				rolesDiv.innerHTML = roleDetails.map(role => `
+					<div class="value-item">
+						<span style="color: #10b981; font-weight: bold; margin-right: 6px;">✓</span>
+						<span>${role.name}</span>
+					</div>
+				`).join('');
+			});
+		});
+	}
+	
+	async function handleSubmit() {
+		var userId = Xrm.Utility.getGlobalContext().userSettings.userId;
+		userId = userId.replace(/[{}]/g, "");
+
+		if (selectedUserId2.toLowerCase() === userId.toLowerCase()) {
+			showCustomAlert("You are not allowed to change your own security settings.");
+			return;
+		}
+
+		// Disable button during processing
+		const submitButton = document.getElementById("submitButton");
+		submitButton.disabled = true;
+		submitButton.style.opacity = '0.6';
+		submitButton.style.cursor = 'not-allowed';
+		submitButton.innerHTML = `
+			<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="animation: spin 1s linear infinite;">
+				<path d="M21 12a9 9 0 11-6.219-8.56"/>
+			</svg>
+			Processing...
+		`;
+
+		showLoadingDialog("Copying security settings, please wait...");
+		const actionType = "Change BUTR"; // BUTR = Business Unit, Teams, Roles
+		let updateWasSuccessful = true;
+
+		if (typeof updateUserDetails === "function") {
+			try {
+				await updateUserDetails(selectedUserId2, selectedBusinessUnitId, selectedTeamIds, selectedRoleIds, actionType);
+			} catch (error) {
+				console.error("An error occurred during the update process:", error);
+				showCustomAlert(`An error occurred: ${error.message}`);
+				updateWasSuccessful = false;
+			} finally {
+				closeLoadingDialog();
+				// Re-enable button
+				submitButton.disabled = false;
+				submitButton.style.opacity = '1';
+				submitButton.style.cursor = 'pointer';
+				submitButton.innerHTML = `
+					<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+						<path d="M5 12h14M12 5l7 7-7 7"/>
+					</svg>
+					Copy Security
+				`;
+			}
+
+			if (updateWasSuccessful) {
+				showCustomAlert(`Security successfully copied to ${selectedUserName2}!`);
+
+				// Refresh the TO user's data to show updated security
+				setTimeout(() => {
+					loadUserData(selectedUserId2, 'to');
+				}, 1000);
+			}
+		} else {
+			updateWasSuccessful = false;
+			closeLoadingDialog();
+			submitButton.disabled = false;
+			submitButton.style.opacity = '1';
+			submitButton.style.cursor = 'pointer';
+			submitButton.innerHTML = `
+				<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+					<path d="M5 12h14M12 5l7 7-7 7"/>
+				</svg>
+				Copy Security
+			`;
+			showCustomAlert("Failed to update security settings. Please check the logs for more details.");
 		}
 	}
 
@@ -333,73 +432,11 @@ function copySecurityCopy() {
 	    const newContainer = createAppendSecurityPopup();
 	    renderUserList(users.entities, user => selectUser(user, '1'), 'userList1', 'searchInput1');
 	    renderUserList(users.entities, user => selectUser(user, '2'), 'userList2', 'searchInput2');
-	    setupSearchFilter('searchInput1', 'user1');
-	    setupSearchFilter('searchInput2', 'user2');	
-
-	    const submitButton = document.getElementById("submitButton");
-	    if (submitButton) {	        
-	        submitButton.addEventListener("click", async function() {
-	            var userId = Xrm.Utility.getGlobalContext().userSettings.userId;        
-	            userId = userId.replace(/[{}]/g, "");
-
-	            if (selectedUserId2.toLowerCase() === userId.toLowerCase()) {
-	                showCustomAlert("You are not allowed to change your own security settings.");                
-	                return;
-	            }
-	            
-	            // Disable button during processing
-	            submitButton.disabled = true;
-	            submitButton.style.opacity = '0.6';
-	            submitButton.style.cursor = 'not-allowed';
-	            submitButton.textContent = 'Processing...';
-	            
-	            showLoadingDialog("Copying security settings, please wait...");
-	            const actionType = "Change BUTR"; // BUTR = Business Unit, Teams, Roles
-	            let updateWasSuccessful = true;
-	            
-	            if (typeof updateUserDetails === "function") {
-	                try {
-	                    await updateUserDetails(selectedUserId2, selectedBusinessUnitId, selectedTeamIds, selectedRoleIds, actionType);
-	                } catch (error) {
-	                    console.error("An error occurred during the update process:", error);
-	                    showCustomAlert(`An error occurred: ${error.message}`);
-	                    updateWasSuccessful = false;
-	                } finally {
-	                    closeLoadingDialog();
-	                    // Re-enable button
-	                    submitButton.disabled = false;
-	                    submitButton.style.opacity = '1';
-	                    submitButton.style.cursor = 'pointer';
-	                    submitButton.textContent = 'Copy Security';
-	                }
-	                
-	                if (updateWasSuccessful) {
-	                    showCustomAlert(`Security successfully copied to ${selectedUserName2}!`);
-	                    
-	                    // Refresh the TO user's data to show updated security
-	                    setTimeout(() => {
-	                        const toUserDiv = document.getElementById('userList2').querySelector(`[data-id='${selectedUserId2}']`);
-	                        if (toUserDiv) {
-	                            const toUserData = users.entities.find(u => u.systemuserid === selectedUserId2);
-	                            if (toUserData) {
-	                                selectUser(toUserData, '2');
-	                            }
-	                        }
-	                    }, 1000);
-	                }
-	            } else {
-	                updateWasSuccessful = false;
-	                closeLoadingDialog();
-	                submitButton.disabled = false;
-	                submitButton.style.opacity = '1';
-	                submitButton.style.cursor = 'pointer';
-	                submitButton.textContent = 'Copy Security';
-	                showCustomAlert("Failed to update security settings. Please check the logs for more details.");
-	            }
-	        });
-	    }
-	    updateSubmitButtonVisibility();
+	    setupSearchFilter('searchInput1', 'user-item');
+	    setupSearchFilter('searchInput2', 'user-item');
 	}
+	
+	// Fetch users and display
 	fetchUsers(function(users) {
 		displayPopup(users);
 	});

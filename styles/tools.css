@@ -642,6 +642,217 @@
     padding-left: 15px;
 }
 
+/* Copy Security Redesign Styles */
+.copySecurity-redesign {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif;
+}
+
+.copySecurity-layout {
+    display: flex;
+    height: 100%;
+    background-color: #f8f9fa;
+}
+
+.copySecurity-redesign .user-selection-panel {
+    width: 240px;
+    min-width: 240px;
+    background: white;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.copySecurity-redesign .from-panel {
+    border-right: 2px solid #e0e0e0;
+}
+
+.copySecurity-redesign .to-panel {
+    border-left: 2px solid #e0e0e0;
+}
+
+.copySecurity-redesign .from-header {
+    background: #e8f4fd;
+    border-bottom: 2px solid #5ba3d0;
+}
+
+.copySecurity-redesign .to-header {
+    background: #f0ede8;
+    border-bottom: 2px solid #d0a85b;
+}
+
+.copySecurity-redesign .security-details-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: white;
+}
+
+/* Comparison Styles */
+.comparison-header {
+    padding: 24px 32px;
+    background: white;
+    border-bottom: 2px solid #e0e0e0;
+}
+
+.comparison-title h2 {
+    margin: 0 0 8px 0;
+    font-size: 22px;
+    color: #2b2b2b;
+    font-weight: 600;
+}
+
+.comparison-title p {
+    margin: 0;
+    font-size: 14px;
+    color: #666;
+}
+
+.comparison-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 24px 32px;
+}
+
+.comparison-section {
+    margin-bottom: 32px;
+}
+
+.comparison-section h3 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0 0 16px 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: #2b2b2b;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.comparison-grid {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 20px;
+    align-items: start;
+}
+
+.comparison-card {
+    background: #fafafa;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    overflow: hidden;
+    min-height: 100px;
+}
+
+.comparison-card.from-card {
+    border-color: #5ba3d0;
+}
+
+.comparison-card.to-card {
+    border-color: #d0a85b;
+}
+
+.card-header {
+    padding: 10px 16px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid;
+}
+
+.from-card .card-header {
+    background: #e8f4fd;
+    color: #2b5a7a;
+    border-color: #5ba3d0;
+}
+
+.to-card .card-header {
+    background: #f0ede8;
+    color: #7a5a2b;
+    border-color: #d0a85b;
+}
+
+.card-content {
+    padding: 16px;
+    background: white;
+}
+
+.card-content.scrollable {
+    max-height: 250px;
+    overflow-y: auto;
+}
+
+.arrow-divider {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+    color: #999;
+    font-weight: bold;
+}
+
+.value-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 12px;
+    background: #f8f9fa;
+    border-radius: 6px;
+    margin-bottom: 8px;
+    font-size: 13px;
+    color: #2b2b2b;
+    line-height: 1.4;
+}
+
+.value-item.disabled {
+    opacity: 0.5;
+}
+
+.value-item small {
+    color: #666;
+    font-size: 11px;
+    margin-left: auto;
+}
+
+.loading-spinner {
+    padding: 20px;
+    text-align: center;
+    color: #999;
+    font-style: italic;
+}
+
+.empty-message {
+    padding: 20px;
+    text-align: center;
+    color: #999;
+    font-style: italic;
+}
+
+.action-note {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 18px;
+    background: #fef3c7;
+    border: 2px solid #f59e0b;
+    border-radius: 8px;
+    font-size: 13px;
+    color: #92400e;
+    flex: 1;
+}
+
+.action-note svg {
+    flex-shrink: 0;
+}
+
+/* Animation for spinner */
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
 /* Assign Security Redesign Styles */
 .assignSecurity-redesign {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif;
