@@ -32,11 +32,13 @@ function copySecurityCopy() {
 		    <!-- User Selection Row -->
 		    <div class="securityPopup-row" style="gap: 20px; margin-bottom: 20px;">
 		      <div class="user-section" id="section1" style="flex: 1; border: 2px solid #ddd; border-radius: 8px; padding: 15px; background: #fafafa;">
-		        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
-		          <h3 style="margin: 0; color: #2b2b2b; font-size: 16px; font-weight: 600;">FROM User</h3>
+		        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 10px;">
+		          <h3 style="margin: 0; color: #2b2b2b; font-size: 16px; font-weight: 600; white-space: nowrap;">FROM User</h3>
+		          <input type="text" id="searchInput1" placeholder="🔍 Search..." style="flex: 1; padding: 8px 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 13px; box-sizing: border-box;">
+		        </div>
+		        <div style="margin-bottom: 8px;">
 		          <span id="fromStatus" style="font-size: 12px; color: #999; font-style: italic;">No user selected</span>
 		        </div>
-		        <input type="text" id="searchInput1" placeholder="🔍 Search Users..." style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; margin-bottom: 10px; box-sizing: border-box;">
 		        <div class="user-list-container" style="max-height: 220px; overflow-y: auto; border: 1px solid #ddd; border-radius: 6px; background: white;">
 		          <div id="userList1"></div>
 		        </div>
@@ -47,11 +49,13 @@ function copySecurityCopy() {
 		      </div>
 		      
 		      <div class="user-section" id="section2" style="flex: 1; border: 2px solid #ddd; border-radius: 8px; padding: 15px; background: #fafafa;">
-		        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
-		          <h3 style="margin: 0; color: #2b2b2b; font-size: 16px; font-weight: 600;">TO User</h3>
+		        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 10px;">
+		          <h3 style="margin: 0; color: #2b2b2b; font-size: 16px; font-weight: 600; white-space: nowrap;">TO User</h3>
+		          <input type="text" id="searchInput2" placeholder="🔍 Search..." style="flex: 1; padding: 8px 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 13px; box-sizing: border-box;">
+		        </div>
+		        <div style="margin-bottom: 8px;">
 		          <span id="toStatus" style="font-size: 12px; color: #999; font-style: italic;">No user selected</span>
 		        </div>
-		        <input type="text" id="searchInput2" placeholder="🔍 Search Users..." style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; margin-bottom: 10px; box-sizing: border-box;">
 		        <div class="user-list-container" style="max-height: 220px; overflow-y: auto; border: 1px solid #ddd; border-radius: 6px; background: white;">
 		          <div id="userList2"></div>
 		        </div>
