@@ -178,10 +178,6 @@ function appendDirtyFieldsPopupToBody(entityName, recordId, dirtyCount, fieldLis
     // Popup Container
     const popupContainer = document.createElement('div');
     popupContainer.className = 'commonPopup';
-    popupContainer.style.border = '3px solid #1a1a1a';
-    popupContainer.style.borderRadius = '12px';
-    popupContainer.style.width = '75%';
-    popupContainer.style.maxHeight = '90vh';
         
     const contentHtml = `
         <div style="background-color: #f9f9f9; padding: 15px 20px; border-radius: 5px; margin-bottom: 15px;">

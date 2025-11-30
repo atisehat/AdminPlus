@@ -16,10 +16,6 @@ function copySecurity() {
 	function createAppendSecurityPopup() {		
 		var newContainer = document.createElement('div');		
 		newContainer.className = 'commonPopup';
-		newContainer.style.border = '3px solid #1a1a1a';
-		newContainer.style.borderRadius = '12px';
-		newContainer.style.width = '75%';
-		newContainer.style.maxHeight = '90vh';
 		
 		newContainer.innerHTML =  `
 		  <div class="commonPopup-header">

@@ -315,10 +315,6 @@ function createAutomationsPopup(entityName, workflows, dialogs, businessRules, b
     existingPopups.forEach(popup => popup.remove());    
     const popupContainer = document.createElement('div');
     popupContainer.className = 'commonPopup';
-    popupContainer.style.border = '3px solid #1a1a1a';
-    popupContainer.style.borderRadius = '12px';
-    popupContainer.style.width = '75%';
-    popupContainer.style.maxHeight = '90vh';
     
     popupContainer.innerHTML = `
         <div class="commonPopup-header">

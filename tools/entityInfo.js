@@ -313,11 +313,7 @@ function appendEntityInfoPopupToBody(entityName, recordId, pluralName, fieldList
     
     // Popup container
     const popupContainer = document.createElement('div');
-    popupContainer.className = 'commonPopup';
-    popupContainer.style.border = '3px solid #1a1a1a';
-    popupContainer.style.borderRadius = '12px';
-    popupContainer.style.width = '75%';
-    popupContainer.style.maxHeight = '90vh';   
+    popupContainer.className = 'commonPopup';   
     const sectionNavHtml = generateSectionNavigationButtons();
     
     // HTML Content
