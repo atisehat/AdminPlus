@@ -11,6 +11,7 @@
     border: 3px solid #1a1a1a;
     border-radius: 12px;
     width: 75%;
+    min-height: 60vh;
     max-height: 90vh;
     overflow: hidden;
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
