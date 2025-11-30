@@ -360,8 +360,7 @@
 .section1-row1 { 
     display: inline-block; 
     width: 50%; 
-    min-height: 280px;
-    max-height: 310px;
+    height: 100%;
     padding: 10px 15px; 
     border-bottom: 2px solid #e0e0e0; 
     box-sizing: border-box; 
@@ -380,8 +379,7 @@
 .section1-row2 { 
     display: inline-block; 
     width: 50%; 
-    min-height: 400px;
-    max-height: 475px;
+    height: 100%;
     padding: 15px; 
     vertical-align: top; 
     box-sizing: border-box; 
@@ -612,8 +610,12 @@
 
 /* Date Calculator Overrides */
 .dateCalculatorPopup .commonSection {
-    max-height: calc(80vh - 70px);
-    overflow-y: auto;
+    height: calc(80vh - 70px);
+    overflow: hidden;
+}
+
+.dateCalculatorPopup .securityPopup-row {
+    height: 50%;
 }
 
 .dateCalculatorPopup #section1 {
