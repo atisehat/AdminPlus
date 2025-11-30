@@ -152,30 +152,51 @@ function analyzeFormFields() {
 function createCloneRecordPopup(fieldAnalysis) {
     const container = document.createElement('div');
     container.className = 'commonPopup';
+    container.style.border = '3px solid #1a1a1a';
+    container.style.borderRadius = '12px';
+    container.style.width = '75%';
+    container.style.maxHeight = '90vh';
     
     container.innerHTML = `
-        <div class="commonPopup-header">
-            <span>Clone Record</span>
-            <span class="close-button">&times;</span>
+        <div class="commonPopup-header" style="background-color: #2b2b2b; position: relative; cursor: move; border-radius: 9px 9px 0 0; margin: 0; border-bottom: 2px solid #1a1a1a;">
+            <span style="color: white;">Clone Record</span>
+            <span class="close-button" style="position: absolute; right: 0; top: 0; bottom: 0; width: 45px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 20px; color: white; font-weight: bold; transition: background-color 0.2s ease; border-radius: 0 9px 0 0;">&times;</span>
         </div>
-        <div class="popup-body">
-            <div class="commonSection content-section">
-                <div class="info-header-section" style="background-color: white; border-left: 4px solid #3b82f6; border-right: 4px solid #3b82f6; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); margin: 0 20px 15px 20px;">
+        <div class="popup-body" style="padding: 20px;">
+            <div class="commonSection content-section" style="padding: 0; border-right: 0; height: 100%;">
+                
+                <!-- Instructions -->
+                <div style="background-color: white; padding: 12px 15px; border-radius: 8px; margin-bottom: 25px; border-left: 4px solid #3b82f6; border-right: 4px solid #3b82f6; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">
                     <p style="margin: 0; font-size: 13px; color: #555; line-height: 1.6;">
                         <strong>Note:</strong> Selected field(s) will be cloned to a new record. Fields marked with <span style="color: #ef4444; font-weight: bold;">*</span> are required and could require a manual save if left unchecked.
                     </p>
                 </div>
-                <div class="scroll-section">
+                
+                <!-- Fields by Type -->
+                <div class="scroll-section" style="overflow-y: auto; max-height: calc(90vh - 240px); padding-right: 10px;">
                     ${generateFieldsHTML(fieldAnalysis)}
                 </div>
-                <div class="action-buttons-container">
-                    <button id="selectAllButton" class="clone-select-all-btn">
+                
+                <!-- Action Buttons -->
+                <div style="display: flex; justify-content: center; gap: 15px; margin-top: 25px;">
+                    <button 
+                        id="selectAllButton"
+                        style="padding: 10px 24px; font-size: 14px; font-weight: 600; background-color: #6b7280; color: white; border: none; cursor: pointer; border-radius: 8px; transition: all 0.2s ease; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);"
+                        onmouseover="this.style.backgroundColor='#4b5563'; this.style.transform='translateY(-1px)';"
+                        onmouseout="this.style.backgroundColor='#6b7280'; this.style.transform='translateY(0)';"
+                    >
                         Select All
                     </button>
-                    <button id="cloneRecordButton" class="clone-action-btn">
+                    <button 
+                        id="cloneRecordButton"
+                        style="padding: 12px 32px; font-size: 15px; font-weight: 600; width: auto; min-width: 180px; background-color: #2b2b2b; color: white; border: none; cursor: pointer; border-radius: 8px; transition: all 0.2s ease; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);"
+                        onmouseover="this.style.backgroundColor='#1a1a1a'; this.style.boxShadow='0 4px 10px rgba(0, 0, 0, 0.3)'; this.style.transform='translateY(-1px)';"
+                        onmouseout="this.style.backgroundColor='#2b2b2b'; this.style.boxShadow='0 2px 6px rgba(0, 0, 0, 0.2)'; this.style.transform='translateY(0)';"
+                    >
                         Clone Record
                     </button>
                 </div>
+                
             </div>
         </div>
     `;
@@ -268,7 +289,7 @@ function generateFieldsHTML(fieldAnalysis) {
             }
             
             html += `
-                <div class="clone-field-card">
+                <div style="padding: 8px; background-color: #f5f5f5; border-radius: 5px; border-left: 3px solid #2b2b2b; cursor: pointer; transition: background-color 0.2s;">
                     <div style="display: flex; align-items: center; margin-bottom: 5px;">
                         <input type="checkbox" class="field-checkbox" data-field-name="${field.name}" data-field-type="${type}" style="margin-right: 8px; width: 16px; height: 16px; cursor: pointer; flex-shrink: 0;" checked>
                         <div style="font-weight: bold; color: #333; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
@@ -306,6 +327,13 @@ function setupCloneRecordHandlers(container, fieldAnalysis, entityName) {
     closeButton.addEventListener('click', () => {
         container.remove();
     });
+    
+    closeButton.addEventListener('mouseenter', function() {
+        this.style.backgroundColor = '#e81123';
+    });
+    closeButton.addEventListener('mouseleave', function() {
+        this.style.backgroundColor = 'transparent';
+    });    
     
     const selectAllButton = container.querySelector('#selectAllButton');
     let allSelected = true; // Start with all checked by default
