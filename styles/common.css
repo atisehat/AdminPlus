@@ -1,5 +1,10 @@
 /* Common Shared Styles */
 
+/* Universal box-sizing for all popup elements */
+.commonPopup * {
+    box-sizing: border-box;
+}
+
 /* Popup Styles */
 .commonPopup {
     background-color: #f9f9f9;
@@ -66,14 +71,23 @@
 .commonSection { 
     padding: 20px; 
     border-right: 0;
-    overflow-y: auto; 
+    overflow-y: auto;
+    box-sizing: border-box;
+    width: 100%;
 }
 
 .content-section {
     height: 100%;
+    box-sizing: border-box;
 }
 
 /* Layout Styles */
+.popup-body {
+    box-sizing: border-box;
+    width: 100%;
+    overflow: hidden;
+}
+
 .securityPopup-row { 
     display: flex; 
 }
