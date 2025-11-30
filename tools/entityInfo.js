@@ -215,23 +215,23 @@ function appendEntityInfoPopupToBody(entityName, recordId, pluralName, fieldList
             <span class="close-button">&times;</span>
         </div>
         <div class="popup-body">
-            <div class="commonSection content-section" style="padding: 0; border-right: 0;">
-                <div style="background-color: #f9f9f9; padding: 12px 20px; border-radius: 5px; margin-bottom: 8px;">
-                    <div style="display: flex; gap: 20px; align-items: center; flex-wrap: wrap; font-size: 15px;">
-                        <div style="white-space: nowrap;"><strong>Table Name:</strong> ${entityName}</div>
-                        <div style="white-space: nowrap;"><strong>Plural Name:</strong> ${pluralName}</div>
-                        <div style="white-space: nowrap; min-width: 200px;"><strong>Record ID:</strong> ${recordId}</div>
+            <div class="commonSection content-section">
+                <div class="info-header-section">
+                    <div class="info-header-row">
+                        <div class="info-header-item"><strong>Table Name:</strong> ${entityName}</div>
+                        <div class="info-header-item"><strong>Plural Name:</strong> ${pluralName}</div>
+                        <div class="info-header-item" style="min-width: 200px;"><strong>Record ID:</strong> ${recordId}</div>
                     </div>
                 </div>
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding: 0 20px; gap: 15px; position: relative; z-index: 100; overflow: visible;">
+                <div class="nav-container">
                     <div id="section-navigation" style="display: flex; flex: 1; min-width: 0; overflow: visible;">
                         ${generateSectionNavigationButtons()}
                     </div>
-                    <div style="font-size: 13px; color: #666; font-style: italic; background-color: #f9f9f9; padding: 8px 12px; border-radius: 5px; border: 1px solid #ddd; white-space: nowrap; flex-shrink: 0;">
+                    <div class="note-section">
                         <strong>Note:</strong> Click on any field to copy its information
                     </div>
                 </div>
-                <div class="scroll-section" style="padding: 0 2px 20px 20px; overflow-y: auto; max-height: calc(90vh - 235px); position: relative; z-index: 1;">
+                <div class="scroll-section">
                     ${fieldListHtml}
                 </div>
             </div>

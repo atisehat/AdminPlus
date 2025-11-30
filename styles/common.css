@@ -56,6 +56,80 @@
     background-color: #e81123;
 }
 
+/* Popup Body */
+.popup-body {
+    padding: 0;
+}
+
+/* Common Content Section */
+.content-section {
+    padding: 0;
+    border-right: 0;
+}
+
+/* Info Header Section */
+.info-header-section {
+    background-color: #f9f9f9;
+    padding: 12px 20px;
+    border-radius: 5px;
+    margin-bottom: 8px;
+}
+
+.info-header-row {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+    flex-wrap: wrap;
+    font-size: 15px;
+}
+
+.info-header-item {
+    white-space: nowrap;
+}
+
+/* Note/Instruction Section */
+.note-section {
+    background-color: #f9f9f9;
+    padding: 8px 12px;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+    font-size: 13px;
+    color: #666;
+    font-style: italic;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+/* Navigation Container */
+.nav-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding: 0 20px;
+    gap: 15px;
+    position: relative;
+    z-index: 100;
+    overflow: visible;
+}
+
+/* Scroll Section */
+.scroll-section {
+    padding: 0 2px 20px 20px;
+    overflow-y: auto;
+    max-height: calc(90vh - 235px);
+    position: relative;
+    z-index: 1;
+}
+
+/* Action Buttons Container */
+.action-buttons-container {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin: 0 20px 20px 20px;
+}
+
 .commonback-button { 
     position: absolute; 
     top: -3px; 
