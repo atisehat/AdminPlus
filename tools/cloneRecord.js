@@ -169,7 +169,7 @@ function createCloneRecordPopup(fieldAnalysis) {
                 </div>
                 
                 <!-- Fields by Type -->
-                <div class="scroll-section" style="overflow-y: auto; max-height: calc(90vh - 240px); padding-right: 10px;">
+                <div class="scroll-section" style="overflow-y: auto; max-height: calc(80vh - 240px); padding-right: 10px;">
                     ${generateFieldsHTML(fieldAnalysis)}
                 </div>
                 

@@ -630,8 +630,8 @@
 /* Copy Security Styles */
 .copySecurity-layout {
     display: flex;
-    height: calc(90vh - 50px);
-    max-height: calc(90vh - 50px);
+    height: calc(80vh - 50px);
+    max-height: calc(80vh - 50px);
     background-color: #f8f9fa;
     flex-wrap: wrap;
 }
@@ -643,7 +643,7 @@
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    max-height: calc(90vh - 50px);
+    max-height: calc(80vh - 50px);
     flex-shrink: 0;
 }
 
@@ -698,7 +698,7 @@
     flex: 1;
     overflow-y: auto;
     padding: 16px 24px;
-    max-height: calc(90vh - 200px);
+    max-height: calc(80vh - 200px);
 }
 
 .comparison-section {
@@ -937,8 +937,8 @@
 .assignSecurity-layout {
     display: flex;
     background-color: #f8f9fa;
-    height: calc(90vh - 50px);
-    max-height: calc(90vh - 50px);
+    height: calc(80vh - 50px);
+    max-height: calc(80vh - 50px);
 }
 
 /* User Selection Panel */
