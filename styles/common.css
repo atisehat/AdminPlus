@@ -3,10 +3,10 @@
 /* Popup Styles */
 .commonPopup { 
     background-color: #f9f9f9; 
-    border: 3px solid #1a1a1a;
-    border-radius: 12px;
-    width: 75%;
-    max-height: 90vh;
+    border: 3px solid #102e55; 
+    border-radius: 20px; 
+    width: 50%; 
+    height: 90%; 
     overflow: hidden; 
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.5); 
     font-family: Arial, sans-serif; 
@@ -17,40 +17,15 @@
 }
 
 .commonPopup-header { 
-    background-color: #2b2b2b;
+    background-color: #102e55; 
     color: white; 
-    padding: 10px;
-    border-radius: 9px 9px 0 0;
+    padding: 10px; 
+    border-radius: 10px 10px 0 0; 
     font-size: 18px; 
     display: flex; 
     justify-content: center; 
     align-items: center;
     box-shadow: none;
-    position: relative;
-    cursor: move;
-    margin: 0;
-    border-bottom: 2px solid #1a1a1a;
-}
-
-.close-button {
-    position: absolute;
-    right: 0;
-    top: 0;
-    bottom: 0;
-    width: 45px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    font-size: 20px;
-    color: white;
-    font-weight: bold;
-    transition: background-color 0.2s ease;
-    border-radius: 0 9px 0 0;
-}
-
-.close-button:hover {
-    background-color: #e81123;
 }
 
 .commonback-button { 
