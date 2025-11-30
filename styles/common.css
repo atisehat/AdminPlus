@@ -80,6 +80,14 @@
 .content-section {
     height: 100%;
     box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+}
+
+.scroll-section {
+    flex: 1;
+    overflow-y: auto;
+    box-sizing: border-box;
 }
 
 /* Layout Styles */

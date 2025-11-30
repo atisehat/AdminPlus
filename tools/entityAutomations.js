@@ -332,7 +332,7 @@ function createAutomationsPopup(entityName, workflows, dialogs, businessRules, b
                     </div>
                 </div>
                 
-                <div class="scroll-section" style="overflow-y: auto; max-height: calc(90vh - 200px);">
+                <div class="scroll-section">
                     ${generateAutomationsHtml(workflows, dialogs, businessRules, businessProcessFlows, customApis, customActions)}
                 </div>
             </div>

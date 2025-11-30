@@ -187,7 +187,7 @@ function appendDirtyFieldsPopupToBody(entityName, recordId, dirtyCount, fieldLis
                 <div style="white-space: nowrap; flex: 1;"><strong>Dirty Fields Count:</strong> ${dirtyCount}</div>
             </div>
         </div>
-        <div class="scroll-section" style="overflow-y: auto; max-height: calc(90vh - 235px);">
+        <div class="scroll-section">
             ${fieldListHtml}
         </div>
     `;

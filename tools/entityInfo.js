@@ -333,7 +333,7 @@ function appendEntityInfoPopupToBody(entityName, recordId, pluralName, fieldList
                 <strong>Note:</strong> Click on any field to copy its information
             </div>
         </div>
-        <div class="scroll-section" style="padding: 0 2px 20px 20px; overflow-y: auto; max-height: calc(90vh - 235px); position: relative; z-index: 1;">
+        <div class="scroll-section" style="padding: 0 2px 20px 20px; position: relative; z-index: 1;">
             ${fieldListHtml}
         </div>
     `;
