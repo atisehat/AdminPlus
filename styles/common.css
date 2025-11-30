@@ -31,6 +31,10 @@
     border-bottom: 2px solid #1a1a1a;
 }
 
+.commonPopup-header > span:not(.close-button) {
+    color: white;
+}
+
 .commonPopup-header .close-button {
     position: absolute;
     right: 0;

@@ -211,7 +211,7 @@ function appendEntityInfoPopupToBody(entityName, recordId, pluralName, fieldList
     
     popupContainer.innerHTML = `
         <div class="commonPopup-header">
-            <span style="color: white;">Table & Fields Info</span>
+            <span>Table & Fields Info</span>
             <span class="close-button">&times;</span>
         </div>
         <div class="popup-body">
