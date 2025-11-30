@@ -163,7 +163,7 @@ function createCloneRecordPopup(fieldAnalysis) {
             <span class="close-button" style="position: absolute; right: 0; top: 0; bottom: 0; width: 45px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 20px; color: white; font-weight: bold; transition: background-color 0.2s ease; border-radius: 0 9px 0 0;">&times;</span>
         </div>
         <div class="popup-body">
-            <div class="commonSection content-section" style="padding: 20px; border-right: 0; height: 100%;">
+            <div class="commonSection content-section" style="height: 100%;">
                 
                 <!-- Instructions -->
                 <div style="background-color: white; padding: 12px 15px; border-radius: 8px; margin-bottom: 25px; border-left: 4px solid #3b82f6; border-right: 4px solid #3b82f6; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">

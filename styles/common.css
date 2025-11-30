@@ -42,7 +42,8 @@
 }
 
 .commonSection { 
-    padding: 10px; 
+    padding: 20px; 
+    border-right: 0;
     overflow-y: auto; 
 }
 
