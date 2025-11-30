@@ -15,7 +15,7 @@ function copySecurity() {
 	
 	function createAppendSecurityPopup() {		
 		var newContainer = document.createElement('div');		
-		newContainer.className = 'commonPopup copySecurity-redesign';
+		newContainer.className = 'commonPopup';
 		newContainer.style.border = '3px solid #1a1a1a';
 		newContainer.style.borderRadius = '12px';
 		newContainer.style.width = '75%';
@@ -27,7 +27,7 @@ function copySecurity() {
 		    <span class="close-button" style="position: absolute; right: 0; top: 0; bottom: 0; width: 45px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 20px; color: white; font-weight: bold; transition: background-color 0.2s ease; border-radius: 0 9px 0 0;">&times;</span>
 		  </div>
 		  <div class="popup-body">
-		    <div class="copySecurity-layout">
+		    <div class="copySecurity-layout" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif;">
 		      <!-- FROM User Panel -->
 		      <div class="user-selection-panel from-panel">
 		        <div class="panel-header from-header">

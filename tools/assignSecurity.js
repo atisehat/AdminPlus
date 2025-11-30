@@ -57,7 +57,7 @@ function editSecurity() {
 	 */
 	function createSecurityPopup() {
 		const popup = document.createElement('div');
-		popup.className = 'commonPopup assignSecurity-redesign';
+		popup.className = 'commonPopup';
 		popup.style.border = '3px solid #1a1a1a';
 		popup.style.borderRadius = '12px';
 		popup.style.width = '75%';
@@ -69,7 +69,7 @@ function editSecurity() {
 	      <span class="close-button" style="position: absolute; right: 0; top: 0; bottom: 0; width: 45px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 20px; color: white; font-weight: bold; transition: background-color 0.2s ease; border-radius: 0 9px 0 0;">&times;</span>
 	    </div>
 		<div class="popup-body">
-			<div class="assignSecurity-layout" style="height: calc(100% - 50px);">
+			<div class="assignSecurity-layout" style="height: calc(100% - 50px); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif;">
 					<!-- User Selection Panel -->
 					<div class="user-selection-panel">
 						<div class="panel-header">
