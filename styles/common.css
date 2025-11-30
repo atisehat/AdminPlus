@@ -48,28 +48,13 @@
 }
 
 /* Layout Styles */
-.iframe-container { 
-    overflow: hidden; 
-}
-
 .securityPopup-row { 
     display: flex; 
 }
 
 /* User Selection Styles */
-.selected, .userSelected { 
+.selected { 
     background-color: #e0e0e0; 
-}
-
-.user { 
-    cursor: pointer; 
-    padding: 3px; 
-    font-size: 14px; 
-    transition: background-color 0.3s; 
-}
-
-.user:hover { 
-    background-color: #f0f0f0; 
 }
 
 /* Button Styles */
@@ -98,21 +83,5 @@
     background-color: #0a0a0a; 
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
     transform: translateY(0);
-}
-
-/* Checkbox/Radio Styles */
-.sectionWrapper { 
-    display: flex; 
-}
-
-.assignCheckbox, .teamsCheckbox, .rolesCheckbox, 
-.businessUnitRadioButtons, .teamsRadioButtons, .rolesRadioButtons { 
-    margin: 0px 5px 0 0; 
-    width: 20px !important; 
-    height: 15px; 
-}
-
-#sectionsRow { 
-    white-space: nowrap; 
 }
 

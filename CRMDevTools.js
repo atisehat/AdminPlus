@@ -375,7 +375,7 @@ function closePopup() {
 }
 
 function closeSubPopups() { 
-    const popupClasses = ['.commonPopup', '.assignPopup'];    
+    const popupClasses = ['.commonPopup'];    
     popupClasses.forEach((popupClass) => {
         const popups = document.querySelectorAll(popupClass);
         popups.forEach((popup) => {

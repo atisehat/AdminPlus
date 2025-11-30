@@ -100,21 +100,6 @@
 }
 
 /* Assign Security */
-.assignPopup { 
-    background-color: #f9f9f9; 
-    border: 3px solid #102e55; 
-    border-radius: 20px; 
-    width: 55%; 
-    height: 90%; 
-    overflow: hidden; 
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5); 
-    font-family: Arial, sans-serif; 
-    position: fixed; 
-    top: 50%; 
-    left: 50%; 
-    transform: translate(-50%, -50%); 
-}
-
 .section-header-with-search {
     display: flex;
     align-items: center;
@@ -642,11 +627,7 @@
     padding-left: 15px;
 }
 
-/* Copy Security Redesign Styles */
-.copySecurity-redesign {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif;
-}
-
+/* Copy Security Styles */
 .copySecurity-layout {
     display: flex;
     height: calc(90vh - 50px);
@@ -655,7 +636,7 @@
     flex-wrap: wrap;
 }
 
-.copySecurity-redesign .user-selection-panel {
+.copySecurity-layout .user-selection-panel {
     width: 180px;
     min-width: 160px;
     background: white;
@@ -666,25 +647,25 @@
     flex-shrink: 0;
 }
 
-.copySecurity-redesign .from-panel {
+.copySecurity-layout .from-panel {
     border-right: 2px solid #e0e0e0;
 }
 
-.copySecurity-redesign .to-panel {
+.copySecurity-layout .to-panel {
     border-left: 2px solid #e0e0e0;
 }
 
-.copySecurity-redesign .from-header {
+.copySecurity-layout .from-header {
     background: #e8f4fd;
     border-bottom: 2px solid #5ba3d0;
 }
 
-.copySecurity-redesign .to-header {
+.copySecurity-layout .to-header {
     background: #f0ede8;
     border-bottom: 2px solid #d0a85b;
 }
 
-.copySecurity-redesign .security-details-panel {
+.copySecurity-layout .security-details-panel {
     flex: 1;
     min-width: 400px;
     display: flex;
@@ -835,7 +816,7 @@
 
 /* Responsive adjustments */
 @media (max-width: 1200px) {
-    .copySecurity-redesign .user-selection-panel {
+    .copySecurity-layout .user-selection-panel {
         width: 160px;
         min-width: 140px;
     }
@@ -861,7 +842,7 @@
         flex-wrap: wrap;
     }
     
-    .copySecurity-redesign .user-selection-panel {
+    .copySecurity-layout .user-selection-panel {
         width: 100%;
         max-width: 100%;
         min-width: 100%;
@@ -871,7 +852,7 @@
         border-bottom: 2px solid #e0e0e0;
     }
     
-    .copySecurity-redesign .security-details-panel {
+    .copySecurity-layout .security-details-panel {
         width: 100%;
         min-width: 100%;
     }
@@ -952,11 +933,7 @@
     to { transform: rotate(360deg); }
 }
 
-/* Assign Security Redesign Styles */
-.assignSecurity-redesign {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif;
-}
-
+/* Assign Security Styles */
 .assignSecurity-layout {
     display: flex;
     background-color: #f8f9fa;
