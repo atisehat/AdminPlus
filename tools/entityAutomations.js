@@ -321,7 +321,7 @@ function createAutomationsPopup(entityName, workflows, dialogs, businessRules, b
             <span style="color: white;">Table Automations</span>
             <span class="close-button">&times;</span>
         </div>
-        <div class="popup-body" style="padding: 20px;">
+        <div class="popup-body">
             <div style="background-color: #f9f9f9; padding: 12px 20px; border-radius: 5px; margin-bottom: 15px;">
                 <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; flex-wrap: wrap;">
                     <div style="flex-shrink: 0;"><strong>Table:</strong> ${entityName}</div>

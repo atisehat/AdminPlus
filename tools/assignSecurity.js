@@ -65,7 +65,7 @@ function editSecurity() {
 	      <span class="close-button">&times;</span>
 	    </div>
 		<div class="popup-body">
-			<div class="assignSecurity-layout" style="height: calc(100% - 50px); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif;">
+			<div class="assignSecurity-layout" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif;">
 					<!-- User Selection Panel -->
 					<div class="user-selection-panel">
 						<div class="panel-header">

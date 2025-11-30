@@ -937,6 +937,8 @@
 .assignSecurity-layout {
     display: flex;
     background-color: #f8f9fa;
+    height: calc(90vh - 50px);
+    max-height: calc(90vh - 50px);
 }
 
 /* User Selection Panel */

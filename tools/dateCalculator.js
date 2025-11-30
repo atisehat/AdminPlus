@@ -117,7 +117,7 @@ function createModalContent() {
           <span style="color: white;">Date Calculator</span>
           <span class="close-button">&times;</span>
         </div>
-        <div class="popup-body" style="padding: 20px;">
+        <div class="popup-body">
    
          <div class="securityPopup-row">
             <div class="section1-row1" id="section1">
