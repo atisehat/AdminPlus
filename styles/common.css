@@ -69,6 +69,10 @@
     overflow-y: auto; 
 }
 
+.content-section {
+    height: 100%;
+}
+
 /* Layout Styles */
 .securityPopup-row { 
     display: flex; 
