@@ -64,9 +64,9 @@ function editSecurity() {
 		popup.style.maxHeight = '90vh';
 		
 		popup.innerHTML = `
-	    <div class="commonPopup-header" style="background-color: #2b2b2b; position: relative; cursor: move; border-radius: 12px 12px 0 0; margin: 0; padding: 0; border-bottom: 2px solid #1a1a1a; font-size: 18px; display: flex; justify-content: center; align-items: center; box-shadow: none; height: 50px;">
+	    <div class="commonPopup-header">
 	      <span style="color: white;">Assign User Security</span>
-	      <span class="close-button" style="position: absolute; right: 0; top: 0; bottom: 0; width: 45px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 20px; color: white; font-weight: bold; transition: background-color 0.2s ease; border-radius: 0 12px 0 0;">&times;</span>
+	      <span class="close-button">&times;</span>
 	    </div>
 		<div class="popup-body">
 			<div class="assignSecurity-layout" style="height: calc(100% - 50px); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif;">
