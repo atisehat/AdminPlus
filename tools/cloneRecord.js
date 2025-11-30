@@ -158,23 +158,23 @@ function createCloneRecordPopup(fieldAnalysis) {
             <span>Clone Record</span>
             <span class="close-button">&times;</span>
         </div>
-        <div class="popup-body" style="padding: 20px;">
-            <div class="commonSection content-section" style="padding: 0; border-right: 0; height: 100%;">
+        <div class="popup-body">
+            <div class="commonSection content-section" style="padding: 0; border-right: 0;">
                 
                 <!-- Instructions -->
-                <div style="background-color: white; padding: 12px 15px; border-radius: 8px; margin-bottom: 25px; border-left: 4px solid #3b82f6; border-right: 4px solid #3b82f6; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">
+                <div style="background-color: white; padding: 12px 15px; border-radius: 8px; margin: 0 20px 20px 20px; border-left: 4px solid #3b82f6; border-right: 4px solid #3b82f6; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">
                     <p style="margin: 0; font-size: 13px; color: #555; line-height: 1.6;">
                         <strong>Note:</strong> Selected field(s) will be cloned to a new record. Fields marked with <span style="color: #ef4444; font-weight: bold;">*</span> are required and could require a manual save if left unchecked.
                     </p>
                 </div>
                 
                 <!-- Fields by Type -->
-                <div class="scroll-section" style="overflow-y: auto; max-height: calc(90vh - 240px); padding-right: 10px;">
+                <div class="scroll-section" style="padding: 0 2px 20px 20px; overflow-y: auto; max-height: calc(90vh - 235px);">
                     ${generateFieldsHTML(fieldAnalysis)}
                 </div>
                 
                 <!-- Action Buttons -->
-                <div style="display: flex; justify-content: center; gap: 15px; margin-top: 25px;">
+                <div style="display: flex; justify-content: center; gap: 15px; margin: 0 20px 20px 20px;">
                     <button id="selectAllButton" class="clone-select-all-btn">
                         Select All
                     </button>
