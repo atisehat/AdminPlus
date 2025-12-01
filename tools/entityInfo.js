@@ -129,10 +129,32 @@ function formatFieldValue(attribute) {
         // Optionset
         if (attrType === 'optionset' || attrType === 'multiselectoptionset') {
             try {
+                // Try to get formatted value first
                 if (typeof attribute.getFormattedValue === 'function') {
                     const formattedValue = attribute.getFormattedValue();
                     if (formattedValue && value !== null && value !== undefined) {
                         return `${value} (${formattedValue})`;
+                    }
+                }
+                
+                // Try to get label from options
+                const controls = attribute.controls.get();
+                if (controls && controls.length > 0) {
+                    const control = controls[0];
+                    if (typeof control.getOptions === 'function') {
+                        const options = control.getOptions();
+                        if (attrType === 'optionset' && value !== null && value !== undefined) {
+                            const option = options.find(opt => opt.value === value);
+                            if (option && option.text) {
+                                return `${value} (${option.text})`;
+                            }
+                        } else if (attrType === 'multiselectoptionset' && Array.isArray(value)) {
+                            const texts = value.map(v => {
+                                const option = options.find(opt => opt.value === v);
+                                return option && option.text ? `${v} (${option.text})` : v;
+                            });
+                            return texts.join(', ');
+                        }
                     }
                 }
             } catch (e) {

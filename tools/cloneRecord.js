@@ -256,9 +256,22 @@ function generateFieldsHTML(fieldAnalysis) {
                     }
                 } else if (type === 'multiselectoptionset' || type === 'optionset') {
                     try {
-                        if (type === 'optionset' && typeof field.attribute.getFormattedValue === 'function') {
-                            const formattedValue = field.attribute.getFormattedValue();
-                            if (formattedValue && field.currentValue !== null && field.currentValue !== undefined) {
+                        if (type === 'optionset' && field.currentValue !== null && field.currentValue !== undefined) {
+                            // Try formatted value first
+                            let formattedValue = null;
+                            if (typeof field.attribute.getFormattedValue === 'function') {
+                                formattedValue = field.attribute.getFormattedValue();
+                            }
+                            
+                            // If no formatted value, try to get from options
+                            if (!formattedValue && field.options && Array.isArray(field.options)) {
+                                const option = field.options.find(opt => opt.value === field.currentValue);
+                                if (option && option.text) {
+                                    formattedValue = option.text;
+                                }
+                            }
+                            
+                            if (formattedValue) {
                                 displayValue = `${field.currentValue} (${formattedValue})`;
                             } else {
                                 displayValue = String(field.currentValue);
@@ -270,9 +283,22 @@ function generateFieldsHTML(fieldAnalysis) {
                                     const formattedValue = field.attribute.getFormattedValue();
                                     if (formattedValue) {
                                         displayValue = formattedValue;
+                                    } else if (field.options && Array.isArray(field.options)) {
+                                        // Get labels from options
+                                        const texts = field.currentValue.map(v => {
+                                            const option = field.options.find(opt => opt.value === v);
+                                            return option && option.text ? `${v} (${option.text})` : v;
+                                        });
+                                        displayValue = texts.join(', ');
                                     } else {
                                         displayValue = field.currentValue.join(', ');
                                     }
+                                } else if (field.options && Array.isArray(field.options)) {
+                                    const texts = field.currentValue.map(v => {
+                                        const option = field.options.find(opt => opt.value === v);
+                                        return option && option.text ? `${v} (${option.text})` : v;
+                                    });
+                                    displayValue = texts.join(', ');
                                 } else {
                                     displayValue = field.currentValue.join(', ');
                                 }
