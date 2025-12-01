@@ -517,7 +517,11 @@ function copySecurity() {
 			}
 
 			if (updateWasSuccessful) {
-				showCustomAlert(`Security successfully copied to ${selectedUserName2}!`);
+				if (typeof showToast === 'function') {
+					showToast(`Security successfully copied to ${selectedUserName2}!`, 'success', 4000);
+				} else {
+					showCustomAlert(`Security successfully copied to ${selectedUserName2}!`);
+				}
 
 				// Refresh the TO user's data to show updated security
 				setTimeout(() => {
