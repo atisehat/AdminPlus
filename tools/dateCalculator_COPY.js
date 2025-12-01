@@ -110,7 +110,7 @@ async function displayHolidays(scheduleName) {
            `;
        }).join('');               
        
-       initCalendar(holidays);
+           initCalendar(holidays);
     } catch (error) {
         console.error("Error fetching holidays: ", error);
     }
@@ -122,7 +122,7 @@ function createModalContent() {
     
     container.innerHTML = `
         <div class="commonPopup-header">
-            <span style="color: white;">Date Calculator (REDESIGNED) 🎨</span>
+            <span style="color: white;">Date Calculator (REDESIGNED)</span>
             <span class="close-button">&times;</span>
         </div>
         <div class="popup-body">
@@ -157,27 +157,27 @@ function createModalContent() {
                                 <line x1="3" y1="10" x2="21" y2="10"/>
                             </svg>
                             <h3>Calendar View</h3>
+                </div>
+                    <div class="calendar">
+                        <div class="calendarHeader">
+                            <button id="prevMonth">&lt;</button>
+                            <span id="monthYearLabel"></span>
+                            <button id="nextMonth">&gt;</button>
                         </div>
-                        <div class="calendar">
-                            <div class="calendarHeader">
-                                <button id="prevMonth">&lt;</button>
-                                <span id="monthYearLabel"></span>
-                                <button id="nextMonth">&gt;</button>
-                            </div>
-                            <div class="calendarDays">
-                                <div>Sun</div>
-                                <div>Mon</div>
-                                <div>Tue</div>
-                                <div>Wed</div>
-                                <div>Thu</div>
-                                <div>Fri</div>
-                                <div>Sat</div>
-                            </div>
-                            <div class="calendarDates" id="calendarDates"></div>
+                        <div class="calendarDays">
+                            <div>Sun</div>
+                            <div>Mon</div>
+                            <div>Tue</div>
+                            <div>Wed</div>
+                            <div>Thu</div>
+                            <div>Fri</div>
+                            <div>Sat</div>
                         </div>
+                        <div class="calendarDates" id="calendarDates"></div>
                     </div>
                 </div>
-                
+            </div>
+            
                 <!-- Right Panel: Calculations -->
                 <div class="dateCalc-right-panel">
                     <!-- Tab Navigation -->
@@ -233,9 +233,9 @@ function renderCalcTab() {
 function renderDaysBetweenTab(container) {
     container.innerHTML = `
         <div class="dateCalc-tab-panel">
-            <!-- Date Inputs Section -->
+            <!-- Date Inputs Section with Exclusion Options -->
             <div class="dateCalc-panel-section">
-                <h4 class="dateCalc-panel-title">Date Range</h4>
+                <h4 class="dateCalc-panel-title">Date Range & Exclusion Options</h4>
                 <div class="dateCalc-inputs-grid">
                     <div class="dateCalc-input-field">
                         <label for="startDate1">Start Date</label>
@@ -246,26 +246,14 @@ function renderDaysBetweenTab(container) {
                         <input type="date" id="endDate1">
                     </div>
                 </div>
-            </div>
-            
-            <!-- Options Section -->
-            <div class="dateCalc-panel-section">
-                <h4 class="dateCalc-panel-title">Exclusion Options</h4>
+                <div class="dateCalc-options-divider"></div>
                 <div class="dateCalc-options-grid">
                     <label class="dateCalc-option-item">
                         <input type="checkbox" id="excludeSchedule">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-                            <line x1="3" y1="10" x2="21" y2="10"/>
-                        </svg>
                         <span>Exclude System Schedule Days</span>
                     </label>
                     <label class="dateCalc-option-item">
                         <input type="checkbox" id="excludeWeekends">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                            <circle cx="12" cy="7" r="4"/>
-                        </svg>
                         <span>Exclude Weekends</span>
                     </label>
                     <div class="dateCalc-additional-days-input">
@@ -282,15 +270,15 @@ function renderDaysBetweenTab(container) {
                     <div class="dateCalc-result-item">
                         <span class="result-label">Days from Start to End:</span>
                         <span class="result-value" data-result="totalDays">--</span>
-                    </div>
+                        </div>
                     <div class="dateCalc-result-item">
                         <span class="result-label">Excluded Schedule Days:</span>
                         <span class="result-value" data-result="scheduleDays">--</span>
-                    </div>
+                        </div>
                     <div class="dateCalc-result-item">
                         <span class="result-label">Excluded Weekends:</span>
                         <span class="result-value" data-result="weekendDays">--</span>
-                    </div>
+                        </div>
                     <div class="dateCalc-result-item">
                         <span class="result-label">Excluded Additional Days:</span>
                         <span class="result-value" data-result="additionalDays">--</span>
@@ -334,9 +322,9 @@ function renderDaysBetweenTab(container) {
 function renderAddDaysTab(container) {
     container.innerHTML = `
         <div class="dateCalc-tab-panel">
-            <!-- Date Inputs Section -->
+            <!-- Date Inputs Section with Exclusion Options -->
             <div class="dateCalc-panel-section">
-                <h4 class="dateCalc-panel-title">Start Date & Duration</h4>
+                <h4 class="dateCalc-panel-title">Start Date, Duration & Exclusion Options</h4>
                 <div class="dateCalc-inputs-grid">
                     <div class="dateCalc-input-field">
                         <label for="pickDate">Start Date</label>
@@ -347,31 +335,19 @@ function renderAddDaysTab(container) {
                         <input type="number" id="addDaysCount" min="1" step="1" placeholder="Enter days">
                     </div>
                 </div>
-            </div>
-            
-            <!-- Options Section -->
-            <div class="dateCalc-panel-section">
-                <h4 class="dateCalc-panel-title">Exclusion Options</h4>
+                <div class="dateCalc-options-divider"></div>
                 <div class="dateCalc-options-grid">
                     <label class="dateCalc-option-item">
                         <input type="checkbox" id="addSchedule">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-                            <line x1="3" y1="10" x2="21" y2="10"/>
-                        </svg>
                         <span>Exclude System Schedule Days</span>
                     </label>
                     <label class="dateCalc-option-item">
                         <input type="checkbox" id="addWeekends">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                            <circle cx="12" cy="7" r="4"/>
-                        </svg>
                         <span>Exclude Weekends</span>
                     </label>
                 </div>
             </div>
-            
+                    
             <!-- Results Section -->
             <div class="dateCalc-panel-section dateCalc-results-section">
                 <h4 class="dateCalc-panel-title">Calculation Results</h4>
@@ -379,11 +355,11 @@ function renderAddDaysTab(container) {
                     <div class="dateCalc-result-item">
                         <span class="result-label">Excluded Schedule Days:</span>
                         <span class="result-value" data-result="addScheduleDays">--</span>
-                    </div>
+                        </div>
                     <div class="dateCalc-result-item">
                         <span class="result-label">Excluded Weekends:</span>
                         <span class="result-value" data-result="addWeekendDays">--</span>
-                    </div>
+                        </div>
                     <div class="dateCalc-result-item">
                         <span class="result-label">Total Excluded Days:</span>
                         <span class="result-value" data-result="addTotalExcluded">--</span>
@@ -406,7 +382,7 @@ function renderAddDaysTab(container) {
                 </button>
             </div>
         </div>
-    `;
+    `;    
     
     // Attach event listener
     document.getElementById('calculateAddDaysBtn').addEventListener('click', calculateAddDays);
@@ -416,33 +392,33 @@ function renderAddDaysTab(container) {
  * Calculate days between two dates
  */
 function calculateDaysBetween() {
-    calcDateDays.startDate = document.getElementById('startDate1').value;
-    calcDateDays.endDate = document.getElementById('endDate1').value;
+        calcDateDays.startDate = document.getElementById('startDate1').value;
+        calcDateDays.endDate = document.getElementById('endDate1').value;
 
-    if (!calcDateDays.startDate || !calcDateDays.endDate) {
-        showCustomAlert(`Please provide both Start Date and End Date.`);
+        if (!calcDateDays.startDate || !calcDateDays.endDate) {
+            showCustomAlert(`Please provide both Start Date and End Date.`);            
         resetResults('daysBetween');
-        return; 
-    }
-    
-    // Date comparison using Date obj
-    const startDateObj = createDateObject(calcDateDays.startDate);
-    const endDateObj = createDateObject(calcDateDays.endDate);
-    
-    if (endDateObj < startDateObj) {
-        showCustomAlert("End Date cannot be less than Start Date.");
+            return; 
+        }
+        
+        // Date comparison using Date obj
+        const startDateObj = createDateObject(calcDateDays.startDate);
+        const endDateObj = createDateObject(calcDateDays.endDate);
+        
+        if (endDateObj < startDateObj) {
+            showCustomAlert("End Date cannot be less than Start Date.");
         resetResults('daysBetween');
-        return; 
-    }
+            return; 
+        }
 
-    const daysDifference = calculateDateDifference(calcDateDays.startDate, calcDateDays.endDate);        
-    const isExcludeWeekendsChecked = document.getElementById('excludeWeekends').checked;        
-    const isExcludeScheduleChecked = document.getElementById('excludeSchedule').checked;
-    const holidaysCount = isExcludeScheduleChecked ? getHolidaysBetweenDates(calcDateDays.startDate, calcDateDays.endDate, isExcludeWeekendsChecked) : 0;        
-    const weekendsCount = isExcludeWeekendsChecked ? countWeekendsBetweenDates(calcDateDays.startDate, calcDateDays.endDate) : 0;
-    
-    let remainingDays = daysDifference - holidaysCount - weekendsCount;        
-    const additionalExcludedDays = Math.min(remainingDays, document.getElementById('daysCount').value || 0);
+        const daysDifference = calculateDateDifference(calcDateDays.startDate, calcDateDays.endDate);        
+        const isExcludeWeekendsChecked = document.getElementById('excludeWeekends').checked;        
+        const isExcludeScheduleChecked = document.getElementById('excludeSchedule').checked;
+        const holidaysCount = isExcludeScheduleChecked ? getHolidaysBetweenDates(calcDateDays.startDate, calcDateDays.endDate, isExcludeWeekendsChecked) : 0;        
+        const weekendsCount = isExcludeWeekendsChecked ? countWeekendsBetweenDates(calcDateDays.startDate, calcDateDays.endDate) : 0;
+        
+        let remainingDays = daysDifference - holidaysCount - weekendsCount;        
+        const additionalExcludedDays = Math.min(remainingDays, document.getElementById('daysCount').value || 0);
 
     // Update results
     document.querySelector('[data-result="totalDays"]').textContent = `${daysDifference} Day(s)`;
@@ -450,81 +426,81 @@ function calculateDaysBetween() {
     document.querySelector('[data-result="weekendDays"]').textContent = `${weekendsCount} Day(s)`;
     document.querySelector('[data-result="additionalDays"]').textContent = `${additionalExcludedDays} Day(s)`;
 
-    // Set total days
-    const totalDays = remainingDays - additionalExcludedDays;
+        // Set total days
+        const totalDays = remainingDays - additionalExcludedDays;
     document.querySelector('[data-result="finalTotal"]').textContent = `${totalDays} Day(s)`;
-    
-    // Show note
+        
+        // Show note
     const noteElement = document.getElementById('daysBetweenNote');
-    if (noteElement) {
+        if (noteElement) {
         noteElement.style.display = 'flex';
-    }
+        }        
 }
 
 /**
  * Calculate final date after adding days
  */
 function calculateAddDays() {
-    const startDateStr = document.getElementById('pickDate').value;
-    const daysToAdd = parseInt(document.getElementById('addDaysCount').value, 10);
+        const startDateStr = document.getElementById('pickDate').value;
+        const daysToAdd = parseInt(document.getElementById('addDaysCount').value, 10);
 
-    if (!startDateStr || isNaN(daysToAdd)) {
-        showCustomAlert("Please provide both Start Date and Days to Add.");
+        if (!startDateStr || isNaN(daysToAdd)) {
+            showCustomAlert("Please provide both Start Date and Days to Add.");
         resetResults('addDays');
-        return;
-    }
-    
-    // Validate that days to add is positive
-    if (daysToAdd <= 0) {
-        showCustomAlert("Days to Add must be greater than 0.");
+            return;
+        }
+        
+        // Validate that days to add is positive
+        if (daysToAdd <= 0) {
+            showCustomAlert("Days to Add must be greater than 0.");
         resetResults('addDays');
-        return;
-    }
+            return;
+        }
 
-    const isAddWeekendsChecked = document.getElementById('addWeekends').checked;
-    const isAddScheduleChecked = document.getElementById('addSchedule').checked;
-    let startDate = createDateObject(startDateStr);
-    let finalDate = new Date(startDate);
+        const isAddWeekendsChecked = document.getElementById('addWeekends').checked;
+        const isAddScheduleChecked = document.getElementById('addSchedule').checked;
+        let startDate = createDateObject(startDateStr);
+        let finalDate = new Date(startDate);
 
-    let totalAddedDays = 0;
-    let weekendsCount = 0;
-    let holidaysCount = 0;
-    
-    while (totalAddedDays < daysToAdd) {
+        let totalAddedDays = 0;
+        let weekendsCount = 0;
+        let holidaysCount = 0;
+        
+        while (totalAddedDays < daysToAdd) {
         finalDate.setDate(finalDate.getDate() + 1);
-        const dayOfWeek = finalDate.getDay();
-        
-        // Check if current date is a weekend
-        const isWeekend = (dayOfWeek === 6 || dayOfWeek === 0);
-        
-        // Check if current date is a holiday
-        const currentDateString = finalDate.toISOString().split('T')[0] + 'T00:00:00.000Z';
-        const isHoliday = listOfHolidays.includes(currentDateString);
-        
-        // Skip weekends if option is checked
-        if (isAddWeekendsChecked && isWeekend) {
-            weekendsCount++;
-            continue; 
+            const dayOfWeek = finalDate.getDay();
+            
+            // Check if current date is a weekend
+            const isWeekend = (dayOfWeek === 6 || dayOfWeek === 0);
+            
+            // Check if current date is a holiday
+            const currentDateString = finalDate.toISOString().split('T')[0] + 'T00:00:00.000Z';
+            const isHoliday = listOfHolidays.includes(currentDateString);
+            
+            // Skip weekends if option is checked
+            if (isAddWeekendsChecked && isWeekend) {
+                weekendsCount++;
+                continue; 
+            }
+            
+            // Skip holidays if option is checked
+            if (isAddScheduleChecked && isHoliday && !(isAddWeekendsChecked && isWeekend)) {
+                holidaysCount++;
+                continue; 
+            }
+            
+            totalAddedDays++; 
         }
         
-        // Skip holidays if option is checked
-        if (isAddScheduleChecked && isHoliday && !(isAddWeekendsChecked && isWeekend)) {
-            holidaysCount++;
-            continue; 
-        }
+        // Format date with zero-padding 
+        const month = String(finalDate.getMonth() + 1).padStart(2, '0');
+        const day = String(finalDate.getDate()).padStart(2, '0');
+        const year = finalDate.getFullYear();
+        const formattedFinalDate = `${month}-${day}-${year}`;
         
-        totalAddedDays++; 
-    }
-    
-    // Format date with zero-padding 
-    const month = String(finalDate.getMonth() + 1).padStart(2, '0');
-    const day = String(finalDate.getDate()).padStart(2, '0');
-    const year = finalDate.getFullYear();
-    const formattedFinalDate = `${month}-${day}-${year}`;
-    
-    // Calculate total excluded days (weekends + holidays)
-    const totalExcludedDays = weekendsCount + holidaysCount;
-    
+        // Calculate total excluded days (weekends + holidays)
+        const totalExcludedDays = weekendsCount + holidaysCount;
+        
     // Update results
     document.querySelector('[data-result="addScheduleDays"]').textContent = `${holidaysCount} Day(s)`;
     document.querySelector('[data-result="addWeekendDays"]').textContent = `${weekendsCount} Day(s)`;
@@ -547,7 +523,7 @@ function resetResults(tab) {
     } else if (tab === 'addDays') {
         document.querySelectorAll('.dateCalc-tab-panel [data-result]').forEach(el => {
             el.textContent = '--';
-        });
+    });
     }
 }
 
@@ -566,7 +542,7 @@ function attachModalEventHandlers(container) {
       closeButton.style.backgroundColor = 'transparent';
     });
     
-    makePopupMovable(container);
+    makePopupMovable(container); 
     
     // Tab switching
     document.querySelectorAll('.dateCalc-tab-btn').forEach(btn => {
@@ -582,13 +558,13 @@ function attachModalEventHandlers(container) {
 
 async function dateCalcTest() {
     try {
-        // Close all popups
-        const existingPopups = document.querySelectorAll('.commonPopup');
-        existingPopups.forEach(popup => popup.remove());    
-        const modalContent = createModalContent();
-        modalContent.setAttribute('data-popup-id', 'dateCalculatorTest');
-        document.body.appendChild(modalContent);
-        attachModalEventHandlers(modalContent);    
+    // Close all popups
+    const existingPopups = document.querySelectorAll('.commonPopup');
+    existingPopups.forEach(popup => popup.remove());    
+    const modalContent = createModalContent();
+    modalContent.setAttribute('data-popup-id', 'dateCalculatorTest');
+    document.body.appendChild(modalContent);
+    attachModalEventHandlers(modalContent);    
         await setupHolidayScheduleDropdown();
     } catch (error) {
         console.error('Error opening Date Calculator (Redesigned):', error);
