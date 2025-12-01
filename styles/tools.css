@@ -814,6 +814,11 @@
         width: 280px;
         min-width: 280px;
     }
+    
+    .dateCalc-tab-btn {
+        padding: 10px 16px;
+        font-size: 13px;
+    }
 }
 
 @media (max-width: 900px) {
@@ -826,10 +831,64 @@
         max-height: 300px;
         border-right: none;
         border-bottom: 2px solid #e0e0e0;
+        min-width: 100%;
     }
     
     .dateCalc-inputs-grid {
         grid-template-columns: 1fr;
+    }
+    
+    .dateCalc-tab-btn {
+        padding: 10px 12px;
+        font-size: 12px;
+    }
+    
+    .dateCalc-options-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .dateCalc-input-field label {
+        min-width: 90px;
+    }
+}
+
+@media (max-width: 600px) {
+    .dateCalculatorPopup {
+        width: 95%;
+    }
+    
+    .dateCalc-left-panel {
+        max-height: 250px;
+    }
+    
+    .dateCalc-calendar-section {
+        height: 280px;
+    }
+    
+    .dateCalc-tab-navigation {
+        flex-direction: column;
+        gap: 4px;
+    }
+    
+    .dateCalc-tab-btn {
+        width: 100%;
+        justify-content: center;
+        border-radius: 6px;
+    }
+    
+    .dateCalc-tab-btn.active {
+        border-bottom: none;
+        border-left: 3px solid #2b2b2b;
+    }
+    
+    .dateCalc-input-field {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 6px;
+    }
+    
+    .dateCalc-input-field label {
+        min-width: 0;
     }
 }
 
