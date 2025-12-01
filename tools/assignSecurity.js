@@ -227,6 +227,25 @@ function editSecurity() {
 	}
 	
 	/**
+	 * Clear selections when switching away from a tab
+	 */
+	function clearTabSelections(tabName) {
+		if (tabName === 'businessunit') {
+			newBusinessUnitId = null;
+			businessUnitAction = null;
+		} else if (tabName === 'teams') {
+			teamsToAdd = [];
+			teamsToRemove = [];
+			teamAction = null;
+		} else if (tabName === 'roles') {
+			rolesToAdd = [];
+			rolesToRemove = [];
+			roleAction = null;
+		}
+		updateActionButtons();
+	}
+	
+	/**
 	 * Reset only the modification selections (for Reset button)
 	 */
 	function resetModifications() {
@@ -389,10 +408,17 @@ function editSecurity() {
 			// Attach tab click handlers
 			securityContent.querySelectorAll('.tab-btn').forEach(btn => {
 				btn.addEventListener('click', () => {
+					const previousTab = activeTab;
 					activeTab = btn.dataset.tab;
+					
+					// Clear selections when switching tabs
+					if (previousTab !== activeTab) {
+						clearTabSelections(previousTab);
+					}
+					
 					updateActiveTab();
-						});
 					});
+				});
 					
 			// Attach button handlers
 			document.getElementById('applyChangesBtn').addEventListener('click', handleApplyChanges);
