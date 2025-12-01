@@ -141,6 +141,9 @@ function createModalContent() {
                             <h3>System Schedule</h3>
                         </div>
                         <select id="holidayScheduleDropdown" class="dateCalc-dropdown"></select>
+                        <div class="dateCalc-schedule-hint">
+                            Select a schedule above to view holidays for this year
+                        </div>
                         <div class="holidays-scroll" id="holidaysList"></div>
                     </div>
                     
