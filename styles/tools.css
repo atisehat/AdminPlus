@@ -1888,8 +1888,9 @@
     align-items: center;
     gap: 16px;
     margin-bottom: 16px;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     position: relative;
+    min-height: 40px;
 }
 
 .section-title-with-actions h4 {
