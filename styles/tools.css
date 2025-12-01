@@ -335,8 +335,8 @@
 
 /* Left Panel - Schedule & Calendar */
 .dateCalc-left-panel {
-    width: 340px;
-    min-width: 340px;
+    width: 400px;
+    min-width: 400px;
     background: white;
     border-right: 2px solid #e0e0e0;
     display: flex;
@@ -629,6 +629,7 @@
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: 10px;
+    min-width: 0; /* Allows grid items to shrink below content size */
 }
 
 .dateCalc-input-field {
@@ -636,6 +637,7 @@
     flex-direction: row;
     align-items: center;
     gap: 8px;
+    min-width: 0; /* Allows flex items to shrink below content size */
 }
 
 .dateCalc-input-field label {
@@ -648,6 +650,7 @@
 
 .dateCalc-input-field input {
     flex: 1;
+    min-width: 0; /* Allows input to shrink */
     padding: 6px 8px;
     border: 2px solid #d0d0d0;
     border-radius: 4px;
@@ -658,6 +661,7 @@
 .dateCalc-input-field input[type="number"] {
     flex: 0;
     width: 120px;
+    min-width: 80px; /* Minimum width before overflow */
 }
 
 .dateCalc-input-field input:focus {
@@ -809,6 +813,13 @@
 }
 
 /* Responsive adjustments */
+@media (max-width: 1400px) {
+    .dateCalc-left-panel {
+        width: 340px;
+        min-width: 340px;
+    }
+}
+
 @media (max-width: 1200px) {
     .dateCalc-left-panel {
         width: 280px;
@@ -818,6 +829,14 @@
     .dateCalc-tab-btn {
         padding: 10px 16px;
         font-size: 13px;
+    }
+}
+
+@media (max-width: 1000px) {
+    /* Make inputs stack vertically when right panel gets narrow */
+    .dateCalc-inputs-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
     }
 }
 
