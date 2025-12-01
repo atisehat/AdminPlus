@@ -38,7 +38,16 @@ async function fetchAllHolidaySchedules() {
 async function setupHolidayScheduleDropdown() {
     const schedules = await fetchAllHolidaySchedules();
     const dropdown = document.getElementById('holidayScheduleDropdown');
-    let defaultScheduleName = '';    
+    let defaultScheduleName = '';
+    
+    // Add default "Select a schedule" option
+    const defaultOption = document.createElement('option');
+    defaultOption.value = '';
+    defaultOption.innerText = '-- Select a Schedule --';
+    defaultOption.disabled = true;
+    defaultOption.selected = true;
+    dropdown.appendChild(defaultOption);
+    
     const options = schedules.map(schedule => {
         const option = document.createElement('option');
         option.value = schedule.name;
@@ -50,11 +59,18 @@ async function setupHolidayScheduleDropdown() {
         return option;
     });
 
-    dropdown.append(...options); 
-    dropdown.value = defaultScheduleName;
-    displayHolidays(defaultScheduleName); 
+    dropdown.append(...options);
+    
+    // If there's a default schedule (type 2), select it
+    if (defaultScheduleName) {
+        dropdown.value = defaultScheduleName;
+        displayHolidays(defaultScheduleName);
+    }
+    
     dropdown.addEventListener('change', (e) => {
-        displayHolidays(e.target.value);
+        if (e.target.value) {
+            displayHolidays(e.target.value);
+        }
     }); 
 }
 
@@ -220,6 +236,21 @@ function createModalContent() {
 }
 
 /**
+ * Validate that a schedule is selected when trying to use schedule exclusion
+ */
+function validateScheduleSelection(checkboxId) {
+    const dropdown = document.getElementById('holidayScheduleDropdown');
+    const checkbox = document.getElementById(checkboxId);
+    
+    if (checkbox && checkbox.checked && (!dropdown.value || dropdown.value === '')) {
+        checkbox.checked = false;
+        showCustomAlert('Please select a System Schedule first before excluding schedule days.');
+        return false;
+    }
+    return true;
+}
+
+/**
  * Render the active calculation tab
  */
 function renderCalcTab() {
@@ -235,6 +266,22 @@ function renderCalcTab() {
     document.querySelectorAll('.dateCalc-tab-btn').forEach(btn => {
         btn.classList.toggle('active', btn.dataset.tab === activeCalcTab);
     });
+    
+    // Attach schedule validation to checkboxes
+    const excludeScheduleCheckbox = document.getElementById('excludeSchedule');
+    const addScheduleCheckbox = document.getElementById('addSchedule');
+    
+    if (excludeScheduleCheckbox) {
+        excludeScheduleCheckbox.addEventListener('change', () => {
+            validateScheduleSelection('excludeSchedule');
+        });
+    }
+    
+    if (addScheduleCheckbox) {
+        addScheduleCheckbox.addEventListener('change', () => {
+            validateScheduleSelection('addSchedule');
+        });
+    }
 }
 
 /**
@@ -423,6 +470,16 @@ function calculateDaysBetween() {
     const daysDifference = calculateDateDifference(calcDateDays.startDate, calcDateDays.endDate);
     const isExcludeWeekendsChecked = document.getElementById('excludeWeekends').checked;
     const isExcludeScheduleChecked = document.getElementById('excludeSchedule').checked;
+    
+    // Validate schedule selection if trying to exclude schedule days
+    if (isExcludeScheduleChecked) {
+        const dropdown = document.getElementById('holidayScheduleDropdown');
+        if (!dropdown.value || dropdown.value === '') {
+            showCustomAlert('Please select a System Schedule before excluding schedule days.');
+            resetResults('daysBetween');
+            return;
+        }
+    }
     const holidaysCount = isExcludeScheduleChecked ? getHolidaysBetweenDates(calcDateDays.startDate, calcDateDays.endDate, isExcludeWeekendsChecked) : 0;
     const weekendsCount = isExcludeWeekendsChecked ? countWeekendsBetweenDates(calcDateDays.startDate, calcDateDays.endDate) : 0;
     
@@ -466,6 +523,16 @@ function calculateAddDays() {
 
     const isAddWeekendsChecked = document.getElementById('addWeekends').checked;
     const isAddScheduleChecked = document.getElementById('addSchedule').checked;
+    
+    // Validate schedule selection if trying to exclude schedule days
+    if (isAddScheduleChecked) {
+        const dropdown = document.getElementById('holidayScheduleDropdown');
+        if (!dropdown.value || dropdown.value === '') {
+            showCustomAlert('Please select a System Schedule before excluding schedule days.');
+            resetResults('addDays');
+            return;
+        }
+    }
     let startDate = createDateObject(startDateStr);
     let finalDate = new Date(startDate);
 
