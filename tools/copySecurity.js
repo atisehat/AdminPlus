@@ -366,6 +366,11 @@ function copySecurity() {
 		var userId = Xrm.Utility.getGlobalContext().userSettings.userId;
 		userId = userId.replace(/[{}]/g, "");
 
+		if (selectedUserId === selectedUserId2) {
+			showCustomAlert("The FROM user and TO user cannot be the same. Please select different users.");
+			return;
+		}
+
 		if (selectedUserId2.toLowerCase() === userId.toLowerCase()) {
 			showCustomAlert("You are not allowed to change your own security settings.");
 			return;
