@@ -561,14 +561,14 @@
 .dateCalc-option-item {
     display: flex;
     align-items: center;
-    gap: 6px;
-    padding: 8px 10px;
+    gap: 5px;
+    padding: 6px 8px;
     background: white;
-    border: 2px solid #e0e0e0;
+    border: 1px solid #e0e0e0;
     border-radius: 4px;
     cursor: pointer;
     transition: all 0.2s;
-    font-size: 12px;
+    font-size: 11px;
     color: #2b2b2b;
 }
 
@@ -579,20 +579,21 @@
 
 .dateCalc-option-item input[type="checkbox"] {
     cursor: pointer;
-    width: 16px;
-    height: 16px;
+    width: 14px;
+    height: 14px;
     flex-shrink: 0;
 }
 
 .dateCalc-option-item svg {
     flex-shrink: 0;
     color: #666;
-    width: 14px;
-    height: 14px;
+    width: 13px;
+    height: 13px;
 }
 
 .dateCalc-option-item:has(input[type="checkbox"]:checked) {
     border-color: #2b2b2b;
+    border-width: 2px;
     background: #e8f4f8;
 }
 
@@ -600,15 +601,15 @@
     grid-column: 1;
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 8px 10px;
+    gap: 5px;
+    padding: 6px 8px;
     background: white;
-    border: 2px solid #e0e0e0;
+    border: 1px solid #e0e0e0;
     border-radius: 4px;
 }
 
 .dateCalc-additional-days-input label {
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 600;
     color: #2b2b2b;
     white-space: nowrap;
@@ -616,11 +617,11 @@
 
 .dateCalc-additional-days-input input {
     flex: 1;
-    padding: 5px 8px;
+    padding: 4px 6px;
     border: 1px solid #d0d0d0;
     border-radius: 4px;
-    font-size: 12px;
-    min-width: 60px;
+    font-size: 11px;
+    min-width: 50px;
 }
 
 .dateCalc-additional-days-input input:focus {
@@ -632,14 +633,14 @@
 .dateCalc-inputs-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
+    gap: 8px;
 }
 
 .dateCalc-input-field {
     display: flex;
     flex-direction: row;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
 }
 
 .dateCalc-input-field label {
@@ -647,15 +648,15 @@
     font-weight: 600;
     color: #2b2b2b;
     white-space: nowrap;
-    min-width: 75px;
+    min-width: 70px;
 }
 
 .dateCalc-input-field input {
     flex: 1;
-    padding: 6px 8px;
-    border: 2px solid #d0d0d0;
+    padding: 5px 7px;
+    border: 1px solid #d0d0d0;
     border-radius: 4px;
-    font-size: 12px;
+    font-size: 11px;
     transition: all 0.2s;
 }
 
