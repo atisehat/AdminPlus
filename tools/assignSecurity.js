@@ -417,8 +417,8 @@ function editSecurity() {
 					}
 					
 					updateActiveTab();
+						});
 					});
-				});
 					
 			// Attach button handlers
 			document.getElementById('applyChangesBtn').addEventListener('click', handleApplyChanges);

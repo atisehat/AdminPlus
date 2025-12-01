@@ -1824,7 +1824,7 @@
 }
 
 .current-items-list {
-    max-height: 300px;
+    max-height: 200px;
     overflow-y: auto;
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -1888,9 +1888,8 @@
     align-items: center;
     gap: 16px;
     margin-bottom: 16px;
-    flex-wrap: nowrap;
+    flex-wrap: wrap;
     position: relative;
-    min-height: 40px;
 }
 
 .section-title-with-actions h4 {
@@ -1962,7 +1961,7 @@
 
 /* Selection Lists */
 .selection-list {
-    max-height: 350px;
+    max-height: 250px;
     overflow-y: auto;
     margin-top: 12px;
     padding: 4px;
