@@ -319,8 +319,8 @@
 
 /* Date Calculator */
 .holidaysList { 
-    max-height: 74%; 
-    overflow-y: hidden; 
+    max-height: 300px; 
+    overflow-y: auto; 
     display: grid; 
     margin-top: 15px; 
     padding-left: 0px; 
@@ -358,7 +358,8 @@
 }
 
 .section1-row1 { 
-    display: inline-block; 
+    display: flex;
+    flex-direction: column;
     width: 50%; 
     height: 100%;
     padding: 10px 15px; 
@@ -366,6 +367,7 @@
     box-sizing: border-box; 
     text-align: left;
     overflow: hidden;
+    min-height: 0;
 }
 
 .section1-row1:first-child {
@@ -377,14 +379,15 @@
 }
 
 .section1-row2 { 
-    display: inline-block; 
+    display: flex;
+    flex-direction: column;
     width: 50%; 
     height: 100%;
     padding: 15px; 
-    vertical-align: top; 
     box-sizing: border-box; 
     text-align: left;
     overflow: hidden;
+    min-height: 0;
 }
 
 .securityPopup-row .section1-row2:first-child {
@@ -397,24 +400,32 @@
 
 .calendar { 
     width: 95%; 
-    height: 92%; 
+    height: 100%; 
     border: 1px solid #ddd; 
     background-color: #f9f9f9; 
     padding: 10px; 
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1); 
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
 }
 
 .calendarHeader { 
     display: flex; 
     justify-content: space-between; 
     align-items: center; 
-    margin-bottom: 10px; 
+    margin-bottom: 10px;
+    flex-shrink: 0;
 }
 
 .calendarDays, .calendarDates { 
     display: grid; 
     grid-template-columns: repeat(7, 1fr); 
     gap: 5px; 
+}
+
+.calendarDays {
+    flex-shrink: 0;
 }
 
 .calendarDays div { 
@@ -426,9 +437,15 @@
     margin-bottom: 5px; 
 }
 
+.calendarDates {
+    flex: 1;
+    overflow-y: auto;
+    min-height: 0;
+}
+
 .calendarDates div { 
     background-color: #e9ecef; 
-    height: 23px; 
+    height: 30px; 
     display: flex; 
     align-items: center; 
     justify-content: center; 
@@ -455,18 +472,20 @@
 
 .excludeSettingsWrapper { 
     border: 1px solid #d4d4d4; 
-    padding: 10px; 
+    padding: 8px; 
     border-radius: 5px; 
-    margin-bottom: 10px; 
-    margin-top: 10px; 
-    background-color: #f5f5f5; 
+    margin-bottom: 8px; 
+    margin-top: 5px; 
+    background-color: #f5f5f5;
+    flex-shrink: 0;
 }
 
 .excludeSettingsWrapper h4 { 
     margin-top: 0; 
     border-bottom: 1px solid #d4d4d4; 
     padding-bottom: 5px; 
-    margin-bottom: 10px; 
+    margin-bottom: 8px; 
+    font-size: 13px;
 }
 
 .checkboxWrapper { 
@@ -485,11 +504,13 @@
     border: 1px solid #ccc; 
     padding: 10px; 
     border-radius: 4px; 
-    margin-top: 10px; 
+    margin-top: 8px;
+    flex-shrink: 0;
 }
 
 .calculationsWrapper { 
-    margin-top: 20px; 
+    margin-top: 15px;
+    flex-shrink: 0;
 }
 
 .calculationRow { 
@@ -504,8 +525,9 @@
 }
 
 .section3-submitBtn { 
-    margin-top: 25px; 
-    text-align: center; 
+    margin-top: 15px; 
+    text-align: center;
+    flex-shrink: 0;
 }
 
 #section3SubmitBtn { 
@@ -542,43 +564,50 @@
 
 .notes { 
     display: none; 
-    padding: 12px; 
+    padding: 10px;
+    margin-top: 10px;
+    font-size: 12px;
+    flex-shrink: 0;
 }
 
 .addSettingsWrapper { 
     border: 1px solid #d4d4d4; 
-    padding: 11px; 
+    padding: 8px; 
     border-radius: 5px; 
-    margin-bottom: 10px; 
-    margin-top: 10px; 
-    background-color: #f5f5f5; 
+    margin-bottom: 8px; 
+    margin-top: 5px; 
+    background-color: #f5f5f5;
+    flex-shrink: 0;
 }
 
 .addSettingsWrapper h4 { 
     margin-top: 0; 
     border-bottom: 1px solid #d4d4d4; 
     padding-bottom: 5px; 
-    margin-bottom: 10px; 
+    margin-bottom: 8px;
+    font-size: 13px;
 }
 
 .addDateRow { 
     display: flex; 
-    margin-top: 20px; 
+    margin-top: 15px; 
 }
 
 .addCalculationsWrapper { 
-    margin-top: 30px; 
+    margin-top: 20px;
+    flex-shrink: 0;
 }
 
 .addDateSeparator { 
     border-top: 2px solid black; 
-    margin-top: 30px; 
+    margin-top: 15px; 
     margin-bottom: 10px; 
 }
 
 .section4-submitBtn { 
-    margin-top: 25px; 
-    text-align: center; 
+    margin-top: 15px; 
+    text-align: center;
+    flex-shrink: 0;
 }
 
 #section4SubmitBtn { 
@@ -609,64 +638,103 @@
 }
 
 /* Date Calculator Overrides */
-.dateCalculatorPopup .commonSection {
-    height: calc(80vh - 70px);
+.dateCalculatorPopup {
+    width: 85%;
+    max-width: 1400px;
+}
+
+.dateCalculatorPopup .popup-body {
+    height: calc(80vh - 60px);
+    max-height: calc(80vh - 60px);
     overflow: hidden;
     display: flex;
     flex-direction: column;
+}
+
+.dateCalculatorPopup .commonSection {
+    flex: 1;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    padding: 15px;
 }
 
 .dateCalculatorPopup .securityPopup-row {
     flex: 1;
     display: flex;
     overflow: hidden;
+    min-height: 0;
+}
+
+.dateCalculatorPopup .securityPopup-row:first-child {
+    flex: 0 0 45%;
+    max-height: 45%;
+}
+
+.dateCalculatorPopup .securityPopup-row:last-child {
+    flex: 1;
+    min-height: 0;
 }
 
 .dateCalculatorPopup #section1 {
-    border-right: 2px solid #e0e0e0;
-    padding-right: 15px;
+    display: flex;
+    flex-direction: column;
     overflow: hidden;
 }
 
 .dateCalculatorPopup #section2 {
+    display: flex;
+    flex-direction: column;
     overflow: hidden;
 }
 
 .dateCalculatorPopup #section3 {
-    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
 }
 
 .dateCalculatorPopup #section4 {
-    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
 }
 
 .dateCalculatorPopup .calendar {
-    height: 85%;
+    flex: 1;
+    min-height: 0;
     overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.dateCalculatorPopup .calendarDates {
+    overflow-y: auto;
+    max-height: 250px;
 }
 
 .dateCalculatorPopup .holidaysList {
-    overflow: hidden;
+    flex: 1;
+    overflow-y: auto;
+    min-height: 0;
 }
 
 .dateCalculatorPopup .dateSection {
-    max-height: 60%;
-    overflow: hidden;
+    flex-shrink: 0;
 }
 
-.dateCalculatorPopup #section2 {
-    border-right: none;
-    padding-left: 15px;
+.dateCalculatorPopup .excludeSettingsWrapper,
+.dateCalculatorPopup .addSettingsWrapper {
+    flex-shrink: 0;
 }
 
-.dateCalculatorPopup #section3 {
-    border-right: 2px solid #e0e0e0;
-    padding-right: 15px;
+.dateCalculatorPopup .section3-submitBtn,
+.dateCalculatorPopup .section4-submitBtn {
+    flex-shrink: 0;
 }
 
-.dateCalculatorPopup #section4 {
-    border-right: none;
-    padding-left: 15px;
+.dateCalculatorPopup .notes {
+    flex-shrink: 0;
 }
 
 /* Copy Security Styles */
