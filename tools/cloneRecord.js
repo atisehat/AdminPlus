@@ -302,13 +302,13 @@ function generateFieldsHTML(fieldAnalysis) {
             
             html += `
                 <div style="padding: 8px; background-color: #f5f5f5; border-radius: 5px; border-left: 3px solid #2b2b2b; cursor: pointer; transition: background-color 0.2s;">
-                    <div style="display: flex; align-items: center; margin-bottom: 5px;">
+                    <div style="display: flex; align-items: center;">
                         <input type="checkbox" class="field-checkbox" data-field-name="${field.name}" data-field-type="${type}" style="margin-right: 8px; width: 16px; height: 16px; cursor: pointer; flex-shrink: 0;" checked>
-                        <div style="font-weight: bold; color: #333; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                        <div style="font-weight: bold; color: #333; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1;">
                             ${field.displayName}${requiredMark}${recommendedMark}
                         </div>
                     </div>
-                    <div style="margin-top: 5px; padding-top: 5px; border-top: 1px solid #ddd; font-size: 12px; color: #555; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-left: 24px;">
+                    <div style="margin-top: 5px; padding-top: 5px; border-top: 1px solid #ddd; font-size: 12px; color: #555; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
                         <strong>Value:</strong> <span style="font-style: italic;">${displayValue}</span>
                     </div>
                 </div>
