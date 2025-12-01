@@ -342,7 +342,7 @@ function renderAddDaysTab(container) {
                     </div>
                     <div class="dateCalc-input-field">
                         <label for="addDaysCount">Days to Add</label>
-                        <input type="number" id="addDaysCount" min="1" step="1" placeholder="Enter days" oninput="this.value = Math.max(1, parseInt(this.value) || 1)">
+                        <input type="number" id="addDaysCount" min="0" step="1" placeholder="0" oninput="this.value = Math.max(0, parseInt(this.value) || 0)">
                     </div>
                 </div>
                 <div class="dateCalc-options-divider"></div>
@@ -458,8 +458,8 @@ function calculateAddDays() {
         return;
     }
     
-    if (daysToAdd <= 0) {
-        showCustomAlert('Days to Add must be greater than 0.');
+    if (daysToAdd < 0) {
+        showCustomAlert('Days to Add cannot be negative.');
         resetResults('addDays');
         return;
     }
