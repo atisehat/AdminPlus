@@ -36,17 +36,32 @@ async function fetchAllHolidaySchedules() {
 }
 
 async function setupHolidayScheduleDropdown() {
-    const schedules = await fetchAllHolidaySchedules();
     const dropdown = document.getElementById('holidayScheduleDropdown');
     let defaultScheduleName = '';
     
-    // Add default "Select a schedule" option
+    // Add default "Select a schedule" option immediately
     const defaultOption = document.createElement('option');
     defaultOption.value = '';
     defaultOption.innerText = '-- Select a Schedule --';
     defaultOption.disabled = true;
     defaultOption.selected = true;
     dropdown.appendChild(defaultOption);
+    
+    // Show loading option
+    const loadingOption = document.createElement('option');
+    loadingOption.value = '';
+    loadingOption.innerText = 'Loading schedules...';
+    loadingOption.disabled = true;
+    dropdown.appendChild(loadingOption);
+    
+    // Initialize calendar with empty data immediately
+    initCalendar([]);
+    
+    // Fetch schedules asynchronously
+    const schedules = await fetchAllHolidaySchedules();
+    
+    // Remove loading option
+    dropdown.removeChild(loadingOption);
     
     const options = schedules.map(schedule => {
         const option = document.createElement('option');
@@ -61,7 +76,7 @@ async function setupHolidayScheduleDropdown() {
 
     dropdown.append(...options);
     
-    // If there's a default schedule (type 2), select it
+    // If there's a default schedule (type 2), select it and load holidays
     if (defaultScheduleName) {
         dropdown.value = defaultScheduleName;
         displayHolidays(defaultScheduleName);
@@ -113,29 +128,45 @@ function formatHolidays(entities) {
 }
 
 async function displayHolidays(scheduleName) {
+    const holidaysList = document.getElementById('holidaysList');
+    
     try {
+        // Show loading state
+        holidaysList.innerHTML = '<div style="padding: 10px; text-align: center; color: #666;">Loading holidays...</div>';
+        
         const holidays = await getHolidaysForSchedule(scheduleName);       
         listOfHolidays = holidays.map(holiday => holiday.date.toISOString());              
         holidays.sort((a, b) => a.date - b.date);
 
-        const holidaysList = document.getElementById('holidaysList');
-
-       holidaysList.innerHTML = holidays.map(holiday => {
-           const dateObj = new Date(holiday.date);
-           const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-           const dayOfWeek = dayNames[dateObj.getUTCDay()];
-           const formattedDate = `${dayOfWeek} - ${("0" + (dateObj.getUTCMonth() + 1)).slice(-2)}/${("0" + dateObj.getUTCDate()).slice(-2)}/${dateObj.getUTCFullYear()}`;
-           return `
-               <div class="holiday-item">
-                   <div class="holiday-item-name">${holiday.name}</div>
-                   <div class="holiday-item-date">${formattedDate}</div>
-               </div>
-           `;
-       }).join('');               
+        // Use DocumentFragment for better performance
+        const fragment = document.createDocumentFragment();
+        const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+        
+        holidays.forEach(holiday => {
+            const dateObj = new Date(holiday.date);
+            const dayOfWeek = dayNames[dateObj.getUTCDay()];
+            const month = String(dateObj.getUTCMonth() + 1).padStart(2, '0');
+            const day = String(dateObj.getUTCDate()).padStart(2, '0');
+            const year = dateObj.getUTCFullYear();
+            const formattedDate = `${dayOfWeek} - ${month}/${day}/${year}`;
+            
+            const holidayDiv = document.createElement('div');
+            holidayDiv.className = 'holiday-item';
+            holidayDiv.innerHTML = `
+                <div class="holiday-item-name">${holiday.name}</div>
+                <div class="holiday-item-date">${formattedDate}</div>
+            `;
+            fragment.appendChild(holidayDiv);
+        });
+        
+        holidaysList.innerHTML = '';
+        holidaysList.appendChild(fragment);
        
-           initCalendar(holidays);
+        // Update calendar with new holidays
+        initCalendar(holidays);
     } catch (error) {
         console.error("Error fetching holidays: ", error);
+        holidaysList.innerHTML = '<div style="padding: 10px; text-align: center; color: #e81123;">Error loading holidays</div>';
     }
 }
 
@@ -449,17 +480,17 @@ function renderAddDaysTab(container) {
  * Calculate days between two dates
  */
 function calculateDaysBetween() {
-    calcDateDays.startDate = document.getElementById('startDate1').value;
-    calcDateDays.endDate = document.getElementById('endDate1').value;
+    const startDate = document.getElementById('startDate1').value;
+    const endDate = document.getElementById('endDate1').value;
 
-    if (!calcDateDays.startDate || !calcDateDays.endDate) {
+    if (!startDate || !endDate) {
         showCustomAlert('Please provide both Start Date and End Date.');
         resetResults('daysBetween');
         return;
     }
     
-    const startDateObj = createDateObject(calcDateDays.startDate);
-    const endDateObj = createDateObject(calcDateDays.endDate);
+    const startDateObj = createDateObject(startDate);
+    const endDateObj = createDateObject(endDate);
     
     if (endDateObj < startDateObj) {
         showCustomAlert('End Date cannot be less than Start Date.');
@@ -467,7 +498,7 @@ function calculateDaysBetween() {
         return;
     }
 
-    const daysDifference = calculateDateDifference(calcDateDays.startDate, calcDateDays.endDate);
+    const daysDifference = calculateDateDifference(startDate, endDate);
     const isExcludeWeekendsChecked = document.getElementById('excludeWeekends').checked;
     const isExcludeScheduleChecked = document.getElementById('excludeSchedule').checked;
     
@@ -480,20 +511,26 @@ function calculateDaysBetween() {
             return;
         }
     }
-    const holidaysCount = isExcludeScheduleChecked ? getHolidaysBetweenDates(calcDateDays.startDate, calcDateDays.endDate, isExcludeWeekendsChecked) : 0;
-    const weekendsCount = isExcludeWeekendsChecked ? countWeekendsBetweenDates(calcDateDays.startDate, calcDateDays.endDate) : 0;
     
-    let remainingDays = daysDifference - holidaysCount - weekendsCount;
-    const additionalExcludedDays = Math.min(remainingDays, document.getElementById('daysCount').value || 0);
-
-    // Update result displays
-    document.querySelector('[data-result="totalDays"]').textContent = `${daysDifference} Day(s)`;
-    document.querySelector('[data-result="scheduleDays"]').textContent = `${holidaysCount} Day(s)`;
-    document.querySelector('[data-result="weekendDays"]').textContent = `${weekendsCount} Day(s)`;
-    document.querySelector('[data-result="additionalDays"]').textContent = `${additionalExcludedDays} Day(s)`;
-
+    const holidaysCount = isExcludeScheduleChecked ? getHolidaysBetweenDates(startDate, endDate, isExcludeWeekendsChecked) : 0;
+    const weekendsCount = isExcludeWeekendsChecked ? countWeekendsBetweenDates(startDate, endDate) : 0;
+    
+    const remainingDays = daysDifference - holidaysCount - weekendsCount;
+    const additionalExcludedDays = Math.min(remainingDays, parseInt(document.getElementById('daysCount').value) || 0);
     const totalDays = remainingDays - additionalExcludedDays;
-    document.querySelector('[data-result="finalTotal"]').textContent = `${totalDays} Day(s)`;
+
+    // Batch DOM updates for better performance
+    const updates = [
+        ['totalDays', `${daysDifference} Day(s)`],
+        ['scheduleDays', `${holidaysCount} Day(s)`],
+        ['weekendDays', `${weekendsCount} Day(s)`],
+        ['additionalDays', `${additionalExcludedDays} Day(s)`],
+        ['finalTotal', `${totalDays} Day(s)`]
+    ];
+    
+    updates.forEach(([key, value]) => {
+        document.querySelector(`[data-result="${key}"]`).textContent = value;
+    });
     
     // Show informational note
     const noteElement = document.getElementById('daysBetweenNote');
@@ -533,8 +570,12 @@ function calculateAddDays() {
             return;
         }
     }
-    let startDate = createDateObject(startDateStr);
-    let finalDate = new Date(startDate);
+    
+    const startDate = createDateObject(startDateStr);
+    const finalDate = new Date(startDate);
+    
+    // Convert holidays to Set for faster lookup
+    const holidaySet = new Set(listOfHolidays);
 
     let totalAddedDays = 0;
     let weekendsCount = 0;
@@ -545,7 +586,7 @@ function calculateAddDays() {
         const dayOfWeek = finalDate.getDay();
         const isWeekend = (dayOfWeek === 6 || dayOfWeek === 0);
         const currentDateString = finalDate.toISOString().split('T')[0] + 'T00:00:00.000Z';
-        const isHoliday = listOfHolidays.includes(currentDateString);
+        const isHoliday = holidaySet.has(currentDateString);
         
         if (isAddWeekendsChecked && isWeekend) {
             weekendsCount++;
@@ -566,11 +607,17 @@ function calculateAddDays() {
     const formattedFinalDate = `${month}-${day}-${year}`;
     const totalExcludedDays = weekendsCount + holidaysCount;
     
-    // Update result displays
-    document.querySelector('[data-result="addScheduleDays"]').textContent = `${holidaysCount} Day(s)`;
-    document.querySelector('[data-result="addWeekendDays"]').textContent = `${weekendsCount} Day(s)`;
-    document.querySelector('[data-result="addTotalExcluded"]').textContent = `${totalExcludedDays} Day(s)`;
-    document.querySelector('[data-result="addFinalDate"]').textContent = formattedFinalDate;
+    // Batch DOM updates for better performance
+    const updates = [
+        ['addScheduleDays', `${holidaysCount} Day(s)`],
+        ['addWeekendDays', `${weekendsCount} Day(s)`],
+        ['addTotalExcluded', `${totalExcludedDays} Day(s)`],
+        ['addFinalDate', formattedFinalDate]
+    ];
+    
+    updates.forEach(([key, value]) => {
+        document.querySelector(`[data-result="${key}"]`).textContent = value;
+    });
 }
 
 /**
@@ -632,14 +679,21 @@ async function dateCalc() {
         const existingPopups = document.querySelectorAll('.commonPopup');
         existingPopups.forEach(popup => popup.remove());
         
-        // Create and display the modal
+        // Create and display the modal immediately
         const modalContent = createModalContent();
         modalContent.setAttribute('data-popup-id', 'dateCalculator');
         document.body.appendChild(modalContent);
         
-        // Attach event handlers and load data
+        // Attach event handlers immediately (UI is responsive right away)
         attachModalEventHandlers(modalContent);
-        await setupHolidayScheduleDropdown();
+        
+        // Load data asynchronously without blocking UI
+        setupHolidayScheduleDropdown().catch(error => {
+            console.error('Error loading schedules:', error);
+            if (typeof showToast === 'function') {
+                showToast('Error loading schedules. Please refresh.', 'error', 3000);
+            }
+        });
     } catch (error) {
         console.error('Error opening Date Calculator:', error);
         if (typeof showToast === 'function') {
@@ -666,32 +720,52 @@ function initCalendar(holidays) {
         const todayDate = today.getDate();
         const todayMonth = today.getMonth();
         const todayYear = today.getFullYear();
+        
+        // Create a map for faster holiday lookup
+        const holidayMap = new Map();
+        holidays.forEach(h => {
+            const formattedDate = (h.date instanceof Date ? h.date.toISOString() : h.date).split('T')[0];
+            holidayMap.set(formattedDate, h.name);
+        });
     
-        let calendarHTML = '';            
+        // Use DocumentFragment for better performance
+        const fragment = document.createDocumentFragment();
+        
+        // Add empty divs for days before month starts
         for (let i = 0; i < firstDayOfMonth; i++) {
-            calendarHTML += '<div></div>';
-        }        
+            fragment.appendChild(document.createElement('div'));
+        }
+        
+        // Add days of the month
         for (let i = 1; i <= daysInMonth; i++) {
-            let currentDate = `${year}-${(month + 1).toString().padStart(2, '0')}-${i.toString().padStart(2, '0')}`; 
-            let dateClass = '';
-            let titleAttr = '';            
-            if (holidayDates.has(currentDate)) {
-                const holidayObject = holidays.find(h => {
-                    const formattedDate = (h.date instanceof Date ? h.date.toISOString() : h.date).split('T')[0];
-                    return formattedDate === currentDate;
-                });
-                const holidayName = holidayObject ? holidayObject.name : "Unknown Holiday";
-                dateClass = 'holidayDate';
-                titleAttr = `title="${holidayName}"`;
-            } 
+            const monthStr = String(month + 1).padStart(2, '0');
+            const dayStr = String(i).padStart(2, '0');
+            const currentDate = `${year}-${monthStr}-${dayStr}`;
+            
+            const dayDiv = document.createElement('div');
+            dayDiv.textContent = i;
+            
+            // Check for holiday
+            if (holidayMap.has(currentDate)) {
+                dayDiv.className = 'holidayDate';
+                dayDiv.title = holidayMap.get(currentDate);
+            }
+            
+            // Check if today
             if (i === todayDate && month === todayMonth && year === todayYear) {
-                dateClass += ' todayDate'; 
-            }    
-            calendarHTML += `<div class="${dateClass}" ${titleAttr}>${i}</div>`;
-        }    
-        document.getElementById('calendarDates').innerHTML = calendarHTML;    
+                dayDiv.className = dayDiv.className ? dayDiv.className + ' todayDate' : 'todayDate';
+            }
+            
+            fragment.appendChild(dayDiv);
+        }
+        
+        // Update DOM once
+        const calendarDates = document.getElementById('calendarDates');
+        calendarDates.innerHTML = '';
+        calendarDates.appendChild(fragment);
+        
         const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-        document.getElementById('monthYearLabel').innerText = `${monthNames[month]} ${year}`;
+        document.getElementById('monthYearLabel').textContent = `${monthNames[month]} ${year}`;
     }
 
     function goToPrevMonth() {
