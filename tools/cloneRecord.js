@@ -246,7 +246,7 @@ function generateFieldsHTML(fieldAnalysis) {
                     } else {
                         displayValue = 'Lookup value set';
                     }
-                } else if (type === 'multiselectoptionset' || type === 'optionset') {
+                } else if (type === 'multiselectoptionset' || type === 'optionset') {                    
                     if (type === 'optionset' && field.currentValue !== null && field.currentValue !== undefined) {
                         let formattedValue = null;
                         if (typeof field.attribute.getFormattedValue === 'function') {
@@ -279,7 +279,7 @@ function generateFieldsHTML(fieldAnalysis) {
                     } else {
                         displayValue = String(field.currentValue);
                     }
-                } else if (type === 'other') {
+                } else if (type === 'other') {                    
                     if (Array.isArray(field.currentValue)) {
                         if (field.currentValue.length > 0 && field.currentValue[0].name) {
                             displayValue = field.currentValue.map(v => v.name || v).join(', ');
@@ -291,9 +291,9 @@ function generateFieldsHTML(fieldAnalysis) {
                     } else {
                         displayValue = String(field.currentValue);
                     }
-                } else {
+                } else {                    
                     displayValue = String(field.currentValue);
-                }
+                }               
                 
                 if (displayValue && displayValue.length > 35) {
                     displayValue = displayValue.substring(0, 35) + '...';
@@ -370,13 +370,13 @@ function handleCloneRecord(container, fieldAnalysis, entityName) {
                 showToast('Please select at least one field to clone', 'warning');
             }
             return;
-        }
+        }      
         
-        const fieldsToClone = {};
+        const fieldsToClone = {};        
         selectedCheckboxes.forEach(checkbox => {
             try {
                 const fieldName = checkbox.getAttribute('data-field-name');
-                const fieldType = checkbox.getAttribute('data-field-type');
+                const fieldType = checkbox.getAttribute('data-field-type');                
                 const field = fieldAnalysis[fieldType].find(f => f.name === fieldName);
                 if (!field || field.currentValue === null || field.currentValue === undefined) {
                     return;
@@ -385,14 +385,14 @@ function handleCloneRecord(container, fieldAnalysis, entityName) {
                 let valueToStore = field.currentValue;
                 
                 if (fieldType === 'lookup' || fieldType === 'other') {
-                    if (Array.isArray(valueToStore)) {
+                    if (Array.isArray(valueToStore)) {                        
                         const hasValidLookups = valueToStore.every(lv => 
                             lv && lv.id && lv.name && lv.entityType
                         );
                         if (!hasValidLookups) {
                             return;
                         }
-                    } else if (typeof valueToStore === 'object' && valueToStore !== null) {
+                    } else if (typeof valueToStore === 'object' && valueToStore !== null) {                        
                         if (!valueToStore.id || !valueToStore.name || !valueToStore.entityType) {
                             return;
                         }
@@ -411,25 +411,25 @@ function handleCloneRecord(container, fieldAnalysis, entityName) {
                 showToast('No fields with values selected to clone', 'warning');
             }
             return;
-        }
+        }        
         
         container.remove();
         Xrm.Navigation.openForm({
             entityName: entityName,
             useQuickCreateForm: false,
             openInNewWindow: false
-        }).then(function(result) {
+        }).then(function(result) {            
             const maxAttempts = 20;
             let attempts = 0;
             
             const setValues = setInterval(() => {
-                attempts++;
-                try {
-                    if (typeof Xrm !== 'undefined' && Xrm.Page && Xrm.Page.data && Xrm.Page.data.entity) {
+                attempts++;                
+                try {                    
+                    if (typeof Xrm !== 'undefined' && Xrm.Page && Xrm.Page.data && Xrm.Page.data.entity) {                        
                         const newRecordId = Xrm.Page.data.entity.getId();
-                        if (!newRecordId) {
+                        if (!newRecordId) {                            
                             let successCount = 0;
-                            let errorCount = 0;
+                            let errorCount = 0;                            
                             const skippedFields = {};
                             
                             Object.keys(fieldsToClone).forEach(fieldName => {
@@ -437,13 +437,13 @@ function handleCloneRecord(container, fieldAnalysis, entityName) {
                                     const attribute = Xrm.Page.data.entity.attributes.get(fieldName);
                                     if (attribute) {
                                         const attrType = attribute.getAttributeType();
-                                        let valueToSet = fieldsToClone[fieldName];
-                                        if (attrType === 'lookup') {
-                                            if (valueToSet && !Array.isArray(valueToSet)) {
+                                        let valueToSet = fieldsToClone[fieldName];     
+                                        if (attrType === 'lookup') {                                            
+                                            if (valueToSet && !Array.isArray(valueToSet)) {                                                
                                                 if (valueToSet.id && valueToSet.name && valueToSet.entityType) {
                                                     valueToSet = [valueToSet];
                                                 }
-                                            }
+                                            }                                            
                                             if (Array.isArray(valueToSet) && valueToSet.length > 0) {
                                                 const lookup = valueToSet[0];
                                                 if (!lookup.id || !lookup.name || !lookup.entityType) {
@@ -455,7 +455,7 @@ function handleCloneRecord(container, fieldAnalysis, entityName) {
                                         
                                         attribute.setValue(valueToSet);
                                         successCount++;
-                                    } else {
+                                    } else {                              
                                         skippedFields[fieldName] = fieldsToClone[fieldName];
                                     }
                                 } catch (e) {
@@ -464,31 +464,31 @@ function handleCloneRecord(container, fieldAnalysis, entityName) {
                                 }
                             });
                             
-                            const skippedCount = Object.keys(skippedFields).length;
-                            if (skippedCount > 0) {
-                                const entityName = Xrm.Page.data.entity.getEntityName();
+                            const skippedCount = Object.keys(skippedFields).length;                                                            
+                            if (skippedCount > 0) {                                
+                                const entityName = Xrm.Page.data.entity.getEntityName();  
                                 sessionStorage.setItem('adminplus_skipped_fields', JSON.stringify(skippedFields));
                                 sessionStorage.setItem('adminplus_skipped_entity', entityName);
                                 sessionStorage.setItem('adminplus_clone_timestamp', Date.now().toString());
-                                sessionStorage.setItem('adminplus_waiting_for_save', 'true');
+                                sessionStorage.setItem('adminplus_waiting_for_save', 'true');                                
                                 
                                 try {
                                     const onCloseHandler = function() {
                                         const waiting = sessionStorage.getItem('adminplus_waiting_for_save');
-                                        if (waiting === 'true') {
+                                        if (waiting === 'true') {                                            
                                             cleanupSkippedFieldsStorage();
                                         }
-                                    };
+                                    };                                   
                                     Xrm.Page.data.entity.addOnSave(function(context) {
                                         sessionStorage.setItem('adminplus_save_in_progress', 'true');
-                                    });
+                                    });               
                                     
                                     window.addEventListener('beforeunload', onCloseHandler);
                                     window.addEventListener('pagehide', onCloseHandler);
                                 } catch (e) {
-                                }
+                                }                                
                                 startSaveMonitoring();
-                            }
+                            }                            
                             
                             if (typeof showToast === 'function') {
                                 if (skippedCount > 0) {
@@ -496,7 +496,7 @@ function handleCloneRecord(container, fieldAnalysis, entityName) {
                                 } else {
                                     showToast(`Successfully cloned ${successCount} field(s)!`, 'success', 3000);
                                 }
-                            }
+                            }                                                        
                             clearInterval(setValues);
                         }
                     }

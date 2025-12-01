@@ -372,8 +372,15 @@ function copySecurity() {
 		}
 
 		if (selectedUserId2.toLowerCase() === userId.toLowerCase()) {
-			showCustomAlert("You are not allowed to change your own security settings.");
-			return;
+			const confirmOptions = {
+				text: "⚠️ Warning: You are about to change your own security settings. This may result in loss of access or being locked out of the system. Are you sure you want to proceed?",
+				title: "Confirm Security Change"
+			};
+			
+			const confirmed = await Xrm.Navigation.openConfirmDialog(confirmOptions);
+			if (!confirmed.confirmed) {
+				return;
+			}
 		}
 
 		// Disable button during processing
