@@ -676,11 +676,12 @@ function getHolidaysBetweenDates(startDate, endDate, excludeWeekends = false) {
     const end = createDateObject(endDate);
     return listOfHolidays.reduce((count, holidayDateStr) => {
         const holiday = new Date(holidayDateStr);
-        holiday.setHours(0, 0, 0, 0);
+        // Create a local date from the UTC date components for accurate comparison
+        const holidayLocal = new Date(holiday.getUTCFullYear(), holiday.getUTCMonth(), holiday.getUTCDate());
         // Use getUTCDay() for consistency with holiday schedule data
         const dayOfWeek = holiday.getUTCDay();
         
-        if (holiday >= start && holiday <= end) {
+        if (holidayLocal >= start && holidayLocal <= end) {
             if (excludeWeekends) {
                 // Only count holidays NOT on weekends
                 if (dayOfWeek !== 6 && dayOfWeek !== 0) {
