@@ -138,9 +138,8 @@ function formatFieldValue(attribute) {
                 }
                 
                 // Try to get label from options
-                const controls = attribute.controls.get();
-                if (controls && controls.length > 0) {
-                    const control = controls[0];
+                if (attribute.controls && attribute.controls.getLength() > 0) {
+                    const control = attribute.controls.get(0);
                     if (typeof control.getOptions === 'function') {
                         const options = control.getOptions();
                         if (attrType === 'optionset' && value !== null && value !== undefined) {

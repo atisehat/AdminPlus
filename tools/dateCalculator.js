@@ -1,13 +1,5 @@
-/**
- * Date Calculator
- * Provides two calculation modes:
- * 1. Calculate days between two dates (with exclusions)
- * 2. Add days to a date (with exclusions)
- */
-
 // Global state variables
 let listOfHolidays = [];
-let calcDateDays = { startDate: null, endDate: null };
 const typeNames = { 0: "Default", 1: "Customer Service", 2: "Holiday Schedule", "-1": "Inner Calendar" };
 let activeCalcTab = 'daysBetween';
 
@@ -170,9 +162,6 @@ async function displayHolidays(scheduleName) {
     }
 }
 
-/**
- * Create the main modal content structure
- */
 function createModalContent() {
     const container = document.createElement('div');
     container.className = 'commonPopup';
@@ -266,9 +255,6 @@ function createModalContent() {
     return container;    
 }
 
-/**
- * Validate that a schedule is selected when trying to use schedule exclusion
- */
 function validateScheduleSelection(checkboxId) {
     const dropdown = document.getElementById('holidayScheduleDropdown');
     const checkbox = document.getElementById(checkboxId);
@@ -281,9 +267,6 @@ function validateScheduleSelection(checkboxId) {
     return true;
 }
 
-/**
- * Render the active calculation tab
- */
 function renderCalcTab() {
     const tabContent = document.getElementById('dateCalcTabContent');
     
@@ -315,9 +298,6 @@ function renderCalcTab() {
     }
 }
 
-/**
- * Render "Days Between Dates" tab
- */
 function renderDaysBetweenTab(container) {
     container.innerHTML = `
         <div class="dateCalc-tab-panel">
@@ -404,9 +384,6 @@ function renderDaysBetweenTab(container) {
     document.getElementById('calculateDaysBetweenBtn').addEventListener('click', calculateDaysBetween);
 }
 
-/**
- * Render "Add Days to Date" tab
- */
 function renderAddDaysTab(container) {
     container.innerHTML = `
         <div class="dateCalc-tab-panel">
@@ -476,9 +453,6 @@ function renderAddDaysTab(container) {
     document.getElementById('calculateAddDaysBtn').addEventListener('click', calculateAddDays);
 }
 
-/**
- * Calculate days between two dates
- */
 function calculateDaysBetween() {
     const startDate = document.getElementById('startDate1').value;
     const endDate = document.getElementById('endDate1').value;
@@ -519,29 +493,18 @@ function calculateDaysBetween() {
     const additionalExcludedDays = Math.min(remainingDays, parseInt(document.getElementById('daysCount').value) || 0);
     const totalDays = remainingDays - additionalExcludedDays;
 
-    // Batch DOM updates for better performance
-    const updates = [
-        ['totalDays', `${daysDifference} Day(s)`],
-        ['scheduleDays', `${holidaysCount} Day(s)`],
-        ['weekendDays', `${weekendsCount} Day(s)`],
-        ['additionalDays', `${additionalExcludedDays} Day(s)`],
-        ['finalTotal', `${totalDays} Day(s)`]
-    ];
+    document.querySelector('[data-result="totalDays"]').textContent = `${daysDifference} Day(s)`;
+    document.querySelector('[data-result="scheduleDays"]').textContent = `${holidaysCount} Day(s)`;
+    document.querySelector('[data-result="weekendDays"]').textContent = `${weekendsCount} Day(s)`;
+    document.querySelector('[data-result="additionalDays"]').textContent = `${additionalExcludedDays} Day(s)`;
+    document.querySelector('[data-result="finalTotal"]').textContent = `${totalDays} Day(s)`;
     
-    updates.forEach(([key, value]) => {
-        document.querySelector(`[data-result="${key}"]`).textContent = value;
-    });
-    
-    // Show informational note
     const noteElement = document.getElementById('daysBetweenNote');
     if (noteElement) {
         noteElement.style.display = 'flex';
     }
 }
 
-/**
- * Calculate final date after adding days
- */
 function calculateAddDays() {
     const startDateStr = document.getElementById('pickDate').value;
     const daysToAdd = parseInt(document.getElementById('addDaysCount').value, 10);
@@ -573,8 +536,6 @@ function calculateAddDays() {
     
     const startDate = createDateObject(startDateStr);
     const finalDate = new Date(startDate);
-    
-    // Convert holidays to Set for faster lookup
     const holidaySet = new Set(listOfHolidays);
 
     let totalAddedDays = 0;
@@ -607,22 +568,12 @@ function calculateAddDays() {
     const formattedFinalDate = `${month}-${day}-${year}`;
     const totalExcludedDays = weekendsCount + holidaysCount;
     
-    // Batch DOM updates for better performance
-    const updates = [
-        ['addScheduleDays', `${holidaysCount} Day(s)`],
-        ['addWeekendDays', `${weekendsCount} Day(s)`],
-        ['addTotalExcluded', `${totalExcludedDays} Day(s)`],
-        ['addFinalDate', formattedFinalDate]
-    ];
-    
-    updates.forEach(([key, value]) => {
-        document.querySelector(`[data-result="${key}"]`).textContent = value;
-    });
+    document.querySelector('[data-result="addScheduleDays"]').textContent = `${holidaysCount} Day(s)`;
+    document.querySelector('[data-result="addWeekendDays"]').textContent = `${weekendsCount} Day(s)`;
+    document.querySelector('[data-result="addTotalExcluded"]').textContent = `${totalExcludedDays} Day(s)`;
+    document.querySelector('[data-result="addFinalDate"]').textContent = formattedFinalDate;
 }
 
-/**
- * Reset results display
- */
 function resetResults(tab) {
     if (tab === 'daysBetween') {
         document.querySelectorAll('.dateCalc-tab-panel [data-result]').forEach(el => {
@@ -639,21 +590,17 @@ function resetResults(tab) {
     }
 }
 
-/**
- * Attach all event handlers to the modal
- */
 function attachModalEventHandlers(container) {
     const closeButton = container.querySelector('.close-button');
     closeButton.addEventListener('click', () => {
-      container.remove();
+        container.remove();
     });
     
-    // Hover effect
     closeButton.addEventListener('mouseenter', () => {
-      closeButton.style.backgroundColor = '#e81123';
+        closeButton.style.backgroundColor = '#e81123';
     });
     closeButton.addEventListener('mouseleave', () => {
-      closeButton.style.backgroundColor = 'transparent';
+        closeButton.style.backgroundColor = 'transparent';
     });
     
     makePopupMovable(container); 
@@ -670,24 +617,17 @@ function attachModalEventHandlers(container) {
     renderCalcTab();
 }
 
-/**
- * Main function to open the Date Calculator
- */
 async function dateCalc() {
     try {
-        // Close any existing popups
         const existingPopups = document.querySelectorAll('.commonPopup');
         existingPopups.forEach(popup => popup.remove());
         
-        // Create and display the modal immediately
         const modalContent = createModalContent();
         modalContent.setAttribute('data-popup-id', 'dateCalculator');
         document.body.appendChild(modalContent);
         
-        // Attach event handlers immediately (UI is responsive right away)
         attachModalEventHandlers(modalContent);
         
-        // Load data asynchronously without blocking UI
         setupHolidayScheduleDropdown().catch(error => {
             console.error('Error loading schedules:', error);
             if (typeof showToast === 'function') {
@@ -704,13 +644,9 @@ async function dateCalc() {
     }
 }
 
-/**
- * Initialize and render the calendar with holiday highlighting
- */
 function initCalendar(holidays) {    
     let currentMonth = new Date().getMonth();
     let currentYear = new Date().getFullYear();
-    const holidayDates = new Set(holidays.map(h => (h.date instanceof Date ? h.date.toISOString() : h.date).split('T')[0]));
 
     function displayCalendar(holidays, month, year) {
         const daysInMonth = new Date(year, month + 1, 0).getDate();
@@ -721,22 +657,18 @@ function initCalendar(holidays) {
         const todayMonth = today.getMonth();
         const todayYear = today.getFullYear();
         
-        // Create a map for faster holiday lookup
         const holidayMap = new Map();
         holidays.forEach(h => {
             const formattedDate = (h.date instanceof Date ? h.date.toISOString() : h.date).split('T')[0];
             holidayMap.set(formattedDate, h.name);
         });
     
-        // Use DocumentFragment for better performance
         const fragment = document.createDocumentFragment();
         
-        // Add empty divs for days before month starts
         for (let i = 0; i < firstDayOfMonth; i++) {
             fragment.appendChild(document.createElement('div'));
         }
         
-        // Add days of the month
         for (let i = 1; i <= daysInMonth; i++) {
             const monthStr = String(month + 1).padStart(2, '0');
             const dayStr = String(i).padStart(2, '0');
@@ -745,13 +677,11 @@ function initCalendar(holidays) {
             const dayDiv = document.createElement('div');
             dayDiv.textContent = i;
             
-            // Check for holiday
             if (holidayMap.has(currentDate)) {
                 dayDiv.className = 'holidayDate';
                 dayDiv.title = holidayMap.get(currentDate);
             }
             
-            // Check if today
             if (i === todayDate && month === todayMonth && year === todayYear) {
                 dayDiv.className = dayDiv.className ? dayDiv.className + ' todayDate' : 'todayDate';
             }
@@ -759,7 +689,6 @@ function initCalendar(holidays) {
             fragment.appendChild(dayDiv);
         }
         
-        // Update DOM once
         const calendarDates = document.getElementById('calendarDates');
         calendarDates.innerHTML = '';
         calendarDates.appendChild(fragment);
@@ -794,10 +723,6 @@ function initCalendar(holidays) {
     displayCalendar(holidays, currentMonth, currentYear);    
 }
 
-/**
- * Helper Functions
- */
-
 function createDateObject(dateString) {
     const [year, month, day] = dateString.split('-').map(Number);
     const date = new Date(year, month - 1, day);
@@ -817,20 +742,14 @@ function getHolidaysBetweenDates(startDate, endDate, excludeWeekends = false) {
     const end = createDateObject(endDate);
     return listOfHolidays.reduce((count, holidayDateStr) => {
         const holiday = new Date(holidayDateStr);
-        // Create a local date from the UTC date components for accurate comparison
         const holidayLocal = new Date(holiday.getUTCFullYear(), holiday.getUTCMonth(), holiday.getUTCDate());
-        // Use getUTCDay() for consistency with holiday schedule data
         const dayOfWeek = holiday.getUTCDay();
         
         if (holidayLocal >= start && holidayLocal <= end) {
-            if (excludeWeekends) {
-                // Only count holidays NOT on weekends
-                if (dayOfWeek !== 6 && dayOfWeek !== 0) {
-                    count++;
-                }
-            } else {
-                count++;
+            if (excludeWeekends && (dayOfWeek === 6 || dayOfWeek === 0)) {
+                return count;
             }
+            count++;
         }
         return count;
     }, 0);

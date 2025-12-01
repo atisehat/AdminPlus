@@ -1,11 +1,9 @@
 async function cloneRecord() {
-    // Check if form page
     if (!requireFormContext()) {
         return;
     }
     
     try {
-        // Check if this is an existing record
         const entityId = Xrm.Page.data.entity.getId();
         if (!entityId) {
             if (typeof showToast === 'function') {
@@ -16,7 +14,6 @@ async function cloneRecord() {
                 
         const existingPopups = document.querySelectorAll('.commonPopup');
         existingPopups.forEach(popup => popup.remove());
-        
         
         const entityName = Xrm.Page.data.entity.getEntityName();        
         const fieldAnalysis = analyzeFormFields();
@@ -63,7 +60,6 @@ function analyzeFormFields() {
                 const attrName = attribute.getName();
                 const controls = attribute.controls.get();
                 
-                // Get display name from first control if available
                 let displayName = attrName;
                 if (controls && controls.length > 0 && typeof controls[0].getLabel === 'function') {
                     const label = controls[0].getLabel();
@@ -72,7 +68,6 @@ function analyzeFormFields() {
                     }
                 }
                 
-                // Check field requirement
                 const requiredLevel = attribute.getRequiredLevel();
                 const isRequired = requiredLevel === 'required';
                 const isRecommended = requiredLevel === 'recommended';               
@@ -86,8 +81,6 @@ function analyzeFormFields() {
                     currentValue: currentValue,
                     attribute: attribute
                 };
-                
-                // Categorize by type
                 switch (attrType) {
                     case 'lookup':
                         fields.lookup.push(fieldInfo);
@@ -244,7 +237,6 @@ function generateFieldsHTML(fieldAnalysis) {
                 } else if (type === 'money') {
                     displayValue = '$' + field.currentValue.toFixed(2);
                 } else if (type === 'lookup' || type === 'owner' || type === 'customer') {
-                    // Lookup values 
                     if (Array.isArray(field.currentValue) && field.currentValue.length > 0) {
                         displayValue = field.currentValue.map(lv => lv.name || lv.id).join(', ');
                     } else if (field.currentValue.name) {
@@ -255,67 +247,39 @@ function generateFieldsHTML(fieldAnalysis) {
                         displayValue = 'Lookup value set';
                     }
                 } else if (type === 'multiselectoptionset' || type === 'optionset') {
-                    try {
-                        if (type === 'optionset' && field.currentValue !== null && field.currentValue !== undefined) {
-                            // Try formatted value first
-                            let formattedValue = null;
-                            if (typeof field.attribute.getFormattedValue === 'function') {
-                                formattedValue = field.attribute.getFormattedValue();
-                            }
-                            
-                            // If no formatted value, try to get from options
-                            if (!formattedValue && field.options && Array.isArray(field.options)) {
-                                const option = field.options.find(opt => opt.value === field.currentValue);
-                                if (option && option.text) {
-                                    formattedValue = option.text;
-                                }
-                            }
-                            
-                            if (formattedValue) {
-                                displayValue = `${field.currentValue} (${formattedValue})`;
-                            } else {
-                                displayValue = String(field.currentValue);
-                            }
-                        } else if (type === 'multiselectoptionset') {
-                            if (Array.isArray(field.currentValue)) {
-                                // Try to get formatted values for multiselect
-                                if (typeof field.attribute.getFormattedValue === 'function') {
-                                    const formattedValue = field.attribute.getFormattedValue();
-                                    if (formattedValue) {
-                                        displayValue = formattedValue;
-                                    } else if (field.options && Array.isArray(field.options)) {
-                                        // Get labels from options
-                                        const texts = field.currentValue.map(v => {
-                                            const option = field.options.find(opt => opt.value === v);
-                                            return option && option.text ? `${v} (${option.text})` : v;
-                                        });
-                                        displayValue = texts.join(', ');
-                                    } else {
-                                        displayValue = field.currentValue.join(', ');
-                                    }
-                                } else if (field.options && Array.isArray(field.options)) {
-                                    const texts = field.currentValue.map(v => {
-                                        const option = field.options.find(opt => opt.value === v);
-                                        return option && option.text ? `${v} (${option.text})` : v;
-                                    });
-                                    displayValue = texts.join(', ');
-                                } else {
-                                    displayValue = field.currentValue.join(', ');
-                                }
-                            } else {
-                                displayValue = String(field.currentValue);
-                            }
-                        } else {
-                            displayValue = String(field.currentValue);
+                    if (type === 'optionset' && field.currentValue !== null && field.currentValue !== undefined) {
+                        let formattedValue = null;
+                        if (typeof field.attribute.getFormattedValue === 'function') {
+                            formattedValue = field.attribute.getFormattedValue();
                         }
-                    } catch (e) {
-                        if (Array.isArray(field.currentValue)) {
-                            displayValue = field.currentValue.join(', ');
-                        } else {
-                            displayValue = String(field.currentValue);
+                        
+                        if (!formattedValue && field.options && Array.isArray(field.options)) {
+                            const option = field.options.find(opt => opt.value === field.currentValue);
+                            if (option && option.text) {
+                                formattedValue = option.text;
+                            }
                         }
+                        
+                        displayValue = formattedValue ? `${field.currentValue} (${formattedValue})` : String(field.currentValue);
+                    } else if (type === 'multiselectoptionset' && Array.isArray(field.currentValue)) {
+                        let formattedValue = null;
+                        if (typeof field.attribute.getFormattedValue === 'function') {
+                            formattedValue = field.attribute.getFormattedValue();
+                        }
+                        
+                        if (!formattedValue && field.options && Array.isArray(field.options)) {
+                            const texts = field.currentValue.map(v => {
+                                const option = field.options.find(opt => opt.value === v);
+                                return option && option.text ? `${v} (${option.text})` : v;
+                            });
+                            displayValue = texts.join(', ');
+                        } else {
+                            displayValue = formattedValue || field.currentValue.join(', ');
+                        }
+                    } else {
+                        displayValue = String(field.currentValue);
                     }
-                } else if (type === 'other') {                    
+                } else if (type === 'other') {
                     if (Array.isArray(field.currentValue)) {
                         if (field.currentValue.length > 0 && field.currentValue[0].name) {
                             displayValue = field.currentValue.map(v => v.name || v).join(', ');
@@ -323,17 +287,14 @@ function generateFieldsHTML(fieldAnalysis) {
                             displayValue = field.currentValue.join(', ');
                         }
                     } else if (typeof field.currentValue === 'object' && field.currentValue !== null) {
-                        if (field.currentValue.name) {
-                            displayValue = field.currentValue.name;
-                        } else {
-                            displayValue = JSON.stringify(field.currentValue);
-                        }
+                        displayValue = field.currentValue.name || JSON.stringify(field.currentValue);
                     } else {
                         displayValue = String(field.currentValue);
                     }
-                } else {                    
+                } else {
                     displayValue = String(field.currentValue);
-                }               
+                }
+                
                 if (displayValue && displayValue.length > 35) {
                     displayValue = displayValue.substring(0, 35) + '...';
                 }
@@ -409,36 +370,29 @@ function handleCloneRecord(container, fieldAnalysis, entityName) {
                 showToast('Please select at least one field to clone', 'warning');
             }
             return;
-        }      
+        }
         
-        const fieldsToClone = {};        
+        const fieldsToClone = {};
         selectedCheckboxes.forEach(checkbox => {
             try {
                 const fieldName = checkbox.getAttribute('data-field-name');
-                const fieldType = checkbox.getAttribute('data-field-type');                
+                const fieldType = checkbox.getAttribute('data-field-type');
                 const field = fieldAnalysis[fieldType].find(f => f.name === fieldName);
-                if (!field) {
+                if (!field || field.currentValue === null || field.currentValue === undefined) {
                     return;
                 }
                 
-                // Check if field has a value 
-                if (field.currentValue === null || field.currentValue === undefined) {
-                    return;
-                }
-                
-                // Store the value to clone
                 let valueToStore = field.currentValue;
                 
-                // Validate required lookup values
                 if (fieldType === 'lookup' || fieldType === 'other') {
-                    if (Array.isArray(valueToStore)) {                        
+                    if (Array.isArray(valueToStore)) {
                         const hasValidLookups = valueToStore.every(lv => 
                             lv && lv.id && lv.name && lv.entityType
                         );
                         if (!hasValidLookups) {
                             return;
                         }
-                    } else if (typeof valueToStore === 'object' && valueToStore !== null) {                        
+                    } else if (typeof valueToStore === 'object' && valueToStore !== null) {
                         if (!valueToStore.id || !valueToStore.name || !valueToStore.entityType) {
                             return;
                         }
@@ -452,40 +406,30 @@ function handleCloneRecord(container, fieldAnalysis, entityName) {
             }
         });
         
-        
         if (Object.keys(fieldsToClone).length === 0) {
             if (typeof showToast === 'function') {
                 showToast('No fields with values selected to clone', 'warning');
             }
             return;
-        }        
+        }
+        
         container.remove();
-        
-        // Open a new form with the cloned values
-        const clientUrl = Xrm.Page.context.getClientUrl();
-        const formUrl = `${clientUrl}/main.aspx?etn=${entityName}&pagetype=entityrecord`;       
-        const params = {};
-        Object.keys(fieldsToClone).forEach(fieldName => {
-            params[fieldName] = fieldsToClone[fieldName];
-        });
-        
-        // Navigate to create form
         Xrm.Navigation.openForm({
             entityName: entityName,
             useQuickCreateForm: false,
             openInNewWindow: false
-        }).then(function(result) {            
+        }).then(function(result) {
             const maxAttempts = 20;
             let attempts = 0;
             
             const setValues = setInterval(() => {
-                attempts++;                
-                try {                    
-                    if (typeof Xrm !== 'undefined' && Xrm.Page && Xrm.Page.data && Xrm.Page.data.entity) {                        
+                attempts++;
+                try {
+                    if (typeof Xrm !== 'undefined' && Xrm.Page && Xrm.Page.data && Xrm.Page.data.entity) {
                         const newRecordId = Xrm.Page.data.entity.getId();
-                        if (!newRecordId) {                            
+                        if (!newRecordId) {
                             let successCount = 0;
-                            let errorCount = 0;                            
+                            let errorCount = 0;
                             const skippedFields = {};
                             
                             Object.keys(fieldsToClone).forEach(fieldName => {
@@ -493,13 +437,13 @@ function handleCloneRecord(container, fieldAnalysis, entityName) {
                                     const attribute = Xrm.Page.data.entity.attributes.get(fieldName);
                                     if (attribute) {
                                         const attrType = attribute.getAttributeType();
-                                        let valueToSet = fieldsToClone[fieldName];     
-                                        if (attrType === 'lookup') {                                            
-                                            if (valueToSet && !Array.isArray(valueToSet)) {                                                
+                                        let valueToSet = fieldsToClone[fieldName];
+                                        if (attrType === 'lookup') {
+                                            if (valueToSet && !Array.isArray(valueToSet)) {
                                                 if (valueToSet.id && valueToSet.name && valueToSet.entityType) {
                                                     valueToSet = [valueToSet];
                                                 }
-                                            }                                            
+                                            }
                                             if (Array.isArray(valueToSet) && valueToSet.length > 0) {
                                                 const lookup = valueToSet[0];
                                                 if (!lookup.id || !lookup.name || !lookup.entityType) {
@@ -511,7 +455,7 @@ function handleCloneRecord(container, fieldAnalysis, entityName) {
                                         
                                         attribute.setValue(valueToSet);
                                         successCount++;
-                                    } else {                              
+                                    } else {
                                         skippedFields[fieldName] = fieldsToClone[fieldName];
                                     }
                                 } catch (e) {
@@ -520,49 +464,45 @@ function handleCloneRecord(container, fieldAnalysis, entityName) {
                                 }
                             });
                             
-                            const skippedCount = Object.keys(skippedFields).length;                                                            
-                            if (skippedCount > 0) {                                
-                                const entityName = Xrm.Page.data.entity.getEntityName();  
-                                const sessionId = 'clone_' + Date.now() + '_' + Math.random().toString(36).substring(7);
+                            const skippedCount = Object.keys(skippedFields).length;
+                            if (skippedCount > 0) {
+                                const entityName = Xrm.Page.data.entity.getEntityName();
                                 sessionStorage.setItem('adminplus_skipped_fields', JSON.stringify(skippedFields));
                                 sessionStorage.setItem('adminplus_skipped_entity', entityName);
                                 sessionStorage.setItem('adminplus_clone_timestamp', Date.now().toString());
-                                sessionStorage.setItem('adminplus_clone_session_id', sessionId);
-                                sessionStorage.setItem('adminplus_waiting_for_save', 'true');                                
+                                sessionStorage.setItem('adminplus_waiting_for_save', 'true');
                                 
-                                const formContext = Xrm.Page;
-                                sessionStorage.setItem('adminplus_form_identifier', 'new_form_' + Date.now());                        
                                 try {
                                     const onCloseHandler = function() {
                                         const waiting = sessionStorage.getItem('adminplus_waiting_for_save');
-                                        if (waiting === 'true') {                                            
+                                        if (waiting === 'true') {
                                             cleanupSkippedFieldsStorage();
                                         }
-                                    };                                   
+                                    };
                                     Xrm.Page.data.entity.addOnSave(function(context) {
                                         sessionStorage.setItem('adminplus_save_in_progress', 'true');
-                                    });               
+                                    });
                                     
                                     window.addEventListener('beforeunload', onCloseHandler);
                                     window.addEventListener('pagehide', onCloseHandler);
                                 } catch (e) {
-                                }                                
-                                // Start monitoring
+                                }
                                 startSaveMonitoring();
-                            }                            
+                            }
+                            
                             if (typeof showToast === 'function') {
                                 if (skippedCount > 0) {
                                     showToast(`Cloned ${successCount} field(s). ${skippedCount} remaining fields will apply after save.`, 'info', 4000);
                                 } else {
                                     showToast(`Successfully cloned ${successCount} field(s)!`, 'success', 3000);
                                 }
-                            }                                                        
+                            }
                             clearInterval(setValues);
                         }
                     }
                 } catch (e) {
                 }
-                // Stop after max attempts
+                
                 if (attempts >= maxAttempts) {
                     clearInterval(setValues);
                     if (typeof showToast === 'function') {
@@ -640,7 +580,6 @@ function startSaveMonitoring() {
         }
     }, 600000); 
 }
-// Apply skipped fields
 function applySkippedFields() {
     try {                
         const skippedFieldsStr = sessionStorage.getItem('adminplus_skipped_fields');
@@ -758,15 +697,12 @@ function applySkippedFields() {
     }
 }
 
-// Clean up sessionStorage
 function cleanupSkippedFieldsStorage() {
     sessionStorage.removeItem('adminplus_skipped_fields');
     sessionStorage.removeItem('adminplus_skipped_entity');
     sessionStorage.removeItem('adminplus_clone_timestamp');
     sessionStorage.removeItem('adminplus_waiting_for_save');
-    sessionStorage.removeItem('adminplus_clone_session_id');
     sessionStorage.removeItem('adminplus_saved_record_id');
     sessionStorage.removeItem('adminplus_save_in_progress');
-    sessionStorage.removeItem('adminplus_form_identifier');
 }
 
