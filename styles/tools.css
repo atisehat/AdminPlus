@@ -926,15 +926,6 @@
     white-space: nowrap;
 }
 
-#holidayScheduleDropdown {
-    flex: 1;
-    padding: 8px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    font-size: 14px;
-    max-width: 350px;
-}
-
 .holidaysList {
     flex: 1;
     overflow-y: auto;
