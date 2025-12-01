@@ -471,8 +471,8 @@ function copySecurity() {
 
 		if (selectedUserId2.toLowerCase() === userId.toLowerCase()) {
 			const confirmed = await showCustomConfirmDialog(
-				"Confirm Security Change",
-				"⚠️ Warning: You are about to change your own security settings. This may result in loss of access or being locked out of the system. Are you sure you want to proceed?"
+				"⚠️ Warning: Confirm Security Change",
+				"You are about to change your own security settings. This may result in loss of access or being locked out of the system. Are you sure you want to proceed?"
 			);
 			if (!confirmed) {
 				return;
