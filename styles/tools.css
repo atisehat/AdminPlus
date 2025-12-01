@@ -320,7 +320,7 @@
 /* Date Calculator */
 .holidaysList { 
     max-height: 74%; 
-    overflow-y: auto; 
+    overflow-y: hidden; 
     display: grid; 
     margin-top: 15px; 
     padding-left: 0px; 
@@ -365,7 +365,7 @@
     border-bottom: 2px solid #e0e0e0; 
     box-sizing: border-box; 
     text-align: left;
-    overflow-y: auto;
+    overflow: hidden;
 }
 
 .section1-row1:first-child {
@@ -384,7 +384,7 @@
     vertical-align: top; 
     box-sizing: border-box; 
     text-align: left;
-    overflow-y: auto;
+    overflow: hidden;
 }
 
 .securityPopup-row .section1-row2:first-child {
@@ -612,15 +612,46 @@
 .dateCalculatorPopup .commonSection {
     height: calc(80vh - 70px);
     overflow: hidden;
+    display: flex;
+    flex-direction: column;
 }
 
 .dateCalculatorPopup .securityPopup-row {
-    height: 50%;
+    flex: 1;
+    display: flex;
+    overflow: hidden;
 }
 
 .dateCalculatorPopup #section1 {
     border-right: 2px solid #e0e0e0;
     padding-right: 15px;
+    overflow: hidden;
+}
+
+.dateCalculatorPopup #section2 {
+    overflow: hidden;
+}
+
+.dateCalculatorPopup #section3 {
+    overflow: hidden;
+}
+
+.dateCalculatorPopup #section4 {
+    overflow: hidden;
+}
+
+.dateCalculatorPopup .calendar {
+    height: 85%;
+    overflow: hidden;
+}
+
+.dateCalculatorPopup .holidaysList {
+    overflow: hidden;
+}
+
+.dateCalculatorPopup .dateSection {
+    max-height: 60%;
+    overflow: hidden;
 }
 
 .dateCalculatorPopup #section2 {
