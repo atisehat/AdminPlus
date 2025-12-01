@@ -362,6 +362,104 @@ function copySecurity() {
 		});
 	}
 	
+	function showCustomConfirmDialog(title, message) {
+		return new Promise((resolve) => {
+			const overlay = document.createElement('div');
+			overlay.style.cssText = `
+				position: fixed;
+				top: 0;
+				left: 0;
+				width: 100%;
+				height: 100%;
+				background: rgba(0, 0, 0, 0.5);
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				z-index: 10001;
+			`;
+			
+			const dialog = document.createElement('div');
+			dialog.style.cssText = `
+				background: white;
+				border-radius: 8px;
+				box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+				max-width: 480px;
+				width: 90%;
+				font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif;
+			`;
+			
+			dialog.innerHTML = `
+				<div style="padding: 20px 24px; border-bottom: 2px solid #e0e0e0; background: #f8f9fa; border-radius: 8px 8px 0 0;">
+					<h3 style="margin: 0; font-size: 18px; font-weight: 600; color: #2b2b2b;">${title}</h3>
+				</div>
+				<div style="padding: 24px; line-height: 1.6; color: #2b2b2b; font-size: 14px;">
+					${message}
+				</div>
+				<div style="padding: 16px 24px; border-top: 2px solid #e0e0e0; display: flex; gap: 12px; justify-content: flex-end; background: #f8f9fa; border-radius: 0 0 8px 8px;">
+					<button id="confirmCancel" style="
+						padding: 10px 20px;
+						font-size: 14px;
+						font-weight: 600;
+						border: none;
+						border-radius: 6px;
+						cursor: pointer;
+						background: #e0e0e0;
+						color: #2b2b2b;
+						transition: all 0.2s;
+					">Cancel</button>
+					<button id="confirmProceed" style="
+						padding: 10px 20px;
+						font-size: 14px;
+						font-weight: 600;
+						border: none;
+						border-radius: 6px;
+						cursor: pointer;
+						background: #d97706;
+						color: white;
+						transition: all 0.2s;
+					">Proceed</button>
+				</div>
+			`;
+			
+			overlay.appendChild(dialog);
+			document.body.appendChild(overlay);
+			
+			const cancelBtn = dialog.querySelector('#confirmCancel');
+			const proceedBtn = dialog.querySelector('#confirmProceed');
+			
+			cancelBtn.addEventListener('mouseenter', function() {
+				this.style.background = '#d0d0d0';
+			});
+			cancelBtn.addEventListener('mouseleave', function() {
+				this.style.background = '#e0e0e0';
+			});
+			
+			proceedBtn.addEventListener('mouseenter', function() {
+				this.style.background = '#b45309';
+			});
+			proceedBtn.addEventListener('mouseleave', function() {
+				this.style.background = '#d97706';
+			});
+			
+			cancelBtn.addEventListener('click', () => {
+				overlay.remove();
+				resolve(false);
+			});
+			
+			proceedBtn.addEventListener('click', () => {
+				overlay.remove();
+				resolve(true);
+			});
+			
+			overlay.addEventListener('click', (e) => {
+				if (e.target === overlay) {
+					overlay.remove();
+					resolve(false);
+				}
+			});
+		});
+	}
+	
 	async function handleSubmit() {
 		var userId = Xrm.Utility.getGlobalContext().userSettings.userId;
 		userId = userId.replace(/[{}]/g, "");
@@ -372,13 +470,11 @@ function copySecurity() {
 		}
 
 		if (selectedUserId2.toLowerCase() === userId.toLowerCase()) {
-			const confirmOptions = {
-				text: "⚠️ Warning: You are about to change your own security settings. This may result in loss of access or being locked out of the system. Are you sure you want to proceed?",
-				title: "Confirm Security Change"
-			};
-			
-			const confirmed = await Xrm.Navigation.openConfirmDialog(confirmOptions);
-			if (!confirmed.confirmed) {
+			const confirmed = await showCustomConfirmDialog(
+				"Confirm Security Change",
+				"⚠️ Warning: You are about to change your own security settings. This may result in loss of access or being locked out of the system. Are you sure you want to proceed?"
+			);
+			if (!confirmed) {
 				return;
 			}
 		}
