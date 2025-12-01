@@ -233,6 +233,21 @@ function renderCalcTab() {
 function renderDaysBetweenTab(container) {
     container.innerHTML = `
         <div class="dateCalc-tab-panel">
+            <!-- Date Inputs Section -->
+            <div class="dateCalc-panel-section">
+                <h4 class="dateCalc-panel-title">Date Range</h4>
+                <div class="dateCalc-inputs-grid">
+                    <div class="dateCalc-input-field">
+                        <label for="startDate1">Start Date</label>
+                        <input type="date" id="startDate1">
+                    </div>
+                    <div class="dateCalc-input-field">
+                        <label for="endDate1">End Date</label>
+                        <input type="date" id="endDate1">
+                    </div>
+                </div>
+            </div>
+            
             <!-- Options Section -->
             <div class="dateCalc-panel-section">
                 <h4 class="dateCalc-panel-title">Exclusion Options</h4>
@@ -257,21 +272,6 @@ function renderDaysBetweenTab(container) {
                         <span class="option-label">Exclude Additional Days:</span>
                         <input type="number" id="daysCount" min="0" step="1" placeholder="0" class="dateCalc-number-input">
                     </label>
-                </div>
-            </div>
-            
-            <!-- Date Inputs Section -->
-            <div class="dateCalc-panel-section">
-                <h4 class="dateCalc-panel-title">Date Range</h4>
-                <div class="dateCalc-inputs-grid">
-                    <div class="dateCalc-input-field">
-                        <label for="startDate1">Start Date</label>
-                        <input type="date" id="startDate1">
-                    </div>
-                    <div class="dateCalc-input-field">
-                        <label for="endDate1">End Date</label>
-                        <input type="date" id="endDate1">
-                    </div>
                 </div>
             </div>
             
@@ -334,6 +334,21 @@ function renderDaysBetweenTab(container) {
 function renderAddDaysTab(container) {
     container.innerHTML = `
         <div class="dateCalc-tab-panel">
+            <!-- Date Inputs Section -->
+            <div class="dateCalc-panel-section">
+                <h4 class="dateCalc-panel-title">Start Date & Duration</h4>
+                <div class="dateCalc-inputs-grid">
+                    <div class="dateCalc-input-field">
+                        <label for="pickDate">Start Date</label>
+                        <input type="date" id="pickDate">
+                    </div>
+                    <div class="dateCalc-input-field">
+                        <label for="addDaysCount">Days to Add</label>
+                        <input type="number" id="addDaysCount" min="1" step="1" placeholder="Enter days">
+                    </div>
+                </div>
+            </div>
+            
             <!-- Options Section -->
             <div class="dateCalc-panel-section">
                 <h4 class="dateCalc-panel-title">Exclusion Options</h4>
@@ -354,21 +369,6 @@ function renderAddDaysTab(container) {
                         </svg>
                         <span>Exclude Weekends</span>
                     </label>
-                </div>
-            </div>
-            
-            <!-- Date Inputs Section -->
-            <div class="dateCalc-panel-section">
-                <h4 class="dateCalc-panel-title">Start Date & Duration</h4>
-                <div class="dateCalc-inputs-grid">
-                    <div class="dateCalc-input-field">
-                        <label for="pickDate">Start Date</label>
-                        <input type="date" id="pickDate">
-                    </div>
-                    <div class="dateCalc-input-field">
-                        <label for="addDaysCount">Days to Add</label>
-                        <input type="number" id="addDaysCount" min="1" step="1" placeholder="Enter days">
-                    </div>
                 </div>
             </div>
             
