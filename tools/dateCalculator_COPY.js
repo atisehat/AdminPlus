@@ -578,14 +578,28 @@ function attachModalEventHandlers(container) {
 }
 
 async function dateCalcTest() {
-    // Close all popups
-    const existingPopups = document.querySelectorAll('.commonPopup');
-    existingPopups.forEach(popup => popup.remove());    
-    const modalContent = createModalContent();
-    modalContent.setAttribute('data-popup-id', 'dateCalculatorTest');
-    document.body.appendChild(modalContent);
-    attachModalEventHandlers(modalContent);    
-    await setupHolidayScheduleDropdown();   
+    try {
+        // Close all popups
+        const existingPopups = document.querySelectorAll('.commonPopup');
+        existingPopups.forEach(popup => popup.remove());    
+        const modalContent = createModalContent();
+        modalContent.setAttribute('data-popup-id', 'dateCalculatorTest');
+        document.body.appendChild(modalContent);
+        attachModalEventHandlers(modalContent);    
+        await setupHolidayScheduleDropdown();
+    } catch (error) {
+        console.error('Error opening Date Calculator (Redesigned):', error);
+        if (typeof showToast === 'function') {
+            showToast('Error opening Date Calculator. Check console for details.', 'error', 3000);
+        } else {
+            alert('Error opening Date Calculator: ' + error.message);
+        }
+    }
+}
+
+// Ensure function is globally accessible
+if (typeof window !== 'undefined') {
+    window.dateCalcTest = dateCalcTest;
 }
 
 // Calendar functionality
