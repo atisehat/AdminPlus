@@ -677,7 +677,8 @@ function getHolidaysBetweenDates(startDate, endDate, excludeWeekends = false) {
     return listOfHolidays.reduce((count, holidayDateStr) => {
         const holiday = new Date(holidayDateStr);
         holiday.setHours(0, 0, 0, 0);
-        const dayOfWeek = holiday.getDay();
+        // Use getUTCDay() for consistency with holiday schedule data
+        const dayOfWeek = holiday.getUTCDay();
         
         if (holiday >= start && holiday <= end) {
             if (excludeWeekends) {
