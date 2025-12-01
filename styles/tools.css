@@ -552,8 +552,8 @@
 
 /* Options Grid */
 .dateCalc-options-grid {
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
     gap: 12px;
 }
 
@@ -595,6 +595,7 @@
 
 .dateCalc-option-with-input {
     justify-content: space-between;
+    grid-column: 1 / -1;
 }
 
 .dateCalc-option-with-input .option-label {
@@ -617,24 +618,28 @@
 
 /* Inputs Grid */
 .dateCalc-inputs-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
 }
 
 .dateCalc-input-field {
     display: flex;
-    flex-direction: column;
-    gap: 8px;
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
 }
 
 .dateCalc-input-field label {
     font-size: 13px;
     font-weight: 600;
     color: #2b2b2b;
+    white-space: nowrap;
+    min-width: 100px;
 }
 
 .dateCalc-input-field input {
+    flex: 1;
     padding: 10px 12px;
     border: 2px solid #d0d0d0;
     border-radius: 6px;
