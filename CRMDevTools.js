@@ -1,5 +1,5 @@
 const baseUrl = 'https://atisehat.github.io/AdminPlus/';
-const cacheBuster = '?v=' + new Date().getTime(); // Force refresh - dateCalc fix
+const cacheBuster = '?v=' + new Date().getTime(); // Force refresh - dateCalc test version added
 
 
 function loadCSS(href) {
@@ -38,6 +38,7 @@ function onUtilScriptLoaded() {
     loadScript('tools/assignSecurity.js');
     loadScript('tools/securityOperations.js');
     loadScript('tools/dateCalculator.js');
+    loadScript('tools/dateCalculator_COPY.js');
     loadScript('tools/openRecord.js');
     loadScript('tools/openWebApi.js');
     loadScript('tools/cloneRecord.js');
@@ -161,6 +162,9 @@ function openPopup() {
 	    </button>
 	    <button onclick="dateCalc();" class="app-button" title="Date Calculator">
 	      <span class="app-icon">📅</span>
+	    </button>
+	    <button onclick="dateCalcTest();" class="app-button" title="Date Calculator (TEST)">
+	      <span class="app-icon">🧪</span>
 	    </button>
 	    <button onclick="commandChecker();" class="app-button" title="Command Checker">
 	      <span class="app-icon">🐛</span>
@@ -401,3 +405,5 @@ window.openWebApi = openWebApi;
 window.cloneRecord = cloneRecord;
 window.commandChecker = commandChecker;
 window.performanceDiagnostics = performanceDiagnostics;
+window.dateCalc = dateCalc;
+window.dateCalcTest = dateCalcTest;

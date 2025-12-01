@@ -114,7 +114,7 @@ function createModalContent() {
     
     container.innerHTML = `
         <div class="commonPopup-header">
-            <span style="color: white;">Date Calculator</span>
+            <span style="color: white;">Date Calculator (TEST) 🧪</span>
             <span class="close-button">&times;</span>
         </div>
         <div class="popup-body">
@@ -407,12 +407,12 @@ function attachModalEventHandlers(container) {
     setupSection4FormListeners();
 }
 
-async function dateCalc() {
+async function dateCalcTest() {
     // Close all popups
     const existingPopups = document.querySelectorAll('.commonPopup');
     existingPopups.forEach(popup => popup.remove());    
     const modalContent = createModalContent();
-    modalContent.setAttribute('data-popup-id', 'dateCalculator');
+    modalContent.setAttribute('data-popup-id', 'dateCalculatorTest');
     document.body.appendChild(modalContent);
     attachModalEventHandlers(modalContent);    
     const defaultSchedule = await setupHolidayScheduleDropdown();   
