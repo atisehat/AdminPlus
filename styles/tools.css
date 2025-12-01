@@ -611,12 +611,12 @@
 }
 
 .dateCalc-additional-days-input input {
-    flex: 1;
+    flex: 0;
+    width: 80px;
     padding: 5px 8px;
     border: 1px solid #d0d0d0;
     border-radius: 4px;
     font-size: 12px;
-    min-width: 60px;
 }
 
 .dateCalc-additional-days-input input:focus {
@@ -653,6 +653,11 @@
     border-radius: 4px;
     font-size: 12px;
     transition: all 0.2s;
+}
+
+.dateCalc-input-field input[type="number"] {
+    flex: 0;
+    width: 120px;
 }
 
 .dateCalc-input-field input:focus {

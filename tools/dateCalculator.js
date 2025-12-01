@@ -267,8 +267,8 @@ function renderDaysBetweenTab(container) {
                         <span>Exclude Weekends</span>
                     </label>
                     <div class="dateCalc-additional-days-input">
-                        <label for="daysCount">Additional Days:</label>
-                        <input type="number" id="daysCount" min="0" step="1" placeholder="0">
+                        <label for="daysCount">Exclude Additional Days:</label>
+                        <input type="number" id="daysCount" min="0" step="1" placeholder="0" oninput="this.value = Math.max(0, parseInt(this.value) || 0)">
                     </div>
                 </div>
             </div>
@@ -342,7 +342,7 @@ function renderAddDaysTab(container) {
                     </div>
                     <div class="dateCalc-input-field">
                         <label for="addDaysCount">Days to Add</label>
-                        <input type="number" id="addDaysCount" min="1" step="1" placeholder="Enter days">
+                        <input type="number" id="addDaysCount" min="1" step="1" placeholder="Enter days" oninput="this.value = Math.max(1, parseInt(this.value) || 1)">
                     </div>
                 </div>
                 <div class="dateCalc-options-divider"></div>
