@@ -539,6 +539,7 @@
 .dateCalc-panel-section.dateCalc-results-section {
     background: #f0f8ff;
     border-color: #b8daed;
+    padding: 14px 16px;
 }
 
 .dateCalc-panel-title {
@@ -595,25 +596,34 @@
     background: #e8f4f8;
 }
 
-.dateCalc-option-with-input {
-    justify-content: space-between;
-    grid-column: 1 / -1;
+.dateCalc-additional-days-input {
+    grid-column: 1;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    background: white;
+    border: 2px solid #e0e0e0;
+    border-radius: 4px;
 }
 
-.dateCalc-option-with-input .option-label {
-    font-size: 14px;
-    font-weight: 500;
+.dateCalc-additional-days-input label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #2b2b2b;
+    white-space: nowrap;
 }
 
-.dateCalc-number-input {
-    width: 100px;
+.dateCalc-additional-days-input input {
+    flex: 1;
     padding: 5px 8px;
     border: 1px solid #d0d0d0;
     border-radius: 4px;
     font-size: 12px;
+    min-width: 60px;
 }
 
-.dateCalc-number-input:focus {
+.dateCalc-additional-days-input input:focus {
     outline: none;
     border-color: #2b2b2b;
 }
@@ -659,14 +669,14 @@
 .dateCalc-results-grid {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 7px;
 }
 
 .dateCalc-result-item {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 6px 10px;
+    padding: 7px 12px;
     background: white;
     border-radius: 4px;
     border: 1px solid #e0e0e0;
@@ -693,7 +703,7 @@
 .dateCalc-result-total {
     background: #e8f4f8;
     border: 2px solid #2b2b2b;
-    padding: 8px 10px;
+    padding: 9px 12px;
 }
 
 .dateCalc-result-total .result-label {

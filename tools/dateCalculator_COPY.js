@@ -142,7 +142,7 @@ function createModalContent() {
                         </div>
                         <select id="holidayScheduleDropdown" class="dateCalc-dropdown"></select>
                         <div class="dateCalc-schedule-hint">
-                            Select a schedule above to view holidays for this year
+                            Select a schedule to view this year's scheduled events
                         </div>
                         <div class="holidays-scroll" id="holidaysList"></div>
                     </div>
@@ -268,10 +268,10 @@ function renderDaysBetweenTab(container) {
                         </svg>
                         <span>Exclude Weekends</span>
                     </label>
-                    <label class="dateCalc-option-item dateCalc-option-with-input">
-                        <span class="option-label">Exclude Additional Days:</span>
-                        <input type="number" id="daysCount" min="0" step="1" placeholder="0" class="dateCalc-number-input">
-                    </label>
+                    <div class="dateCalc-additional-days-input">
+                        <label for="daysCount">Additional Days:</label>
+                        <input type="number" id="daysCount" min="0" step="1" placeholder="0">
+                    </div>
                 </div>
             </div>
             
