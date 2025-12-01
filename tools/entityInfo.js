@@ -84,7 +84,7 @@ function formatFieldValueFromAPI(value, attributeType, recordData, logicalName) 
         if (attributeType === 'Picklist' || attributeType === 'State' || attributeType === 'Status') {
             const formattedValue = recordData[`${logicalName}@OData.Community.Display.V1.FormattedValue`];
             if (formattedValue && value !== null && value !== undefined) {
-                return `${formattedValue} (${value})`;
+                return `${value} (${formattedValue})`;
             }
             return formattedValue || value.toString();
         }        
@@ -132,7 +132,7 @@ function formatFieldValue(attribute) {
                 if (typeof attribute.getFormattedValue === 'function') {
                     const formattedValue = attribute.getFormattedValue();
                     if (formattedValue && value !== null && value !== undefined) {
-                        return `${formattedValue} (${value})`;
+                        return `${value} (${formattedValue})`;
                     }
                 }
             } catch (e) {

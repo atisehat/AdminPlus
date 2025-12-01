@@ -254,11 +254,40 @@ function generateFieldsHTML(fieldAnalysis) {
                     } else {
                         displayValue = 'Lookup value set';
                     }
-                } else if (type === 'multiselectoptionset' || type === 'optionset') {                    
-                    if (Array.isArray(field.currentValue)) {
-                        displayValue = field.currentValue.join(', ');
-                    } else {
-                        displayValue = String(field.currentValue);
+                } else if (type === 'multiselectoptionset' || type === 'optionset') {
+                    try {
+                        if (type === 'optionset' && typeof field.attribute.getFormattedValue === 'function') {
+                            const formattedValue = field.attribute.getFormattedValue();
+                            if (formattedValue && field.currentValue !== null && field.currentValue !== undefined) {
+                                displayValue = `${field.currentValue} (${formattedValue})`;
+                            } else {
+                                displayValue = String(field.currentValue);
+                            }
+                        } else if (type === 'multiselectoptionset') {
+                            if (Array.isArray(field.currentValue)) {
+                                // Try to get formatted values for multiselect
+                                if (typeof field.attribute.getFormattedValue === 'function') {
+                                    const formattedValue = field.attribute.getFormattedValue();
+                                    if (formattedValue) {
+                                        displayValue = formattedValue;
+                                    } else {
+                                        displayValue = field.currentValue.join(', ');
+                                    }
+                                } else {
+                                    displayValue = field.currentValue.join(', ');
+                                }
+                            } else {
+                                displayValue = String(field.currentValue);
+                            }
+                        } else {
+                            displayValue = String(field.currentValue);
+                        }
+                    } catch (e) {
+                        if (Array.isArray(field.currentValue)) {
+                            displayValue = field.currentValue.join(', ');
+                        } else {
+                            displayValue = String(field.currentValue);
+                        }
                     }
                 } else if (type === 'other') {                    
                     if (Array.isArray(field.currentValue)) {
