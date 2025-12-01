@@ -525,14 +525,14 @@
     margin: 0 auto;
     display: flex;
     flex-direction: column;
-    gap: 14px;
+    gap: 10px;
 }
 
 /* Panel Sections */
 .dateCalc-panel-section {
-    padding: 16px;
+    padding: 12px 14px;
     background: #fafafa;
-    border-radius: 8px;
+    border-radius: 6px;
     border: 1px solid #e0e0e0;
 }
 
@@ -542,8 +542,8 @@
 }
 
 .dateCalc-panel-title {
-    margin: 0 0 12px 0;
-    font-size: 12px;
+    margin: 0 0 10px 0;
+    font-size: 11px;
     font-weight: 600;
     color: #2b2b2b;
     text-transform: uppercase;
@@ -554,20 +554,20 @@
 .dateCalc-options-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
+    gap: 8px;
 }
 
 .dateCalc-option-item {
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 10px 12px;
+    gap: 6px;
+    padding: 8px 10px;
     background: white;
     border: 2px solid #e0e0e0;
-    border-radius: 6px;
+    border-radius: 4px;
     cursor: pointer;
     transition: all 0.2s;
-    font-size: 13px;
+    font-size: 12px;
     color: #2b2b2b;
 }
 
@@ -578,14 +578,16 @@
 
 .dateCalc-option-item input[type="checkbox"] {
     cursor: pointer;
-    width: 18px;
-    height: 18px;
+    width: 16px;
+    height: 16px;
     flex-shrink: 0;
 }
 
 .dateCalc-option-item svg {
     flex-shrink: 0;
     color: #666;
+    width: 14px;
+    height: 14px;
 }
 
 .dateCalc-option-item:has(input[type="checkbox"]:checked) {
@@ -604,11 +606,11 @@
 }
 
 .dateCalc-number-input {
-    width: 120px;
-    padding: 6px 10px;
+    width: 100px;
+    padding: 5px 8px;
     border: 1px solid #d0d0d0;
     border-radius: 4px;
-    font-size: 13px;
+    font-size: 12px;
 }
 
 .dateCalc-number-input:focus {
@@ -620,30 +622,30 @@
 .dateCalc-inputs-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
+    gap: 10px;
 }
 
 .dateCalc-input-field {
     display: flex;
     flex-direction: row;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
 }
 
 .dateCalc-input-field label {
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 600;
     color: #2b2b2b;
     white-space: nowrap;
-    min-width: 80px;
+    min-width: 75px;
 }
 
 .dateCalc-input-field input {
     flex: 1;
-    padding: 8px 10px;
+    padding: 6px 8px;
     border: 2px solid #d0d0d0;
-    border-radius: 6px;
-    font-size: 13px;
+    border-radius: 4px;
+    font-size: 12px;
     transition: all 0.2s;
 }
 
@@ -657,27 +659,27 @@
 .dateCalc-results-grid {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 6px;
 }
 
 .dateCalc-result-item {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 8px 12px;
+    padding: 6px 10px;
     background: white;
-    border-radius: 6px;
+    border-radius: 4px;
     border: 1px solid #e0e0e0;
 }
 
 .dateCalc-result-item .result-label {
-    font-size: 13px;
+    font-size: 12px;
     color: #2b2b2b;
     font-weight: 500;
 }
 
 .dateCalc-result-item .result-value {
-    font-size: 13px;
+    font-size: 12px;
     color: #666;
     font-weight: 600;
 }
@@ -685,69 +687,76 @@
 .dateCalc-result-divider {
     height: 2px;
     background: #2b2b2b;
-    margin: 4px 0;
+    margin: 3px 0;
 }
 
 .dateCalc-result-total {
     background: #e8f4f8;
     border: 2px solid #2b2b2b;
-    padding: 10px 12px;
+    padding: 8px 10px;
 }
 
 .dateCalc-result-total .result-label {
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 600;
 }
 
 .dateCalc-result-total .result-value {
-    font-size: 16px;
+    font-size: 14px;
     color: #10b981;
 }
 
 .result-value-highlight {
     color: #10b981 !important;
-    font-size: 15px !important;
+    font-size: 14px !important;
 }
 
 /* Info Note */
 .dateCalc-info-note {
     display: flex;
     align-items: flex-start;
-    gap: 8px;
-    padding: 10px 12px;
+    gap: 6px;
+    padding: 8px 10px;
     background: #fef3c7;
     border: 2px solid #f59e0b;
-    border-radius: 6px;
-    font-size: 12px;
+    border-radius: 4px;
+    font-size: 11px;
     color: #92400e;
-    margin-top: 8px;
+    margin-top: 6px;
 }
 
 .dateCalc-info-note svg {
     flex-shrink: 0;
     margin-top: 1px;
+    width: 14px;
+    height: 14px;
 }
 
 /* Actions */
 .dateCalc-actions {
     display: flex;
     justify-content: center;
-    margin-top: 4px;
+    margin-top: 0;
 }
 
 .dateCalc-action-btn {
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 12px 28px;
-    font-size: 14px;
+    gap: 6px;
+    padding: 10px 24px;
+    font-size: 13px;
     font-weight: 600;
     background: #2b2b2b;
     color: white;
     border: none;
-    border-radius: 8px;
+    border-radius: 6px;
     cursor: pointer;
     transition: all 0.2s;
+}
+
+.dateCalc-action-btn svg {
+    width: 16px;
+    height: 16px;
 }
 
 .dateCalc-action-btn:hover {
