@@ -318,12 +318,7 @@
 }
 
 /* Date Calculator */
-.dateCalculatorPopup {
-    width: 85%;
-    max-width: 1400px;
-}
-
-.dateCalculatorPopup .popup-body {
+.commonPopup .popup-body {
     display: flex;
     flex-direction: column;
     height: calc(80vh - 60px);
@@ -853,7 +848,7 @@
 }
 
 @media (max-width: 600px) {
-    .dateCalculatorPopup {
+    .commonPopup {
         width: 95%;
     }
     

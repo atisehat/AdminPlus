@@ -128,7 +128,7 @@ async function displayHolidays(scheduleName) {
  */
 function createModalContent() {
     const container = document.createElement('div');
-    container.className = 'commonPopup dateCalculatorPopup';
+    container.className = 'commonPopup';
     
     container.innerHTML = `
         <div class="commonPopup-header">
