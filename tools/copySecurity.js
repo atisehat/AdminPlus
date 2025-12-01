@@ -249,7 +249,7 @@ function copySecurity() {
 						<line x1="12" y1="16" x2="12" y2="12"/>
 						<line x1="12" y1="8" x2="12.01" y2="8"/>
 					</svg>
-					<span><strong>Important:</strong> This will replace all TO user's security settings (Business Unit, Teams, and Roles) with the FROM user's settings. Only assignable teams (Owner/Access) will be copied.</span>
+					<span><strong>Important:</strong> This replaces all TO user's security with FROM user's settings. Only Owner/Access teams will be copied.</span>
 				</div>
 				<button id="submitButton" class="btn-primary" style="display: none;">
 					<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
