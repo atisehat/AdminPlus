@@ -1269,6 +1269,10 @@
     background: white;
     border-bottom: 2px solid #e0e0e0;
     flex-shrink: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
 }
 
 .comparison-title h2 {

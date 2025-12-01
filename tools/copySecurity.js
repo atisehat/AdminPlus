@@ -160,6 +160,12 @@ function copySecurity() {
 					<h2>Security to Copy</h2>
 					<p>From <strong>${selectedUserName}</strong> to <strong>${selectedUserName2}</strong></p>
 				</div>
+				<div class="update-indicator" id="copyUpdateIndicator" style="display: none;">
+					<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+						<polyline points="20 6 9 17 4 12"/>
+					</svg>
+					<span id="copyUpdateIndicatorText">Security Copied Successfully</span>
+				</div>
 			</div>
 			
 			<div class="comparison-content">
@@ -362,6 +368,25 @@ function copySecurity() {
 		});
 	}
 	
+	function showCopyUpdateIndicator() {
+		const indicator = document.getElementById('copyUpdateIndicator');
+		const indicatorText = document.getElementById('copyUpdateIndicatorText');
+		
+		if (!indicator || !indicatorText) return;
+		
+		indicatorText.textContent = 'Security Copied Successfully';
+		indicator.style.display = 'flex';
+		
+		indicator.classList.add('show-indicator');
+		
+		setTimeout(() => {
+			indicator.classList.remove('show-indicator');
+			setTimeout(() => {
+				indicator.style.display = 'none';
+			}, 300);
+		}, 4000);
+	}
+	
 	function showCustomConfirmDialog(title, message) {
 		return new Promise((resolve) => {
 			const overlay = document.createElement('div');
@@ -475,7 +500,7 @@ function copySecurity() {
 				"You are about to change your own security settings. This may result in loss of access or being locked out of the system. Are you sure you want to proceed?"
 			);
 			if (!confirmed) {
-				return;
+			return;
 			}
 		}
 
@@ -517,11 +542,7 @@ function copySecurity() {
 			}
 
 			if (updateWasSuccessful) {
-				if (typeof showToast === 'function') {
-					showToast(`Security successfully copied to ${selectedUserName2}!`, 'success', 4000);
-				} else {
-					showCustomAlert(`Security successfully copied to ${selectedUserName2}!`);
-				}
+				showCopyUpdateIndicator();
 
 				// Refresh the TO user's data to show updated security
 				setTimeout(() => {
