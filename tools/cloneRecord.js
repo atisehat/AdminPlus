@@ -220,7 +220,7 @@ function createCloneRecordPopup(fieldAnalysis) {
                 </div>
                 
                 <!-- Action Buttons -->
-                <div style="display: flex; justify-content: center; gap: 15px; margin-top: 25px;">
+                <div style="display: flex; justify-content: center; align-items: center; gap: 15px; margin-top: 25px;">
                     <button 
                         id="selectAllButton"
                         style="padding: 10px 24px; font-size: 14px; font-weight: 600; background-color: #6b7280; color: white; border: none; cursor: pointer; border-radius: 8px; transition: all 0.2s ease; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);"
@@ -229,6 +229,19 @@ function createCloneRecordPopup(fieldAnalysis) {
                     >
                         Select All
                     </button>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <label for="cloneCountInput" style="font-size: 14px; font-weight: 600; color: #374151; white-space: nowrap;">Copies:</label>
+                        <input
+                            type="number"
+                            id="cloneCountInput"
+                            min="1"
+                            max="10"
+                            value="1"
+                            style="width: 58px; padding: 10px 6px; font-size: 14px; font-weight: 600; text-align: center; border: 2px solid #d1d5db; border-radius: 8px; background: white; color: #2b2b2b; outline: none; box-shadow: 0 2px 4px rgba(0,0,0,0.08);"
+                            onfocus="this.style.borderColor='#2b2b2b';"
+                            onblur="this.style.borderColor='#d1d5db'; this.value = Math.min(Math.max(parseInt(this.value)||1,1),10);"
+                        >
+                    </div>
                     <button 
                         id="cloneRecordButton"
                         style="padding: 12px 32px; font-size: 15px; font-weight: 600; width: auto; min-width: 180px; background-color: #2b2b2b; color: white; border: none; cursor: pointer; border-radius: 8px; transition: all 0.2s ease; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);"
@@ -419,7 +432,7 @@ function setupCloneRecordHandlers(container, fieldAnalysis, entityName) {
     cloneButton.addEventListener('click', () => handleCloneRecord(container, fieldAnalysis, entityName));
 }
 
-function handleCloneRecord(container, fieldAnalysis, entityName) {
+async function handleCloneRecord(container, fieldAnalysis, entityName) {
     try {
         const selectedCheckboxes = container.querySelectorAll('.field-checkbox:checked');
         
@@ -428,7 +441,10 @@ function handleCloneRecord(container, fieldAnalysis, entityName) {
                 showToast('Please select at least one field to clone', 'warning');
             }
             return;
-        }      
+        }
+
+        const cloneCountInput = container.querySelector('#cloneCountInput');
+        const cloneCount = Math.min(Math.max(parseInt(cloneCountInput ? cloneCountInput.value : '1') || 1, 1), 10);
         
         const fieldsToClone = {};        
         selectedCheckboxes.forEach(checkbox => {
@@ -469,7 +485,14 @@ function handleCloneRecord(container, fieldAnalysis, entityName) {
                 showToast('No fields with values selected to clone', 'warning');
             }
             return;
-        }        
+        }
+
+        // Multi-clone path: create N records directly via Web API
+        if (cloneCount > 1) {
+            container.remove();
+            await cloneMultipleViaApi(fieldsToClone, fieldAnalysis, entityName, cloneCount);
+            return;
+        }
         
         container.remove();
         Xrm.Navigation.openForm({
@@ -580,6 +603,108 @@ function handleCloneRecord(container, fieldAnalysis, entityName) {
         console.error('Error cloning record:', error);
         if (typeof showToast === 'function') {
             showToast('Error cloning record', 'error');
+        }
+    }
+}
+
+async function cloneMultipleViaApi(fieldsToClone, fieldAnalysis, entityName, cloneCount) {
+    try {
+        if (typeof showToast === 'function') {
+            showToast(`Creating ${cloneCount} clone(s)...`, 'info', 3000);
+        }
+
+        // Resolve entity set names for all lookup entity types via metadata
+        const entityTypes = new Set();
+        Object.keys(fieldsToClone).forEach(fieldName => {
+            const value = fieldsToClone[fieldName];
+            if (Array.isArray(value) && value.length > 0 && value[0].entityType) {
+                entityTypes.add(value[0].entityType);
+            }
+        });
+
+        const entitySetNames = {};
+        for (const et of entityTypes) {
+            try {
+                const meta = await Xrm.Utility.getEntityMetadata(et);
+                entitySetNames[et] = meta.EntitySetName;
+            } catch (e) {
+                entitySetNames[et] = et + 's';
+            }
+        }
+
+        // Fields that cannot be set on record creation
+        const skipApiFields = new Set(['statecode', 'statuscode', 'versionnumber', 'createdon', 'modifiedon', 'overriddencreatedon']);
+
+        // Build Web API record payload
+        const recordData = {};
+        Object.keys(fieldsToClone).forEach(fieldName => {
+            if (skipApiFields.has(fieldName)) return;
+
+            const value = fieldsToClone[fieldName];
+
+            // Find the field type from fieldAnalysis
+            let fieldType = null;
+            for (const type of Object.keys(fieldAnalysis)) {
+                if (fieldAnalysis[type].find(f => f.name === fieldName)) {
+                    fieldType = type;
+                    break;
+                }
+            }
+
+            if ((fieldType === 'lookup' || fieldType === 'other') && Array.isArray(value) && value.length > 0) {
+                const lookup = value[0];
+                if (lookup.id && lookup.entityType) {
+                    const setName = entitySetNames[lookup.entityType] || (lookup.entityType + 's');
+                    recordData[`${fieldName}@odata.bind`] = `/${setName}(${lookup.id.replace(/[{}]/g, '')})`;
+                }
+            } else if (value instanceof Date) {
+                recordData[fieldName] = value.toISOString();
+            } else if (value !== null && value !== undefined) {
+                recordData[fieldName] = value;
+            }
+        });
+
+        // Create each clone sequentially
+        let successCount = 0;
+        let lastCreatedId = null;
+
+        for (let i = 0; i < cloneCount; i++) {
+            try {
+                const result = await Xrm.WebApi.createRecord(entityName, { ...recordData });
+                lastCreatedId = result.id;
+                successCount++;
+            } catch (e) {
+                console.error(`✗ Error creating clone ${i + 1}:`, e);
+            }
+        }
+
+        if (successCount > 0) {
+            if (typeof showToast === 'function') {
+                const failCount = cloneCount - successCount;
+                const msg = failCount > 0
+                    ? `Created ${successCount} clone(s). ${failCount} failed.`
+                    : `Successfully created ${successCount} clone(s)!`;
+                showToast(msg, failCount > 0 ? 'warning' : 'success', 4000);
+            }
+            // Navigate to the last created record so the user can review it
+            if (lastCreatedId) {
+                Xrm.Navigation.openForm({
+                    entityName: entityName,
+                    entityId: lastCreatedId,
+                    useQuickCreateForm: false,
+                    openInNewWindow: false
+                });
+            }
+        } else {
+            if (typeof showToast === 'function') {
+                showToast('Failed to create clones. Check field values and try again.', 'error', 4000);
+            }
+        }
+
+    } catch (error) {
+        console.error('Error in cloneMultipleViaApi:', error);
+        if (typeof showToast === 'function') {
+            showToast('Error creating clones', 'error');
         }
     }
 }
