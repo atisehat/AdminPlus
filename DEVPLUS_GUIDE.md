@@ -25,14 +25,14 @@ Based on real-world D365 workflows, here is a conservative estimate of daily tim
 
 | Task | Traditional Time | With DevPlus | Time Saved |
 |---|---|---|---|
-| Clone a test record | 10–20 min | 30 seconds | **~95%** |
-| Clone 5 records for a test scenario | 1–2 hours | 2 minutes | **~97%** |
-| Assign security roles to a new user | 15–25 min | 2–3 min | **~88%** |
-| Copy security from one user to another | 30–60 min | 2–3 min | **~95%** |
-| Find a field's logical name | 5–15 min | 10 seconds | **~98%** |
+| Clone a test record | 03–06 min | 30 seconds | **~89%** |
+| Clone 5 records for a test scenario | 10–10 min | 2 minutes | **~80%** |
+| Assign security roles to a new user | 05–10 min | 2–3 min | **~67%** |
+| Copy security from one user to another | 10–15 min | 2–3 min | **~80%** |
+| Find a field's logical name | 5–10 min | 10 seconds | **~98%** |
 | Show all hidden fields / tabs on a form | 5–10 min | 10 seconds | **~98%** |
-| Check what automations run on a table | 15–30 min | 30 seconds | **~97%** |
-| Open a record's Web API endpoint | 5–10 min | 5 seconds | **~99%** |
+| Check what automations run on a table | 15–30 min | 30 seconds | **~98%** |
+| Open a record's Web API endpoint | 2–4 min | 5 seconds | **~97%** |
 | Check which fields changed before saving | 5–10 min | 10 seconds | **~98%** |
 
 > **For a developer or tester using D365 daily, DevPlus realistically saves 1–3 hours every single day.**
