@@ -220,16 +220,9 @@ function createCloneRecordPopup(fieldAnalysis) {
                 </div>
                 
                 <!-- Action Buttons -->
-                <div style="display: flex; justify-content: center; align-items: center; gap: 15px; margin-top: 25px;">
-                    <button 
-                        id="selectAllButton"
-                        style="padding: 10px 24px; font-size: 14px; font-weight: 600; background-color: #6b7280; color: white; border: none; cursor: pointer; border-radius: 8px; transition: all 0.2s ease; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);"
-                        onmouseover="this.style.backgroundColor='#4b5563'; this.style.transform='translateY(-1px)';"
-                        onmouseout="this.style.backgroundColor='#6b7280'; this.style.transform='translateY(0)';"
-                    >
-                        Select All
-                    </button>
-                    <div style="display: flex; align-items: center; gap: 8px;">
+                <div style="position: relative; display: flex; justify-content: center; align-items: center; gap: 15px; margin-top: 25px;">
+                    <!-- Copies input anchored to the left -->
+                    <div style="position: absolute; left: 0; display: flex; align-items: center; gap: 8px;">
                         <label for="cloneCountInput" style="font-size: 14px; font-weight: 600; color: #374151; white-space: nowrap;">Copies:</label>
                         <input
                             type="number"
@@ -242,6 +235,15 @@ function createCloneRecordPopup(fieldAnalysis) {
                             onblur="this.style.borderColor='#d1d5db'; this.value = Math.min(Math.max(parseInt(this.value)||1,1),10);"
                         >
                     </div>
+                    <!-- Centred buttons -->
+                    <button 
+                        id="selectAllButton"
+                        style="padding: 10px 24px; font-size: 14px; font-weight: 600; background-color: #6b7280; color: white; border: none; cursor: pointer; border-radius: 8px; transition: all 0.2s ease; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);"
+                        onmouseover="this.style.backgroundColor='#4b5563'; this.style.transform='translateY(-1px)';"
+                        onmouseout="this.style.backgroundColor='#6b7280'; this.style.transform='translateY(0)';"
+                    >
+                        Select All
+                    </button>
                     <button 
                         id="cloneRecordButton"
                         style="padding: 12px 32px; font-size: 15px; font-weight: 600; width: auto; min-width: 180px; background-color: #2b2b2b; color: white; border: none; cursor: pointer; border-radius: 8px; transition: all 0.2s ease; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);"
