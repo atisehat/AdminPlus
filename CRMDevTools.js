@@ -97,11 +97,11 @@ function checkSystemAdministratorRole() {
 function openPopup() {  
   if (!isD365Context()) {    
     if (typeof showToast === 'function') {
-      showToast('AdminPlus can only run inside Dynamics 365. Please open this tool from within your D365 environment.', 'warning', 4000);
+      showToast('DevPlus can only run inside Dynamics 365. Please open this tool from within your D365 environment.', 'warning', 4000);
     } else {      
       setTimeout(function() {
         if (typeof showToast === 'function') {
-          showToast('AdminPlus can only run inside Dynamics 365. Please open this tool from within your D365 environment.', 'warning', 4000);
+          showToast('DevPlus can only run inside Dynamics 365. Please open this tool from within your D365 environment.', 'warning', 4000);
         }
       }, 100);
     }
@@ -118,7 +118,7 @@ function openPopup() {
   var popupHtml = `
     <div class="popup">
 	<div class="commonPopup-header" onclick="closePopup();" style="cursor: pointer;" title="Click to close">	            
-	    <span class="header-text">Admin<sup>+</sup></span>
+	    <span class="header-text">Dev<sup>+</sup></span>
 	    <span class="header-close">✖</span>
 	</div>
 	<div class="button-container">

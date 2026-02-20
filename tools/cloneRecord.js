@@ -15,8 +15,9 @@ async function cloneRecord() {
         const existingPopups = document.querySelectorAll('.commonPopup');
         existingPopups.forEach(popup => popup.remove());
         
-        const entityName = Xrm.Page.data.entity.getEntityName();        
-        const fieldAnalysis = analyzeFormFields();
+        const entityName = Xrm.Page.data.entity.getEntityName();
+        const cleanEntityId = entityId.replace(/[{}]/g, '');
+        const fieldAnalysis = await analyzeAllFields(entityName, cleanEntityId);
         const popupContainer = createCloneRecordPopup(fieldAnalysis);
         document.body.appendChild(popupContainer);
         
@@ -34,7 +35,7 @@ async function cloneRecord() {
     }
 }
 
-function analyzeFormFields() {
+async function analyzeAllFields(entityName, entityId) {
     const fields = {
         lookup: [],
         string: [],
@@ -50,28 +51,30 @@ function analyzeFormFields() {
         bigint: [],
         other: []
     };
-    
+
+    const formAttributeMap = {};
+
+    // 1. Read all attributes already on the form (includes hidden-via-rule fields)
     try {
         const attributes = Xrm.Page.data.entity.attributes.get();
-        
+
         attributes.forEach(attribute => {
             try {
                 const attrType = attribute.getAttributeType();
                 const attrName = attribute.getName();
                 const controls = attribute.controls.get();
-                
+
                 let displayName = attrName;
                 if (controls && controls.length > 0 && typeof controls[0].getLabel === 'function') {
                     const label = controls[0].getLabel();
-                    if (label) {
-                        displayName = label;
-                    }
+                    if (label) displayName = label;
                 }
-                
+
                 const requiredLevel = attribute.getRequiredLevel();
                 const isRequired = requiredLevel === 'required';
-                const isRecommended = requiredLevel === 'recommended';               
-                const currentValue = attribute.getValue();                
+                const isRecommended = requiredLevel === 'recommended';
+                const currentValue = attribute.getValue();
+
                 const fieldInfo = {
                     name: attrName,
                     displayName: displayName,
@@ -81,64 +84,114 @@ function analyzeFormFields() {
                     currentValue: currentValue,
                     attribute: attribute
                 };
-                switch (attrType) {
-                    case 'lookup':
-                        fields.lookup.push(fieldInfo);
-                        break;
-                    case 'string':
-                        fields.string.push(fieldInfo);
-                        break;
-                    case 'memo':
-                        fields.memo.push(fieldInfo);
-                        break;
-                    case 'boolean':
-                        fields.boolean.push(fieldInfo);
-                        break;
-                    case 'datetime':
-                        fields.datetime.push(fieldInfo);
-                        break;
-                    case 'decimal':
-                        fields.decimal.push(fieldInfo);
-                        break;
-                    case 'double':
-                        fields.double.push(fieldInfo);
-                        break;
-                    case 'integer':
-                        fields.integer.push(fieldInfo);
-                        break;
-                    case 'money':
-                        fields.money.push(fieldInfo);
-                        break;
-                    case 'bigint':
-                        fields.bigint.push(fieldInfo);
-                        break;
-                    case 'optionset':                        
-                        if (controls && controls.length > 0 && typeof controls[0].getOptions === 'function') {
-                            const options = controls[0].getOptions();
-                            fieldInfo.options = options;
-                        }
-                        fields.optionset.push(fieldInfo);
-                        break;
-                    case 'multiselectoptionset':                        
-                        if (controls && controls.length > 0 && typeof controls[0].getOptions === 'function') {
-                            const options = controls[0].getOptions();
-                            fieldInfo.options = options;
-                        }
-                        fields.multiselectoptionset.push(fieldInfo);
-                        break;
-                    default:
-                        // Catch other field types
-                        fields.other.push(fieldInfo);
-                        break;
+
+                if (attrType === 'optionset' || attrType === 'multiselectoptionset') {
+                    if (controls && controls.length > 0 && typeof controls[0].getOptions === 'function') {
+                        fieldInfo.options = controls[0].getOptions();
+                    }
                 }
-            } catch (e) {                
-            }
+
+                formAttributeMap[attrName] = fieldInfo;
+
+                if (fields[attrType] !== undefined) {
+                    fields[attrType].push(fieldInfo);
+                } else {
+                    fields.other.push(fieldInfo);
+                }
+            } catch (e) {}
         });
-        
     } catch (error) {
         console.error('Error analyzing form fields:', error);
     }
-    
+
+    // 2. Fetch the full record via Web API to capture fields not on the form
+    try {
+        const apiRecord = await Xrm.WebApi.retrieveRecord(entityName, entityId);
+        const processedNames = new Set(Object.keys(formAttributeMap));
+
+        // Process lookup fields — Web API exposes them as _fieldname_value
+        Object.keys(apiRecord).forEach(key => {
+            if (!key.startsWith('_') || !key.endsWith('_value') || key.includes('@')) return;
+            const fieldName = key.slice(1, -6); // _primarycontactid_value → primarycontactid
+            if (processedNames.has(fieldName)) return;
+
+            const guidValue = apiRecord[key];
+            if (!guidValue) return;
+
+            const displayNameValue = apiRecord[`${key}@OData.Community.Display.V1.FormattedValue`] || '';
+            const entityType = apiRecord[`${key}@Microsoft.Dynamics.CRM.lookuplogicalname`] || '';
+
+            fields.lookup.push({
+                name: fieldName,
+                displayName: fieldName,
+                type: 'lookup',
+                isRequired: false,
+                isRecommended: false,
+                currentValue: [{ id: guidValue, name: displayNameValue, entityType: entityType }],
+                attribute: null,
+                isFromApi: true
+            });
+            processedNames.add(fieldName);
+        });
+
+        // Process all other (non-lookup, non-metadata) fields
+        Object.keys(apiRecord).forEach(key => {
+            if (key.startsWith('@') || key.includes('@') || key.startsWith('_')) return;
+            if (processedNames.has(key)) return;
+
+            const value = apiRecord[key];
+            if (value === null || value === undefined) return;
+
+            const formattedValue = apiRecord[`${key}@OData.Community.Display.V1.FormattedValue`];
+
+            let attrType;
+            let processedValue = value;
+
+            if (typeof value === 'boolean') {
+                attrType = 'boolean';
+            } else if (typeof value === 'number') {
+                // If the API provides a text formatted value it's an option set, not a plain number
+                if (formattedValue && isNaN(Number(formattedValue))) {
+                    attrType = 'optionset';
+                } else {
+                    attrType = Number.isInteger(value) ? 'integer' : 'decimal';
+                }
+            } else if (typeof value === 'string') {
+                if (/^\d{4}-\d{2}-\d{2}T/.test(value)) {
+                    attrType = 'datetime';
+                    processedValue = new Date(value);
+                } else {
+                    attrType = 'string';
+                }
+            } else {
+                attrType = 'other';
+            }
+
+            const fieldInfo = {
+                name: key,
+                displayName: key,
+                type: attrType,
+                isRequired: false,
+                isRecommended: false,
+                currentValue: processedValue,
+                attribute: null,
+                isFromApi: true,
+                formattedValue: formattedValue
+            };
+
+            if (fields[attrType] !== undefined) {
+                fields[attrType].push(fieldInfo);
+            } else {
+                fields.other.push(fieldInfo);
+            }
+            processedNames.add(key);
+        });
+
+    } catch (error) {
+        console.error('Error fetching full record via Web API:', error);
+        // Continue with form-only fields if the API call fails
+    }
+
     return fields;
 }
 
@@ -248,8 +301,8 @@ function generateFieldsHTML(fieldAnalysis) {
                     }
                 } else if (type === 'multiselectoptionset' || type === 'optionset') {                    
                     if (type === 'optionset' && field.currentValue !== null && field.currentValue !== undefined) {
-                        let formattedValue = null;
-                        if (typeof field.attribute.getFormattedValue === 'function') {
+                        let formattedValue = field.formattedValue || null;
+                        if (!formattedValue && field.attribute && typeof field.attribute.getFormattedValue === 'function') {
                             formattedValue = field.attribute.getFormattedValue();
                         }
                         
@@ -262,8 +315,8 @@ function generateFieldsHTML(fieldAnalysis) {
                         
                         displayValue = formattedValue ? `${field.currentValue} (${formattedValue})` : String(field.currentValue);
                     } else if (type === 'multiselectoptionset' && Array.isArray(field.currentValue)) {
-                        let formattedValue = null;
-                        if (typeof field.attribute.getFormattedValue === 'function') {
+                        let formattedValue = field.formattedValue || null;
+                        if (!formattedValue && field.attribute && typeof field.attribute.getFormattedValue === 'function') {
                             formattedValue = field.attribute.getFormattedValue();
                         }
                         
@@ -300,6 +353,10 @@ function generateFieldsHTML(fieldAnalysis) {
                 }
             }
             
+            const sourceBadge = field.isFromApi
+                ? `<span style="margin-left: 6px; font-size: 10px; font-weight: 500; color: #6b7280; background-color: #e5e7eb; border-radius: 4px; padding: 1px 5px; white-space: nowrap; flex-shrink: 0;">Not on Form</span>`
+                : `<span style="margin-left: 6px; font-size: 10px; font-weight: 500; color: #166534; background-color: #dcfce7; border-radius: 4px; padding: 1px 5px; white-space: nowrap; flex-shrink: 0;">On Form</span>`;
+
             html += `
                 <div style="padding: 8px; background-color: #f5f5f5; border-radius: 5px; border-left: 3px solid #2b2b2b; cursor: pointer; transition: background-color 0.2s;">
                     <div style="display: flex; align-items: center;">
@@ -307,6 +364,7 @@ function generateFieldsHTML(fieldAnalysis) {
                         <div style="font-weight: bold; color: #333; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1;">
                             ${field.displayName}${requiredMark}${recommendedMark}
                         </div>
+                        ${sourceBadge}
                     </div>
                     <div style="margin-top: 5px; padding-top: 5px; border-top: 1px solid #ddd; font-size: 12px; color: #555; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
                         <strong>Value:</strong> <span style="font-style: italic;">${displayValue}</span>
