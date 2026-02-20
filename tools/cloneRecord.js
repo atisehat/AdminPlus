@@ -223,7 +223,7 @@ function createCloneRecordPopup(fieldAnalysis) {
                 <div style="position: relative; display: flex; justify-content: center; align-items: center; gap: 15px; margin-top: 25px;">
                     <!-- Copies input anchored to the left -->
                     <div style="position: absolute; left: 0; display: flex; align-items: center; gap: 8px;">
-                        <label for="cloneCountInput" style="font-size: 14px; font-weight: 600; color: #374151; white-space: nowrap;">Copies:</label>
+                        <label for="cloneCountInput" style="font-size: 14px; font-weight: bold; color: #2b2b2b; white-space: nowrap;">Copies:</label>
                         <input
                             type="number"
                             id="cloneCountInput"
