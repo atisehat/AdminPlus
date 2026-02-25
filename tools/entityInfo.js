@@ -304,15 +304,15 @@ function generateFieldListHtml(fields, fieldValues, fieldMetadata) {
                 fullTooltip = `Lookup Name: ${displayName} (${logicalName})\nEntity Name: ${lookupData.entityType || 'N/A'}\nRecord ID: ${lookupData.id || 'N/A'}\nValue: ${lookupData.name || fieldValue}`;
             }            
             html += `
-                <div class="entityinfo-field-card" data-copy-text="${escapeHtml(fullTooltip)}" data-tooltip="${escapeHtml(fullTooltip)}" style="padding: 8px; background-color: #f5f5f5; border-radius: 5px; border-left: 3px solid #2b2b2b; cursor: pointer; transition: background-color 0.2s;">
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div class="entityinfo-field-card" data-tooltip="${escapeHtml(fullTooltip)}" style="padding: 8px; background-color: #f5f5f5; border-radius: 5px; border-left: 3px solid #2b2b2b;">
+                    <div class="entityinfo-field-name" data-copy-text="${escapeHtml(logicalName)}" title="Click to copy logical name" style="display: flex; justify-content: space-between; align-items: center; cursor: pointer; border-radius: 3px; padding: 2px 4px; margin: -2px -4px; transition: background-color 0.2s;">
                         <div style="font-weight: bold; color: #333; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
                             ${displayName} 
                             <span style="font-weight: normal; color: #666; font-size: 13px;">(${logicalName})</span>
                         </div>
                         <div style="font-size: 12px; color: #666; white-space: nowrap; margin-left: 10px;">Type: ${typeLabel}</div>
                     </div>
-                    <div style="margin-top: 5px; padding-top: 5px; border-top: 1px solid #ddd; font-size: 12px; color: #555; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                    <div class="entityinfo-field-value" data-copy-text="${escapeHtml(fieldValue)}" title="Click to copy value" style="margin-top: 5px; padding: 3px 4px; border-top: 1px solid #ddd; font-size: 12px; color: #555; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; cursor: pointer; border-radius: 3px; transition: background-color 0.2s;">
                         <strong>Value:</strong> <span style="font-style: italic;">${escapeHtml(displayValue)}</span>
                     </div>
                 </div>
@@ -397,32 +397,39 @@ function appendEntityInfoPopupToBody(entityName, recordId, pluralName, fieldList
     }   
     setupSectionNavigation(popupContainer);
     
-    // Click to copy
-    popupContainer.querySelectorAll('.entityinfo-field-card').forEach(card => {
-        card.addEventListener('click', function() {
+    // Click to copy — field name zone copies logical name, value zone copies value
+    const copyZoneHandler = (el, flashTarget) => {
+        el.addEventListener('click', function(e) {
+            e.stopPropagation();
             const copyText = decodeHtmlEntities(this.getAttribute('data-copy-text'));
-            
-            navigator.clipboard.writeText(copyText).then(() => {                
-                const originalBg = this.style.backgroundColor;
-                this.style.backgroundColor = '#d4edda';
-                setTimeout(() => this.style.backgroundColor = originalBg, 300);                
-                
-                const originalTooltip = this.getAttribute('data-tooltip');
-                this.setAttribute('data-tooltip', 'Copied to clipboard! ✓');
-                setTimeout(() => this.setAttribute('data-tooltip', originalTooltip), 1500);
-            }).catch(err => {
+            const target = flashTarget ? this.closest('.entityinfo-field-card') || this : this;
+
+            navigator.clipboard.writeText(copyText).then(() => {
+                const originalBg = target.style.backgroundColor;
+                target.style.backgroundColor = '#d4edda';
+                setTimeout(() => target.style.backgroundColor = originalBg, 300);
+
+                const card = this.closest('.entityinfo-field-card');
+                if (card) {
+                    const originalTooltip = card.getAttribute('data-tooltip');
+                    card.setAttribute('data-tooltip', 'Copied to clipboard! ✓');
+                    setTimeout(() => card.setAttribute('data-tooltip', originalTooltip), 1500);
+                }
+            }).catch(() => {
                 alert('Failed to copy to clipboard');
             });
         });
-        
-        // Hover effect
-        card.addEventListener('mouseenter', function() {
-            this.style.backgroundColor = '#e8e8e8';
+
+        el.addEventListener('mouseenter', function() {
+            this.style.backgroundColor = '#dce8f5';
         });
-        card.addEventListener('mouseleave', function() {
-            this.style.backgroundColor = '#f5f5f5';
+        el.addEventListener('mouseleave', function() {
+            this.style.backgroundColor = '';
         });
-    });
+    };
+
+    popupContainer.querySelectorAll('.entityinfo-field-name').forEach(el => copyZoneHandler(el, false));
+    popupContainer.querySelectorAll('.entityinfo-field-value').forEach(el => copyZoneHandler(el, false));
 }
 
 function addEntityInfoTooltipStyles() {    
