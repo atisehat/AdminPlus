@@ -42,7 +42,9 @@ async function fetchEntityFields() {
         });
         
         // Get complete record data for fields not on form
-        const recordResponse = await fetch(`${clientUrl}/api/data/v9.2/${pluralName}(${cleanRecordId})`);        
+        const recordResponse = await fetch(`${clientUrl}/api/data/v9.2/${pluralName}(${cleanRecordId})`, {
+            headers: { 'Prefer': 'odata.include-annotations="*"' }
+        });        
         if (recordResponse.ok) {
             const recordData = await recordResponse.json();            
             // Populate values
@@ -67,14 +69,16 @@ async function fetchEntityFields() {
 
 function formatFieldValueFromAPI(value, attributeType, recordData, logicalName) {
     try {
-        if (value === null || value === undefined) {
-            return '(empty)';
-        }        
-        // Lookups
+        // Lookups must be checked first — their value lives at _fieldname_value,
+        // not fieldname, so `value` (recordData[logicalName]) is always undefined for them.
         if (attributeType === 'Lookup' || attributeType === 'Customer' || attributeType === 'Owner') {
             const lookupValue = recordData[`_${logicalName}_value`];
             const lookupFormatted = recordData[`_${logicalName}_value@OData.Community.Display.V1.FormattedValue`];
             return lookupFormatted || lookupValue || '(empty)';
+        }
+
+        if (value === null || value === undefined) {
+            return '(empty)';
         }        
         // Boolean
         if (attributeType === 'Boolean') {
