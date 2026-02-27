@@ -169,9 +169,9 @@ function openPopup() {
 	    <button onclick="performanceDiagnostics();" class="app-button" title="Performance Diagnostics">
 	      <span class="app-icon">⚡</span>
 	    </button>
-	    <button onclick="personaSwitcher();" class="app-button" title="Persona Switcher">
+	    <!-- <button onclick="personaSwitcher();" class="app-button" title="Persona Switcher">
 	      <span class="app-icon">🎭</span>
-	    </button>
+	    </button> -->
 	  </div>
 	</div>
    </div>
