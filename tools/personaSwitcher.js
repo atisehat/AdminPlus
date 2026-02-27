@@ -368,6 +368,39 @@ function personaSwitcher() {
 		}
 	}
 
+	// ── Direct API Calls (bypass securityOperations which swallows errors) ──
+
+	async function associateRoleDirect(userId, roleId) {
+		try {
+			const url = `${clientUrl}/api/data/v9.2/systemusers(${userId})/systemuserroles_association/$ref`;
+			const response = await fetch(url, {
+				method: "POST",
+				headers: {
+					"OData-MaxVersion": "4.0",
+					"OData-Version": "4.0",
+					"Accept": "application/json",
+					"Content-Type": "application/json; charset=utf-8"
+				},
+				body: JSON.stringify({
+					"@odata.id": `${clientUrl}/api/data/v9.2/roles(${roleId})`
+				})
+			});
+			return response.ok;
+		} catch (e) {
+			return false;
+		}
+	}
+
+	async function disassociateRoleDirect(userId, roleId) {
+		try {
+			const url = `${clientUrl}/api/data/v9.2/systemusers(${userId})/systemuserroles_association/$ref?$id=${clientUrl}/api/data/v9.2/roles(${roleId})`;
+			const response = await fetch(url, { method: "DELETE" });
+			return response.ok;
+		} catch (e) {
+			return false;
+		}
+	}
+
 	// ── Actions ──
 
 	async function handleSwitch() {
@@ -385,8 +418,13 @@ function personaSwitcher() {
 			showLoadingDialog('Switching to basic persona...');
 
 			saveSnapshot(currentRoles);
-			await updateUserDetails(currentUserId, null, [], [], 'RemoveAllRoles');
-			await updateUserDetails(currentUserId, null, [], selectedBasicRoles, 'AddRoles');
+
+			for (const role of currentRoles) {
+				await disassociateRoleDirect(currentUserId, role.id);
+			}
+			for (const roleId of selectedBasicRoles) {
+				await associateRoleDirect(currentUserId, roleId);
+			}
 
 			closeLoadingDialog();
 			showToast('Switched to basic persona. Page will reload...', 'success', 2500);
@@ -408,18 +446,45 @@ function personaSwitcher() {
 		try {
 			showLoadingDialog('Restoring admin persona...');
 
-			await updateUserDetails(currentUserId, null, [], [], 'RemoveAllRoles');
 			const roleIds = snapshot.roles.map(r => r.id);
-			await updateUserDetails(currentUserId, null, [], roleIds, 'AddRoles');
+
+			// Add saved admin roles FIRST (before removing anything).
+			// If the add fails the user at least keeps their basic roles.
+			for (const roleId of roleIds) {
+				await associateRoleDirect(currentUserId, roleId);
+			}
+
+			// Verify by re-fetching actual roles from the server
+			await loadCurrentRoles();
+			const currentRoleIdSet = new Set(currentRoles.map(r => r.id));
+			const restoredCount = roleIds.filter(id => currentRoleIdSet.has(id)).length;
+
+			if (restoredCount === 0) {
+				closeLoadingDialog();
+				showToast('Could not restore roles. Your saved data is preserved — contact another admin to restore via the Assign Security tool.', 'error', 6000);
+				return;
+			}
+
+			// At least some roles restored — clean up extra basic-only roles
+			const savedIdSet = new Set(roleIds);
+			const extraRoles = currentRoles.filter(r => !savedIdSet.has(r.id));
+			for (const role of extraRoles) {
+				await disassociateRoleDirect(currentUserId, role.id);
+			}
 
 			clearSnapshot();
 			closeLoadingDialog();
-			showToast('Admin persona restored. Page will reload...', 'success', 2500);
-			setTimeout(() => window.location.reload(), 2000);
+
+			if (restoredCount === roleIds.length) {
+				showToast('Admin persona restored. Page will reload...', 'success', 2500);
+			} else {
+				showToast(`Partially restored (${restoredCount}/${roleIds.length} roles). Page will reload...`, 'warning', 3500);
+			}
+			setTimeout(() => window.location.reload(), 2500);
 		} catch (error) {
 			closeLoadingDialog();
 			console.error('Error restoring persona:', error);
-			showToast('Error restoring admin persona. You may need to contact another admin.', 'error', 5000);
+			showToast('Error restoring persona. Your saved data is preserved.', 'error', 5000);
 		}
 	}
 
