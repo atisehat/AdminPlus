@@ -43,6 +43,7 @@ function onUtilScriptLoaded() {
     loadScript('tools/cloneRecord.js');
     loadScript('tools/commandChecker.js');
     loadScript('tools/performanceDiagnostics.js');
+    loadScript('tools/personaSwitcher.js');
   }
 }
 
@@ -167,6 +168,9 @@ function openPopup() {
 	    </button>
 	    <button onclick="performanceDiagnostics();" class="app-button" title="Performance Diagnostics">
 	      <span class="app-icon">⚡</span>
+	    </button>
+	    <button onclick="personaSwitcher();" class="app-button" title="Persona Switcher">
+	      <span class="app-icon">🎭</span>
 	    </button>
 	  </div>
 	</div>
@@ -402,3 +406,4 @@ window.cloneRecord = cloneRecord;
 window.commandChecker = commandChecker;
 window.performanceDiagnostics = performanceDiagnostics;
 window.dateCalc = dateCalc;
+window.personaSwitcher = personaSwitcher;

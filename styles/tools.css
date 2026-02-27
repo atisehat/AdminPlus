@@ -2091,3 +2091,233 @@
     background: #a0a0a0;
 }
 
+/* Persona Switcher */
+.persona-layout {
+    display: flex;
+    flex-direction: column;
+    height: calc(80vh - 50px);
+    max-height: calc(80vh - 50px);
+    background: #f8f9fa;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif;
+}
+
+.persona-header-bar {
+    padding: 16px 24px;
+    background: white;
+    border-bottom: 2px solid #e0e0e0;
+    flex-shrink: 0;
+}
+
+.persona-header-basic {
+    border-bottom-color: #f59e0b;
+}
+
+.persona-user-badge {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.persona-badge-name {
+    font-size: 16px;
+    font-weight: 600;
+    color: #2b2b2b;
+}
+
+.persona-badge-status {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.persona-badge-admin {
+    background: #d1fae5;
+    color: #065f46;
+    border: 1px solid #10b981;
+}
+
+.persona-badge-basic {
+    background: #fef3c7;
+    color: #92400e;
+    border: 1px solid #f59e0b;
+}
+
+.persona-alert-banner {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 24px;
+    background: #fffbeb;
+    border-bottom: 2px solid #f59e0b;
+    flex-shrink: 0;
+    font-size: 13px;
+}
+
+.persona-alert-banner strong {
+    color: #92400e;
+}
+
+.persona-alert-banner span {
+    color: #b45309;
+    font-size: 12px;
+    margin-left: 8px;
+}
+
+.persona-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px 24px;
+}
+
+.persona-section {
+    margin-bottom: 20px;
+}
+
+.persona-section-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #2b2b2b;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 12px;
+}
+
+.persona-hint {
+    font-size: 13px;
+    color: #666;
+    margin: 0 0 12px 0;
+    line-height: 1.4;
+}
+
+.persona-warning-note {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    background: #fef3c7;
+    border: 2px solid #f59e0b;
+    border-radius: 6px;
+    font-size: 12px;
+    color: #92400e;
+    margin-bottom: 12px;
+}
+
+.persona-warning-note svg {
+    flex-shrink: 0;
+}
+
+.persona-roles-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+}
+
+.persona-role-chip {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 12px;
+    background: white;
+    border-radius: 6px;
+    font-size: 13px;
+    color: #2b2b2b;
+    border: 1px solid #e0e0e0;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+
+.persona-role-chip svg {
+    flex-shrink: 0;
+}
+
+.persona-chip-basic {
+    border-color: #fde68a;
+    background: #fffbeb;
+}
+
+.persona-chip-saved {
+    border-color: #a7f3d0;
+    background: #ecfdf5;
+}
+
+.persona-divider-line {
+    height: 1px;
+    background: #e0e0e0;
+    margin: 20px 0;
+}
+
+.persona-select-list {
+    max-height: 250px;
+    overflow-y: auto;
+    column-count: 2;
+    column-gap: 12px;
+    padding: 4px;
+}
+
+.persona-select-item {
+    break-inside: avoid;
+    page-break-inside: avoid;
+}
+
+.persona-footer {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 24px;
+    border-top: 2px solid #e0e0e0;
+    background: white;
+    flex-shrink: 0;
+    justify-content: flex-end;
+}
+
+.persona-footer-restore {
+    justify-content: space-between;
+}
+
+.persona-counter {
+    display: flex;
+    align-items: center;
+    padding: 6px 14px;
+    background: #e8f4f8;
+    border: 2px solid #2b2b2b;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #2b2b2b;
+}
+
+.persona-btn-restore {
+    background: #10b981 !important;
+}
+
+.persona-btn-restore:hover {
+    background: #059669 !important;
+}
+
+/* Persona Switcher Scrollbars */
+.persona-body::-webkit-scrollbar,
+.persona-select-list::-webkit-scrollbar {
+    width: 8px;
+}
+
+.persona-body::-webkit-scrollbar-track,
+.persona-select-list::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 4px;
+}
+
+.persona-body::-webkit-scrollbar-thumb,
+.persona-select-list::-webkit-scrollbar-thumb {
+    background: #c0c0c0;
+    border-radius: 4px;
+}
+
+.persona-body::-webkit-scrollbar-thumb:hover,
+.persona-select-list::-webkit-scrollbar-thumb:hover {
+    background: #a0a0a0;
+}
+
