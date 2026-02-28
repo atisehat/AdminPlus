@@ -1,7 +1,7 @@
 function copySecurity() {
 	// Check if Sys Admin
 	if (!checkSystemAdministratorRole()) {
-		Xrm.Navigation.openAlertDialog({ text: "You do not have permission to execute this action. System Administrator role required." });
+		showToast('System Administrator role required for this action.', 'error', 4000);
 		return;
 	}
 	
