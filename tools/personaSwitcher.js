@@ -210,13 +210,12 @@
 		const el = document.createElement('div');
 		el.id = OVERLAY_ID;
 		el.style.cssText = `
-			position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+			position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
 			z-index: 999997; background: #1e293b; color: white;
-			padding: 14px 20px; border-radius: 8px; border-left: 4px solid #f87171;
+			padding: 24px 28px; border-radius: 10px; border-left: 5px solid #f87171;
 			font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
-			font-size: 13px; display: flex; align-items: center; gap: 14px;
-			box-shadow: 0 4px 24px rgba(0,0,0,0.4); max-width: 540px;
-			animation: adminplus-banner-in 0.25s ease-out;
+			font-size: 14px; display: flex; align-items: flex-start; gap: 16px;
+			box-shadow: 0 8px 40px rgba(0,0,0,0.5); max-width: 480px; width: 90%;
 		`;
 		el.innerHTML = `
 			<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f87171" stroke-width="2" style="flex-shrink:0">
@@ -265,6 +264,41 @@
 		window.__adminplus403Handler = null;
 		const el = document.getElementById('adminplus-access-denied');
 		if (el) el.remove();
+	}
+
+	// ── Refresh Guard ──
+	// Blocks F5, Ctrl/Cmd+R and the browser beforeunload event while
+	// impersonation is active so the user doesn't accidentally lose the patches.
+
+	var _beforeUnload = null;
+	var _keyDown      = null;
+
+	function enableRefreshGuard() {
+		if (_beforeUnload) return;
+
+		_beforeUnload = function (e) {
+			e.preventDefault();
+			e.returnValue = '';
+		};
+
+		_keyDown = function (e) {
+			var isRefresh = e.key === 'F5' ||
+				((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'r');
+			if (!isRefresh) return;
+			e.preventDefault();
+			e.stopPropagation();
+			if (typeof showToast === 'function') {
+				showToast('Page refresh is disabled while impersonation is active. Stop impersonation first.', 'warning', 3500);
+			}
+		};
+
+		window.addEventListener('beforeunload', _beforeUnload);
+		window.addEventListener('keydown', _keyDown, true); // capture phase beats D365
+	}
+
+	function disableRefreshGuard() {
+		if (_beforeUnload) { window.removeEventListener('beforeunload', _beforeUnload); _beforeUnload = null; }
+		if (_keyDown)      { window.removeEventListener('keydown', _keyDown, true);     _keyDown      = null; }
 	}
 
 	// ── SPA Page Refresh ──
@@ -339,9 +373,11 @@
 			addToHistory(userId, userName);
 			showBanner(userName);
 			setupAccessDeniedHandler(userName);
+			enableRefreshGuard();
 		},
 
 		stop: function (silent) {
+			disableRefreshGuard();
 			clearAccessDeniedHandler();
 			removePatches();
 			clearSession();
@@ -366,6 +402,7 @@
 	if (existing) {
 		applyPatches(existing.id);
 		setupAccessDeniedHandler(existing.name);
+		enableRefreshGuard();
 		var ready = function () {
 			showBanner(existing.name);
 			if (typeof showToast === 'function') {
