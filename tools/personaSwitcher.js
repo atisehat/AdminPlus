@@ -200,7 +200,8 @@
 			clearSession();
 			removeBanner();
 			if (!silent && typeof showToast === 'function') {
-				showToast('Impersonation stopped. Navigate or refresh to see your own data.', 'info', 3000);
+				showToast('Impersonation stopped. Reloading...', 'info', 2000);
+				setTimeout(() => window.location.reload(), 1500);
 			}
 		}
 	};
@@ -212,9 +213,6 @@
 		applyPatches(existing.id);
 		var ready = function () {
 			showBanner(existing.name);
-			if (typeof showToast === 'function') {
-				showToast(`Impersonation restored for ${existing.name}. Navigate to a page to apply.`, 'info', 4000);
-			}
 		};
 		if (document.readyState === 'loading') {
 			document.addEventListener('DOMContentLoaded', ready);
@@ -577,7 +575,8 @@ function personaSwitcher() {
 
 		engine.start(selectedUser.id, selectedUser.name);
 		document.querySelectorAll('.commonPopup[data-popup-id="personaSwitcher"]').forEach(p => p.remove());
-		showToast(`Now impersonating ${selectedUser.name}. Navigate to see their experience.`, 'success', 3500);
+		showToast(`Now impersonating ${selectedUser.name}. Reloading...`, 'success', 2000);
+		setTimeout(() => window.location.reload(), 1500);
 	}
 
 	// ── Init ──
