@@ -192,24 +192,35 @@
 		if (b) b.remove();
 	}
 
-	// ── In-place Data Refresh ──
-	// Re-fetches form data, subgrids, and ribbon through our patched APIs
-	// without any page navigation.
+	// ── Page Refresh ──
+	// Uses D365 SPA navigation to re-open the current record. Patches stay
+	// in memory so all re-fetched data goes through them. Falls back to
+	// Xrm.Page.data.refresh() if the URL can't be parsed.
 
 	function refreshCurrentPage() {
 		try {
-			if (typeof Xrm === 'undefined' || !Xrm.Page) return;
-			if (Xrm.Page.data) {
-				Xrm.Page.data.refresh(false).then(function () {
-					try { Xrm.Page.ui.refreshRibbon(); } catch (e) {}
-					try {
-						Xrm.Page.ui.controls.forEach(function (ctrl) {
-							if (ctrl.getControlType && ctrl.getControlType() === 'subgrid') {
-								ctrl.refresh();
-							}
-						});
-					} catch (e) {}
-				});
+			if (typeof Xrm === 'undefined') return;
+
+			var params = new URLSearchParams(window.location.search);
+			var etn = params.get('etn');
+			var id  = params.get('id');
+
+			if (etn && id) {
+				Xrm.Navigation.openForm({ entityName: etn, entityId: id.replace(/[{}]/g, '') });
+				return;
+			}
+
+			if (Xrm.Page && Xrm.Page.data && Xrm.Page.data.entity) {
+				var entityName = Xrm.Page.data.entity.getEntityName();
+				var entityId   = Xrm.Page.data.entity.getId().replace(/[{}]/g, '');
+				if (entityName && entityId) {
+					Xrm.Navigation.openForm({ entityName: entityName, entityId: entityId });
+					return;
+				}
+			}
+
+			if (Xrm.Page && Xrm.Page.data) {
+				Xrm.Page.data.refresh(false);
 			}
 		} catch (e) {}
 	}
