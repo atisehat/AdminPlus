@@ -593,51 +593,54 @@ function personaSwitcher() {
 				</div>
 			</div>
 
-			<div class="persona-body">
-				${history.length > 0 ? `
-					<div class="persona-section">
-						<div class="persona-section-title">
-							<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2b2b2b" stroke-width="2">
-								<polyline points="12 8 12 12 14 14"/><circle cx="12" cy="12" r="10"/>
-							</svg>
-							Recent
-						</div>
-						<div class="persona-recent-chips">
-							${history.map(h => `
-								<div class="persona-recent-chip" data-user-id="${h.id}" data-user-name="${h.name}">
-									${h.name}
-								</div>
-							`).join('')}
-						</div>
+			${history.length > 0 ? `
+				<div class="persona-recent-bar">
+					<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="2" style="flex-shrink:0;">
+						<polyline points="12 8 12 12 14 14"/><circle cx="12" cy="12" r="10"/>
+					</svg>
+					<span style="font-size:11px;font-weight:600;color:#666;text-transform:uppercase;letter-spacing:0.4px;flex-shrink:0;">Recent</span>
+					<div class="persona-recent-chips" id="personaRecentChips">
+						${history.map(h => `
+							<div class="persona-recent-chip" data-user-id="${h.id}" data-user-name="${h.name}">
+								${h.name}
+							</div>
+						`).join('')}
 					</div>
-					<div class="persona-divider-line"></div>
-				` : ''}
+				</div>
+			` : ''}
 
-				<div class="persona-section">
-					<div class="persona-section-title">
-						<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2b2b2b" stroke-width="2">
+			<div class="persona-split">
+				<div class="persona-split-left">
+					<div class="persona-split-search">
+						<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2" style="flex-shrink:0;">
 							<circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
 						</svg>
-						All Users
+						<input type="text" id="personaUserSearch" placeholder="Search users..." class="persona-split-search-input">
 					</div>
-					<input type="text" id="personaUserSearch" placeholder="Search by name..." class="search-input" style="margin-bottom:10px;">
 					<div class="persona-user-list" id="personaUserList">
 						<div class="empty-message">Loading users...</div>
 					</div>
 				</div>
 
-				<div id="personaUserDetails" style="display:none;">
-					<div class="persona-divider-line"></div>
-					<div class="persona-section">
-						<div class="persona-section-title">
-							<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2b2b2b" stroke-width="2">
-								<path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>
+				<div class="persona-split-right" id="personaUserDetails">
+					<div class="persona-split-empty" id="personaDetailEmpty">
+						<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#d0d0d0" stroke-width="1.5">
+							<path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>
+						</svg>
+						<span>Select a user</span>
+					</div>
+					<div id="personaDetailContent" style="display:none;">
+						<div class="persona-detail-name" id="personaDetailName"></div>
+						<div class="persona-detail-bu" id="personaDetailBU"></div>
+						<div class="persona-section-title" style="margin-top:14px;margin-bottom:8px;">
+							<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2b2b2b" stroke-width="2">
+								<path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z"/>
+								<path d="M8 11V7a4 4 0 118 0v4"/>
 							</svg>
-							<span id="personaDetailName">User Details</span>
+							Security Roles
 						</div>
-						<div id="personaDetailBU" style="font-size:13px;margin-bottom:10px;"></div>
 						<div class="persona-roles-grid" id="personaDetailRoles">
-							<div class="empty-message" style="grid-column:1/-1;">Loading roles...</div>
+							<div class="empty-message" style="grid-column:1/-1;">Loading...</div>
 						</div>
 					</div>
 				</div>
@@ -667,7 +670,7 @@ function personaSwitcher() {
 		}
 
 		// Recent chip clicks
-		document.querySelectorAll('.persona-recent-chip').forEach(chip => {
+		document.querySelectorAll('#personaRecentChips .persona-recent-chip').forEach(chip => {
 			chip.addEventListener('click', function () {
 				selectUser(this.dataset.userId, this.dataset.userName);
 			});
@@ -737,8 +740,11 @@ function personaSwitcher() {
 		btn.disabled = false;
 		btn.style.opacity = '1';
 
-		const details = document.getElementById('personaUserDetails');
-		details.style.display = 'block';
+		// Show right panel content, hide empty state
+		const emptyEl = document.getElementById('personaDetailEmpty');
+		const contentEl = document.getElementById('personaDetailContent');
+		if (emptyEl) emptyEl.style.display = 'none';
+		if (contentEl) contentEl.style.display = 'block';
 
 		document.getElementById('personaDetailName').textContent = userName;
 
@@ -747,12 +753,12 @@ function personaSwitcher() {
 		fetchBusinessUnitName(userId, function (res) {
 			if (res && res.entities && res.entities[0]) {
 				const buName = res.entities[0].businessunitid?.name || 'N/A';
-				buEl.innerHTML = `<strong>Business Unit:</strong> <span style="color:#10b981;">${buName}</span>`;
+				buEl.innerHTML = `<span style="color:#10b981;">&#9679;</span> ${buName}`;
 			}
 		});
 
 		const rolesGrid = document.getElementById('personaDetailRoles');
-		rolesGrid.innerHTML = '<div class="empty-message" style="grid-column:1/-1;">Loading roles...</div>';
+		rolesGrid.innerHTML = '<div class="empty-message" style="grid-column:1/-1;">Loading...</div>';
 		const roles = await loadUserRoles(userId);
 		rolesGrid.innerHTML = roles.length > 0
 			? roles.map(r => `
@@ -762,9 +768,7 @@ function personaSwitcher() {
 					</svg>
 					${r.name}
 				</div>`).join('')
-			: '<div class="empty-message" style="grid-column:1/-1;">No roles found</div>';
-
-		details.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+			: '<div class="empty-message" style="grid-column:1/-1;">No roles assigned</div>';
 	}
 
 	// ── Actions ──
