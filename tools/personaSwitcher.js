@@ -271,14 +271,24 @@
 	// impersonation is active so the user doesn't accidentally lose the patches.
 
 	// ── Refresh Guard ──
-	// F5 and Ctrl/Cmd+R are intercepted via keydown (capture phase) and truly
-	// blocked. The browser toolbar refresh button cannot be blocked by any
-	// web page — the browser always owns that button.
+	// F5 / Ctrl+R: fully blocked via keydown capture — shows our toast.
+	// Browser toolbar button: cannot be blocked by any web page. We attach
+	// a beforeunload handler so the browser at least shows its native
+	// "Reload site?" confirmation. Custom text in that dialog is not supported
+	// by modern browsers regardless of what is passed to e.returnValue.
+	// After a reload, the auto-restore below shows a toast telling the user
+	// to re-open the tool if they want to continue impersonating.
 
-	var _keyDown = null;
+	var _beforeUnload = null;
+	var _keyDown      = null;
 
 	function enableRefreshGuard() {
 		if (_keyDown) return;
+
+		_beforeUnload = function (e) {
+			e.preventDefault();
+			e.returnValue = '';   // triggers the browser's native reload dialog
+		};
 
 		_keyDown = function (e) {
 			var isRefresh = e.key === 'F5' ||
@@ -287,15 +297,17 @@
 			e.preventDefault();
 			e.stopPropagation();
 			if (typeof showToast === 'function') {
-				showToast('Keyboard refresh blocked. Stop impersonation first, then refresh.', 'warning', 3500);
+				showToast('Refresh blocked — stop impersonation first, then refresh.', 'warning', 3500);
 			}
 		};
 
+		window.addEventListener('beforeunload', _beforeUnload);
 		window.addEventListener('keydown', _keyDown, true);
 	}
 
 	function disableRefreshGuard() {
-		if (_keyDown) { window.removeEventListener('keydown', _keyDown, true); _keyDown = null; }
+		if (_beforeUnload) { window.removeEventListener('beforeunload', _beforeUnload); _beforeUnload = null; }
+		if (_keyDown)      { window.removeEventListener('keydown', _keyDown, true);     _keyDown      = null; }
 	}
 
 	// ── SPA Page Refresh ──
@@ -403,7 +415,7 @@
 		var ready = function () {
 			showBanner(existing.name);
 			if (typeof showToast === 'function') {
-				showToast(`Impersonation active: ${existing.name}. Use the banner to stop.`, 'info', 4000);
+				showToast(`Impersonation was active for ${existing.name}. Open the Persona Switcher (🎭) to continue or stop.`, 'warning', 6000);
 			}
 		};
 		if (document.readyState === 'loading') {
