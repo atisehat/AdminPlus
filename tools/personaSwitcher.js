@@ -414,9 +414,7 @@
 		enableRefreshGuard();
 		var ready = function () {
 			showBanner(existing.name);
-			if (typeof showToast === 'function') {
-				showToast(`Impersonation was active for ${existing.name}. Open the Persona Switcher (🎭) to continue or stop.`, 'warning', 6000);
-			}
+			setTimeout(refreshCurrentPage, 1000);
 		};
 		if (document.readyState === 'loading') {
 			document.addEventListener('DOMContentLoaded', ready);
