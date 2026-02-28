@@ -26,23 +26,23 @@
 	const API_PATH      = '/api/data/';
 	const MAX_HISTORY   = 10;
 
-	// ── Session (per-tab, survives refresh within same tab) ──
+	// ── Session (localStorage so it survives full page reloads) ──
 
 	function getSession() {
 		try {
-			const d = sessionStorage.getItem(SESSION_KEY);
+			const d = localStorage.getItem(SESSION_KEY);
 			return d ? JSON.parse(d) : null;
 		} catch (e) { return null; }
 	}
 
 	function setSession(userId, userName) {
-		sessionStorage.setItem(SESSION_KEY, JSON.stringify({
+		localStorage.setItem(SESSION_KEY, JSON.stringify({
 			id: userId, name: userName, timestamp: new Date().toISOString()
 		}));
 	}
 
 	function clearSession() {
-		try { sessionStorage.removeItem(SESSION_KEY); } catch (e) {}
+		try { localStorage.removeItem(SESSION_KEY); } catch (e) {}
 	}
 
 	// ── History (persists across sessions for quick re-use) ──
@@ -193,36 +193,12 @@
 	}
 
 	// ── Page Refresh ──
-	// Uses D365 SPA navigation to re-open the current record. Patches stay
-	// in memory so all re-fetched data goes through them. Falls back to
-	// Xrm.Page.data.refresh() if the URL can't be parsed.
+	// Full browser reload. The early-patch block at the top of CRMDevTools.js
+	// reads localStorage and applies MSCRMCallerID patches before D365 makes
+	// any API calls, so the reloaded page is fully impersonated from the start.
 
 	function refreshCurrentPage() {
-		try {
-			if (typeof Xrm === 'undefined') return;
-
-			var params = new URLSearchParams(window.location.search);
-			var etn = params.get('etn');
-			var id  = params.get('id');
-
-			if (etn && id) {
-				Xrm.Navigation.openForm({ entityName: etn, entityId: id.replace(/[{}]/g, '') });
-				return;
-			}
-
-			if (Xrm.Page && Xrm.Page.data && Xrm.Page.data.entity) {
-				var entityName = Xrm.Page.data.entity.getEntityName();
-				var entityId   = Xrm.Page.data.entity.getId().replace(/[{}]/g, '');
-				if (entityName && entityId) {
-					Xrm.Navigation.openForm({ entityName: entityName, entityId: entityId });
-					return;
-				}
-			}
-
-			if (Xrm.Page && Xrm.Page.data) {
-				Xrm.Page.data.refresh(false);
-			}
-		} catch (e) {}
+		window.location.reload();
 	}
 
 	// ── Public API ──
@@ -244,10 +220,10 @@
 			clearSession();
 			removeBanner();
 			if (!silent) {
-				refreshCurrentPage();
 				if (typeof showToast === 'function') {
-					showToast('Impersonation stopped.', 'info', 2500);
+					showToast('Impersonation stopped. Reloading...', 'info', 1500);
 				}
+				setTimeout(refreshCurrentPage, 1000);
 			}
 		},
 
@@ -255,14 +231,12 @@
 	};
 
 	// ── Auto-restore on page load ──
+	// CRMDevTools.js already applied the patches at the top of the file.
+	// Here we just show the banner; no need to re-patch or refresh.
 
 	const existing = getSession();
 	if (existing) {
-		applyPatches(existing.id);
-		var ready = function () {
-			showBanner(existing.name);
-			refreshCurrentPage();
-		};
+		var ready = function () { showBanner(existing.name); };
 		if (document.readyState === 'loading') {
 			document.addEventListener('DOMContentLoaded', ready);
 		} else {
@@ -624,8 +598,8 @@ function personaSwitcher() {
 
 		engine.start(selectedUser.id, selectedUser.name);
 		document.querySelectorAll('.commonPopup[data-popup-id="personaSwitcher"]').forEach(p => p.remove());
-		showToast(`Now impersonating ${selectedUser.name}.`, 'success', 2500);
-		engine.refreshPage();
+		showToast(`Now impersonating ${selectedUser.name}. Reloading...`, 'success', 1500);
+		setTimeout(engine.refreshPage, 1000);
 	}
 
 	// ── Init ──

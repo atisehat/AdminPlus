@@ -1,3 +1,47 @@
+// ── Impersonation Early Patch ──
+// This runs at the very top of CRMDevTools.js — before D365 makes any API
+// calls — so the MSCRMCallerID header is injected from the first request.
+(function () {
+	try {
+		var raw = localStorage.getItem('adminplus_impersonate_session');
+		if (!raw) return;
+		var data = JSON.parse(raw);
+		if (!data || !data.id) return;
+		var uid = data.id;
+		var API = '/api/data/';
+		var HDR = 'MSCRMCallerID';
+		if (window.__adminplusImpersonating) return;
+		window.__adminplusImpersonating = true;
+		var oFetch = window.fetch;
+		window.__adminplusOrigFetch = oFetch;
+		window.fetch = function (input, init) {
+			var url = typeof input === 'string' ? input : (input instanceof Request ? input.url : '');
+			if (!url || url.indexOf(API) === -1) return oFetch.call(window, input, init);
+			var opts = init ? Object.assign({}, init) : {};
+			var hdrs = {};
+			if (opts.headers instanceof Headers) { opts.headers.forEach(function (v, k) { hdrs[k] = v; }); }
+			else if (opts.headers) { Object.assign(hdrs, opts.headers); }
+			hdrs[HDR] = uid;
+			opts.headers = hdrs;
+			return oFetch.call(window, input, opts);
+		};
+		var oOpen = XMLHttpRequest.prototype.open;
+		var oSend = XMLHttpRequest.prototype.send;
+		window.__adminplusOrigXHROpen = oOpen;
+		window.__adminplusOrigXHRSend = oSend;
+		XMLHttpRequest.prototype.open = function () {
+			this.__xhrUrl = typeof arguments[1] === 'string' ? arguments[1] : '';
+			return oOpen.apply(this, arguments);
+		};
+		XMLHttpRequest.prototype.send = function () {
+			if (this.__xhrUrl && this.__xhrUrl.indexOf(API) !== -1) {
+				try { this.setRequestHeader(HDR, uid); } catch (e) {}
+			}
+			return oSend.apply(this, arguments);
+		};
+	} catch (e) {}
+})();
+
 const baseUrl = 'https://atisehat.github.io/AdminPlus/';
 const cacheBuster = '?v=' + new Date().getTime(); // Force refresh - dateCalc test version added
 
