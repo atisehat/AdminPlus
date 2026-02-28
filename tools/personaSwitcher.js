@@ -207,17 +207,28 @@
 	};
 
 	// ── Auto-restore on page load ──
+	// Patches survive the reload (they're on window), but D365 replaces parts
+	// of the DOM after load which removes the banner. A MutationObserver
+	// watches for that and immediately re-injects it.
 
 	const existing = getSession();
 	if (existing) {
 		applyPatches(existing.id);
-		var ready = function () {
-			showBanner(existing.name);
-		};
+
+		function keepBannerAlive(name) {
+			showBanner(name);
+			var observer = new MutationObserver(function () {
+				if (!document.getElementById(BANNER_ID)) {
+					showBanner(name);
+				}
+			});
+			observer.observe(document.body, { childList: true });
+		}
+
 		if (document.readyState === 'loading') {
-			document.addEventListener('DOMContentLoaded', ready);
+			document.addEventListener('DOMContentLoaded', function () { keepBannerAlive(existing.name); });
 		} else {
-			ready();
+			keepBannerAlive(existing.name);
 		}
 	}
 
