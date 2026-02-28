@@ -200,9 +200,6 @@ function openPopup() {
 	    <button onclick="showEntityAutomations();" class="app-button" title="Table Automations">
 	      <span class="app-icon">🤖</span>
 	    </button>
-	    <button onclick="openWebApi();" class="app-button" title="Open Web API Endpoint">
-	      <span class="app-icon">🌐</span>
-	    </button>
 	    <button onclick="personaSwitcher();" class="app-button" title="Persona Switcher">
 	      <span class="app-icon">🎭</span>
 	    </button>
@@ -214,6 +211,9 @@ function openPopup() {
 	    </button>
 	    <button onclick="dateCalc();" class="app-button" title="Date Calculator">
 	      <span class="app-icon">📅</span>
+	    </button>
+	    <button onclick="openWebApi();" class="app-button" title="Open Web API Endpoint">
+	      <span class="app-icon">🌐</span>
 	    </button>
 	    <button onclick="commandChecker();" class="app-button" title="Command Checker">
 	      <span class="app-icon">🐛</span>
