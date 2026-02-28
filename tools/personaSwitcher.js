@@ -124,8 +124,10 @@
 
 	// ── Floating Banner ──
 
+	var bannerObserver = null;
+
 	function showBanner(userName) {
-		removeBanner();
+		removeBanner(true);
 
 		const banner = document.createElement('div');
 		banner.id = BANNER_ID;
@@ -174,11 +176,41 @@
 		});
 		btn.addEventListener('mouseenter', function () { this.style.background = 'rgba(255,255,255,0.35)'; });
 		btn.addEventListener('mouseleave', function () { this.style.background = 'rgba(255,255,255,0.2)'; });
+
+		if (bannerObserver) bannerObserver.disconnect();
+		bannerObserver = new MutationObserver(function () {
+			if (!document.getElementById(BANNER_ID)) {
+				showBanner(userName);
+			}
+		});
+		bannerObserver.observe(document.body, { childList: true });
 	}
 
-	function removeBanner() {
+	function removeBanner(keepObserver) {
+		if (!keepObserver && bannerObserver) { bannerObserver.disconnect(); bannerObserver = null; }
 		const b = document.getElementById(BANNER_ID);
 		if (b) b.remove();
+	}
+
+	// ── SPA Page Refresh ──
+	// Re-opens the current D365 form/view via SPA navigation so patches stay
+	// in memory and all data re-fetches go through them.
+
+	function refreshCurrentPage() {
+		try {
+			if (typeof Xrm === 'undefined') return;
+			if (Xrm.Page && Xrm.Page.data && Xrm.Page.data.entity) {
+				var entityName = Xrm.Page.data.entity.getEntityName();
+				var entityId = Xrm.Page.data.entity.getId().replace(/[{}]/g, '');
+				if (entityName && entityId) {
+					Xrm.Navigation.openForm({ entityName: entityName, entityId: entityId });
+					return;
+				}
+			}
+			if (Xrm.Page && Xrm.Page.data) {
+				Xrm.Page.data.refresh(false);
+			}
+		} catch (e) {}
 	}
 
 	// ── Public API ──
@@ -199,36 +231,30 @@
 			removePatches();
 			clearSession();
 			removeBanner();
-			if (!silent && typeof showToast === 'function') {
-				showToast('Impersonation stopped. Reloading...', 'info', 2000);
-				setTimeout(() => window.location.reload(), 1500);
+			if (!silent) {
+				refreshCurrentPage();
+				if (typeof showToast === 'function') {
+					showToast('Impersonation stopped.', 'info', 2500);
+				}
 			}
-		}
+		},
+
+		refreshPage: refreshCurrentPage
 	};
 
 	// ── Auto-restore on page load ──
-	// Patches survive the reload (they're on window), but D365 replaces parts
-	// of the DOM after load which removes the banner. A MutationObserver
-	// watches for that and immediately re-injects it.
 
 	const existing = getSession();
 	if (existing) {
 		applyPatches(existing.id);
-
-		function keepBannerAlive(name) {
-			showBanner(name);
-			var observer = new MutationObserver(function () {
-				if (!document.getElementById(BANNER_ID)) {
-					showBanner(name);
-				}
-			});
-			observer.observe(document.body, { childList: true });
-		}
-
+		var ready = function () {
+			showBanner(existing.name);
+			refreshCurrentPage();
+		};
 		if (document.readyState === 'loading') {
-			document.addEventListener('DOMContentLoaded', function () { keepBannerAlive(existing.name); });
+			document.addEventListener('DOMContentLoaded', ready);
 		} else {
-			keepBannerAlive(existing.name);
+			ready();
 		}
 	}
 
@@ -377,8 +403,8 @@ function personaSwitcher() {
 		});
 
 		document.getElementById('personaStopBtn').addEventListener('click', () => {
+			document.querySelectorAll('.commonPopup[data-popup-id="personaSwitcher"]').forEach(p => p.remove());
 			engine.stop();
-			renderContent();
 		});
 
 		document.getElementById('personaSwitchUserBtn').addEventListener('click', () => {
@@ -586,8 +612,8 @@ function personaSwitcher() {
 
 		engine.start(selectedUser.id, selectedUser.name);
 		document.querySelectorAll('.commonPopup[data-popup-id="personaSwitcher"]').forEach(p => p.remove());
-		showToast(`Now impersonating ${selectedUser.name}. Reloading...`, 'success', 2000);
-		setTimeout(() => window.location.reload(), 1500);
+		showToast(`Now impersonating ${selectedUser.name}.`, 'success', 2500);
+		engine.refreshPage();
 	}
 
 	// ── Init ──
