@@ -192,14 +192,10 @@
 		if (b) b.remove();
 	}
 
-	// ── Page Refresh ──
-	// Full browser reload. The early-patch block at the top of CRMDevTools.js
-	// reads localStorage and applies MSCRMCallerID patches before D365 makes
-	// any API calls, so the reloaded page is fully impersonated from the start.
-
-	function refreshCurrentPage() {
-		window.location.reload();
-	}
+	// ── No reload needed ──
+	// Patches are on window.fetch / XHR — they stay alive as long as this
+	// browser tab is open. Every D365 navigation the user makes after starting
+	// impersonation goes through the patched APIs automatically.
 
 	// ── Public API ──
 
@@ -219,24 +215,26 @@
 			removePatches();
 			clearSession();
 			removeBanner();
-			if (!silent) {
-				if (typeof showToast === 'function') {
-					showToast('Impersonation stopped. Reloading...', 'info', 1500);
-				}
-				setTimeout(refreshCurrentPage, 1000);
+			if (!silent && typeof showToast === 'function') {
+				showToast('Impersonation stopped. Navigate to refresh the current page data.', 'info', 3000);
 			}
-		},
-
-		refreshPage: refreshCurrentPage
+		}
 	};
 
-	// ── Auto-restore on page load ──
-	// CRMDevTools.js already applied the patches at the top of the file.
-	// Here we just show the banner; no need to re-patch or refresh.
+	// ── Auto-restore on load ──
+	// When AdminPlus is re-loaded (e.g. after the user re-injects it),
+	// patches are re-applied from localStorage and the banner is shown
+	// automatically — no need to open the popup.
 
 	const existing = getSession();
 	if (existing) {
-		var ready = function () { showBanner(existing.name); };
+		applyPatches(existing.id);
+		var ready = function () {
+			showBanner(existing.name);
+			if (typeof showToast === 'function') {
+				showToast(`Impersonation active: ${existing.name}. Use the banner to stop.`, 'info', 4000);
+			}
+		};
 		if (document.readyState === 'loading') {
 			document.addEventListener('DOMContentLoaded', ready);
 		} else {
@@ -598,8 +596,7 @@ function personaSwitcher() {
 
 		engine.start(selectedUser.id, selectedUser.name);
 		document.querySelectorAll('.commonPopup[data-popup-id="personaSwitcher"]').forEach(p => p.remove());
-		showToast(`Now impersonating ${selectedUser.name}. Reloading...`, 'success', 1500);
-		setTimeout(engine.refreshPage, 1000);
+		showToast(`Impersonating ${selectedUser.name}. Navigate to any form, view or dashboard to see their experience.`, 'success', 5000);
 	}
 
 	// ── Init ──
