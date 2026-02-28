@@ -192,23 +192,24 @@
 		if (b) b.remove();
 	}
 
-	// ── SPA Page Refresh ──
-	// Re-opens the current D365 form/view via SPA navigation so patches stay
-	// in memory and all data re-fetches go through them.
+	// ── In-place Data Refresh ──
+	// Re-fetches form data, subgrids, and ribbon through our patched APIs
+	// without any page navigation.
 
 	function refreshCurrentPage() {
 		try {
-			if (typeof Xrm === 'undefined') return;
-			if (Xrm.Page && Xrm.Page.data && Xrm.Page.data.entity) {
-				var entityName = Xrm.Page.data.entity.getEntityName();
-				var entityId = Xrm.Page.data.entity.getId().replace(/[{}]/g, '');
-				if (entityName && entityId) {
-					Xrm.Navigation.openForm({ entityName: entityName, entityId: entityId });
-					return;
-				}
-			}
-			if (Xrm.Page && Xrm.Page.data) {
-				Xrm.Page.data.refresh(false);
+			if (typeof Xrm === 'undefined' || !Xrm.Page) return;
+			if (Xrm.Page.data) {
+				Xrm.Page.data.refresh(false).then(function () {
+					try { Xrm.Page.ui.refreshRibbon(); } catch (e) {}
+					try {
+						Xrm.Page.ui.controls.forEach(function (ctrl) {
+							if (ctrl.getControlType && ctrl.getControlType() === 'subgrid') {
+								ctrl.refresh();
+							}
+						});
+					} catch (e) {}
+				});
 			}
 		} catch (e) {}
 	}
