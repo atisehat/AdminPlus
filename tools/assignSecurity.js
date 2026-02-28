@@ -1,20 +1,3 @@
-/**
- * Assign Security Tool (Redesigned)
- * Allows System Administrators to manage user security including:
- * - Changing user's business unit
- * - Adding/removing teams
- * - Adding/removing security roles
- * 
- * Features:
- * - Modern tabbed interface for better organization
- * - Visual comparison of current vs new security settings
- * - Improved user feedback and validation
- * - Clear action buttons for each category
- * 
- * @requires System Administrator role
- * @requires Xrm.WebApi, fetchUsers, fetchBusinessUnits, fetchTeamsForUser, fetchRolesForUser, fetchSecurityRoles
- * @requires updateUserDetails function from securityOperations.js
- */
 function editSecurity() {
 	// Check if user is Sys Admin
 	if (!checkSystemAdministratorRole()) {
@@ -33,28 +16,26 @@ function editSecurity() {
 	
 	// Business Unit state
 	let newBusinessUnitId = null;
-	let businessUnitAction = null; // 'change' or 'nochange'
+	let businessUnitAction = null; 
 	
 	// Teams state
 	let currentTeamIds = [];
 	let teamsToAdd = [];
 	let teamsToRemove = [];
-	let teamAction = null; // 'add', 'remove', 'replace', 'nochange'
+	let teamAction = null; 
 	
 	// Roles state
 	let currentRoleIds = [];
 	let rolesToAdd = [];
 	let rolesToRemove = [];
-	let roleAction = null; // 'add', 'remove', 'replace', 'nochange'
+	let roleAction = null; 
 	
 	// Data cache
 	let allBusinessUnits = [];
 	let allTeams = [];
 	let allRoles = [];
 	
-	/**
-	 * Create the main popup with modern tabbed interface
-	 */
+	/*Create the main popup with modern tabbed interface */
 	function createSecurityPopup() {
 		const popup = document.createElement('div');
 		popup.className = 'commonPopup';
@@ -77,8 +58,7 @@ function editSecurity() {
 							<div class="info-label">Selected User:</div>
 							<div class="info-value" id="selectedUserName"></div>
 	              </div>
-	            </div> 
-					
+	            </div> 					
 					<!-- Security Management Panel -->
 					<div class="security-panel">
 						<div id="securityContent" class="security-empty-state">
@@ -117,9 +97,7 @@ function editSecurity() {
 		return popup;
 	}
 	
-	/**
-	 * Load and display users in the left panel
-	 */
+	//Load and display users in the left panel
 	function loadUsers(users) {
 		const userList = document.getElementById('userList');
 		if (!userList || !users || !users.entities) return;
@@ -159,9 +137,7 @@ function editSecurity() {
 		});
 	}
 	
-	/**
-	 * Handle user selection
-	 */
+	//Handle user selection
 	async function selectUser(user, preserveTab = false) {
 		// Update UI
 		document.querySelectorAll('.user-item').forEach(el => el.classList.remove('selected'));
@@ -209,26 +185,22 @@ function editSecurity() {
 		}
 	}
 	
-	/**
-	 * Reset all state variables
-	 */
+	//Reset all state variables
 	function resetAllStates() {
 		activeTab = 'businessunit';
 		newBusinessUnitId = null;
 		businessUnitAction = null;
-		// Don't reset currentTeamIds - these are the user's actual current teams
+		
 		teamsToAdd = [];
 		teamsToRemove = [];
 		teamAction = null;
-		// Don't reset currentRoleIds - these are the user's actual current roles
+		
 		rolesToAdd = [];
 		rolesToRemove = [];
 		roleAction = null;
 	}
 	
-	/**
-	 * Clear selections when switching away from a tab
-	 */
+	//Clear selections  
 	function clearTabSelections(tabName) {
 		if (tabName === 'businessunit') {
 			newBusinessUnitId = null;
@@ -245,9 +217,7 @@ function editSecurity() {
 		updateActionButtons();
 	}
 	
-	/**
-	 * Reset only the modification selections (for Reset button)
-	 */
+	//Reset 
 	function resetModifications() {
 		// Reset Business Unit modifications
 		newBusinessUnitId = null;
@@ -278,9 +248,7 @@ function editSecurity() {
 		updateSelectionCounter('roles');
 	}
 	
-	/**
-	 * Load user's business unit
-	 */
+	//Load business unit
 	function loadUserBusinessUnit(userId) {
 		return new Promise((resolve) => {
 			fetchBusinessUnitName(userId, function(response) {
@@ -292,9 +260,7 @@ function editSecurity() {
 		});
 	}
 	
-	/**
-	 * Load user's teams
-	 */
+	//Load teams
 	function loadUserTeams(userId) {
 		return new Promise((resolve) => {
 			fetchTeamsForUser(userId, function(response) {
@@ -312,9 +278,7 @@ function editSecurity() {
 		});
 	}
 	
-	/**
-	 * Load user's roles
-	 */
+	//Load roles	 
 	function loadUserRoles(userId) {
 		return new Promise((resolve) => {
 			fetchRolesForUser(userId, async function(response) {
@@ -337,19 +301,14 @@ function editSecurity() {
 		});
 	}
 	
-	/**
-	 * Render the main security management interface with tabs
-	 */
+	//Render the main security
 	function renderSecurityManagement() {
 		const securityContent = document.getElementById('securityContent');
 		
-		// Check if tabs already exist (to preserve handlers)
-		const existingTabs = securityContent.querySelector('.tab-navigation');
-		
-		if (!existingTabs) {
-			// First time rendering - create full structure
-			securityContent.className = 'security-content';
-			
+		// Check if tabs already exist
+		const existingTabs = securityContent.querySelector('.tab-navigation');		
+		if (!existingTabs) {			
+			securityContent.className = 'security-content';			
 			securityContent.innerHTML = `
 			<!-- Tab Navigation -->
 			<div class="tab-navigation">
@@ -405,17 +364,16 @@ function editSecurity() {
 				</div>
 			`;
 			
-			// Attach tab click handlers
+			//Click handlers
 			securityContent.querySelectorAll('.tab-btn').forEach(btn => {
 				btn.addEventListener('click', () => {
 					const previousTab = activeTab;
 					activeTab = btn.dataset.tab;
 					
-					// Clear selections when switching tabs
+					// Clear selections 
 					if (previousTab !== activeTab) {
 						clearTabSelections(previousTab);
-					}
-					
+					}					
 					updateActiveTab();
 						});
 					});
@@ -425,15 +383,12 @@ function editSecurity() {
 			document.getElementById('resetChangesBtn').addEventListener('click', handleResetChanges);
 		}
 		
-		// Render/update the active tab
+		// Render active tab
 		updateActiveTab();
 	}
 	
-	/**
-	 * Update the active tab display
-	 */
-	function updateActiveTab() {
-		// Update tab buttons
+	//Update the active tab display
+	function updateActiveTab() {		
 		document.querySelectorAll('.tab-btn').forEach(btn => {
 			btn.classList.toggle('active', btn.dataset.tab === activeTab);
 		});
@@ -455,9 +410,7 @@ function editSecurity() {
 		updateActionButtons();
 	}
 	
-	/**
-	 * Render Business Unit tab
-	 */
+	//Render Business Unit tab
 	function renderBusinessUnitTab(container) {
 		container.innerHTML = `
 			<div class="tab-panel">
@@ -471,12 +424,9 @@ function editSecurity() {
 					<div class="selection-list" id="buList"></div>
 				</div>
 			</div>
-		`;
+		`;		
 		
-		// Always set action to 'change' since it's the only option
-		businessUnitAction = 'change';
-		
-		// Load business units - clear cache to force fresh data
+		businessUnitAction = 'change';				
 		allBusinessUnits = [];
 		fetchBusinessUnits(function(response) {
 			if (response && response.entities) {
@@ -486,13 +436,10 @@ function editSecurity() {
 		});
 	}
 	
-	/**
-	 * Render business unit list
-	 */
+	//Render business unit
 	function renderBusinessUnitList() {
 		const buList = document.getElementById('buList');
-		if (!buList) return;
-		
+		if (!buList) return;		
 		buList.innerHTML = '';
 		allBusinessUnits.forEach(bu => {
 			const buDiv = document.createElement('div');
@@ -513,7 +460,7 @@ function editSecurity() {
 			buList.appendChild(buDiv);
 		});
 		
-		// Search functionality
+		//Search
 		const searchInput = document.getElementById('buSearchInput');
 		if (searchInput) {
 			searchInput.addEventListener('input', function() {
@@ -526,9 +473,7 @@ function editSecurity() {
 		}
 	}
 	
-	/**
-	 * Render Teams tab
-	 */
+	//Render Teams tab
 	function renderTeamsTab(container) {
 		container.innerHTML = `
 			<div class="tab-panel">
@@ -579,7 +524,7 @@ function editSecurity() {
 			</div>
 		`;
 		
-		// Load teams - clear cache to force fresh data
+		//Load teams & clear cache
 		allTeams = [];
 		fetchTeams(function(response) {
 			if (response && response.entities) {
@@ -594,7 +539,7 @@ function editSecurity() {
 			}
 		});
 		
-		// Attach event handlers
+		//Event handlers
 		container.querySelectorAll('input[name="teamAction"]').forEach(radio => {
 			radio.addEventListener('change', function() {
 				teamAction = this.value;
@@ -603,20 +548,17 @@ function editSecurity() {
 				teamsToAdd = [];
 				teamsToRemove = [];
 				document.querySelectorAll('.team-item').forEach(el => el.classList.remove('selected'));
-				renderTeamList(); // Re-render to clear selections
+				renderTeamList(); 
 				updateSelectionCounter('teams');
 				updateActionButtons();
 			});
 		});
 	}
 	
-	/**
-	 * Render team list
-	 */
+	//Render team list
 	function renderTeamList() {
 		const teamList = document.getElementById('teamList');
-		if (!teamList) return;
-		
+		if (!teamList) return;		
 		teamList.innerHTML = '';
 		allTeams.forEach(team => {
 			const teamDiv = document.createElement('div');
@@ -624,13 +566,12 @@ function editSecurity() {
 			teamDiv.dataset.teamId = team.id;
 			teamDiv.dataset.searchText = `${team.name} ${team.businessUnit}`.toLowerCase();
 			
-			// Determine if selected
+			//if selected
 			const isAddSelected = teamsToAdd.includes(team.id);
 			const isRemoveSelected = teamsToRemove.includes(team.id);
 			if (isAddSelected || isRemoveSelected) {
 				teamDiv.classList.add('selected');
-			}
-			
+			}			
 			teamDiv.innerHTML = `
 				<span>${team.name}</span>
 				<small>BU: ${team.businessUnit}</small>
@@ -663,7 +604,7 @@ function editSecurity() {
 			teamList.appendChild(teamDiv);
 		});
 		
-		// Search functionality
+		//Search
 		const searchInput = document.getElementById('teamSearchInput');
 		if (searchInput) {
 			searchInput.addEventListener('input', function() {
@@ -676,9 +617,7 @@ function editSecurity() {
 		}
 	}
 	
-	/**
-	 * Render Roles tab
-	 */
+	//Render Roles
 	function renderRolesTab(container) {
 		container.innerHTML = `
 			<div class="tab-panel">
@@ -729,10 +668,10 @@ function editSecurity() {
 			</div>
 		`;
 		
-		// Load roles based on current or new business unit
+		//Load roles based on current or new business unit
 		const targetBU = newBusinessUnitId || selectedBusinessUnitId;
 		if (targetBU) {
-			// Clear the cache to force fresh data
+			// Clear the cache
 			allRoles = [];
 			
 			fetchSecurityRoles(targetBU, function(response) {
@@ -748,7 +687,7 @@ function editSecurity() {
 			});
 		}
 		
-		// Attach event handlers
+		//Event handlers
 		container.querySelectorAll('input[name="roleAction"]').forEach(radio => {
 			radio.addEventListener('change', function() {
 				roleAction = this.value;
@@ -764,9 +703,7 @@ function editSecurity() {
 		});
 	}
 	
-	/**
-	 * Render role list
-	 */
+	//Render role list
 	function renderRoleList() {
 		const roleList = document.getElementById('roleList');
 		if (!roleList) return;
@@ -778,15 +715,13 @@ function editSecurity() {
 			roleDiv.dataset.roleId = role.id;
 			roleDiv.dataset.searchText = role.name.toLowerCase();
 			
-			// Determine if selected
+			//If selected
 			const isAddSelected = rolesToAdd.includes(role.id);
 			const isRemoveSelected = rolesToRemove.includes(role.id);
 			if (isAddSelected || isRemoveSelected) {
 				roleDiv.classList.add('selected');
-			}
-			
-			roleDiv.innerHTML = `<span>${role.name}</span>`;
-			
+			}			
+			roleDiv.innerHTML = `<span>${role.name}</span>`;			
 			roleDiv.addEventListener('click', () => {
 				if (roleAction === 'add' || roleAction === 'replace') {
 					const index = rolesToAdd.indexOf(role.id);
@@ -827,16 +762,12 @@ function editSecurity() {
 		}
 	}
 	
-	/**
-	 * Show update indicator
-	 */
+	//Show update indicator
 	function showUpdateIndicator(updatedItems) {
 		const indicator = document.getElementById('updateIndicator');
-		const indicatorText = document.getElementById('updateIndicatorText');
+		const indicatorText = document.getElementById('updateIndicatorText');		
+		if (!indicator || !indicatorText) return;		
 		
-		if (!indicator || !indicatorText) return;
-		
-		// Create specific message
 		let message = 'Updated';
 		if (updatedItems.length > 0) {
 			message = `${updatedItems.join(' & ')} Updated`;
@@ -845,10 +776,10 @@ function editSecurity() {
 		indicatorText.textContent = message;
 		indicator.style.display = 'flex';
 		
-		// Add animation class
+		// Animation class
 		indicator.classList.add('show-indicator');
 		
-		// Hide after 4 seconds
+		// Hide after 4Sec
 		setTimeout(() => {
 			indicator.classList.remove('show-indicator');
 			setTimeout(() => {
@@ -857,9 +788,7 @@ function editSecurity() {
 		}, 4000);
 	}
 	
-	/**
-	 * Update selection counter
-	 */
+	//Update selection counter
 	function updateSelectionCounter(type) {
 		if (type === 'teams') {
 			const counter = document.getElementById('teamsCounter');
@@ -888,15 +817,11 @@ function editSecurity() {
 		}
 	}
 	
-	/**
-	 * Update action buttons visibility
-	 */
+	//Update action buttons visibility
 	function updateActionButtons() {
 		const applyBtn = document.getElementById('applyChangesBtn');
-		const resetBtn = document.getElementById('resetChangesBtn');
-		
-		if (!applyBtn || !resetBtn) return;
-		
+		const resetBtn = document.getElementById('resetChangesBtn');		
+		if (!applyBtn || !resetBtn) return;		
 		const hasChanges = 
 			(businessUnitAction === 'change' && newBusinessUnitId) ||
 			(teamAction === 'add' && teamsToAdd.length > 0) ||
@@ -910,34 +835,24 @@ function editSecurity() {
 		resetBtn.style.display = hasChanges ? 'flex' : 'none';
 	}
 	
-	/**
-	 * Handle apply changes
-	 */
+	//Apply changes
 	async function handleApplyChanges() {
 		if (!selectedUserId) {
 			showToast('Please select a user first.', 'warning', 3000);
 			return;
-		}
-		
-		// Validate changes
+		}		
 		const hasValidChanges = validateChanges();
 		if (!hasValidChanges) {
 			showToast('Please select at least one valid change to apply.', 'warning', 3000);
 	        return;
-	    }
-		
+	    }		
 		try {
-			showLoadingDialog('Applying security changes...');
-			
-			// Track what was updated for specific message
-			let updatedItems = [];
-			
-			// Apply business unit change
+			showLoadingDialog('Applying security changes...');						
+			let updatedItems = [];						
 			if (businessUnitAction === 'change' && newBusinessUnitId) {
 				await updateUserDetails(selectedUserId, newBusinessUnitId, [], [], 'ChangeBU');
 				updatedItems.push('Business Unit');
-			}
-			
+			}			
 			// Apply team changes
 			if (teamAction === 'add' && teamsToAdd.length > 0) {
 				await updateUserDetails(selectedUserId, null, teamsToAdd, [], 'AddTeams');
@@ -949,8 +864,7 @@ function editSecurity() {
 				await updateUserDetails(selectedUserId, null, [], [], 'RemoveAllTeams');
 				await updateUserDetails(selectedUserId, null, teamsToAdd, [], 'AddTeams');
 				updatedItems.push('Teams');
-			}
-			
+			}			
 			// Apply role changes
 			if (roleAction === 'add' && rolesToAdd.length > 0) {
 				await updateUserDetails(selectedUserId, null, [], rolesToAdd, 'AddRoles');
@@ -964,19 +878,16 @@ function editSecurity() {
 				updatedItems.push('Security Roles');
 			}
 			
-			closeLoadingDialog();
-			
-			// Show inline update indicator
+			closeLoadingDialog();						
 			showUpdateIndicator(updatedItems);
 			
-			// Reload user data while preserving the current tab
+			// Reload user data
 			const user = { 
 				systemuserid: selectedUserId, 
 				displayName: selectedUserFullName,
 				_businessunitid_value: selectedBusinessUnitId
 			};
-			await selectUser(user, true); // true = preserve current tab
-			
+			await selectUser(user, true); 			
 		} catch (error) {
 			closeLoadingDialog();
 			console.error('Error applying changes:', error);
@@ -984,9 +895,7 @@ function editSecurity() {
 		}
 	}
 	
-	/**
-	 * Validate changes before applying
-	 */
+	//Validate changes
 	function validateChanges() {
 		if (businessUnitAction === 'change' && newBusinessUnitId) return true;
 		if (teamAction === 'add' && teamsToAdd.length > 0) return true;
@@ -998,18 +907,16 @@ function editSecurity() {
 		return false;
 	}
 	
-	/**
-	 * Handle reset changes
-	 */
+	//Reset changes
 	function handleResetChanges() {
 		resetModifications();
 		updateActiveTab();
 	}
 	
-	// Initialize the popup
+	// Initialize popup
 	createSecurityPopup();
 	
-	// Load initial data
+	// Initial data
 	 Promise.all([
 	    new Promise(resolve => fetchUsers(resolve)),
 		new Promise(resolve => fetchBusinessUnits(resolve))
@@ -1017,10 +924,8 @@ function editSecurity() {
 	    if (!users || !users.entities || users.entities.length === 0) {
 	        showToast('No users found. Please check your permissions.', 'error', 3000);
 	        return;
-	    }
-		
-		loadUsers(users);
-		
+	    }		
+		loadUsers(users);		
 		if (businessUnits && businessUnits.entities) {
 			allBusinessUnits = businessUnits.entities.sort((a, b) => a.name.localeCompare(b.name));
 		}

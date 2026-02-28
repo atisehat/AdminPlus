@@ -81,9 +81,8 @@ function renameTabsSectionsFields() {
         window.adminPlusLogicalNamesActive = true;
         
         // Click listeners to all labels for copy
-        addCopyListenersToLabels();
+        addCopyListenersToLabels();        
         
-        // Toast
         if (typeof showToast === 'function') {
             showToast('Logical names are now displayed', 'success');
         }
@@ -496,7 +495,6 @@ function renameNavigationItems() {
         
     }
 }
-
 
 // Store original option set values and update
 function storeAndUpdateOptionSetValues(control, logicalName) {

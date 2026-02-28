@@ -1,6 +1,3 @@
-// ── Impersonation Early Patch ──
-// This runs at the very top of CRMDevTools.js — before D365 makes any API
-// calls — so the MSCRMCallerID header is injected from the first request.
 (function () {
 	try {
 		var raw = localStorage.getItem('devplus_impersonate_session');

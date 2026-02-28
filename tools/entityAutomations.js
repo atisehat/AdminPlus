@@ -213,7 +213,7 @@ async function enrichWithSolutionInfo(items, clientUrl) {
                 componentType = 29; // Workflow/Business Rule/Flow/Action
             } else if (item.customapiid) {
                 objectId = item.customapiid.replace(/[{}]/g, '').toLowerCase();
-                componentType = 10380; // Custom API
+                componentType = 10380; 
             } else {
                 return;
             }            
@@ -221,7 +221,7 @@ async function enrichWithSolutionInfo(items, clientUrl) {
             let response = await fetch(
                 `${clientUrl}/api/data/v9.2/solutioncomponents?$select=solutioncomponentid&$expand=solutionid($select=friendlyname,uniquename,ismanaged)&$filter=objectid eq ${objectId} and componenttype eq ${componentType}`
             );            
-            // If expand fails, try without it
+            // If expand fails
             if (!response.ok) {
                 response = await fetch(
                     `${clientUrl}/api/data/v9.2/solutioncomponents?$select=solutioncomponentid,_solutionid_value&$filter=objectid eq ${objectId} and componenttype eq ${componentType}`

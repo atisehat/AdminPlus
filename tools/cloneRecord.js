@@ -53,8 +53,7 @@ async function analyzeAllFields(entityName, entityId) {
     };
 
     const formAttributeMap = {};
-
-    // 1. Read all attributes already on the form (includes hidden-via-rule fields)
+    //Read all attributes on the form
     try {
         const attributes = Xrm.Page.data.entity.attributes.get();
 
@@ -104,23 +103,21 @@ async function analyzeAllFields(entityName, entityId) {
         console.error('Error analyzing form fields:', error);
     }
 
-    // 2. Fetch the full record via Web API to capture fields not on the form
+    //Fetch full record
     try {
         const apiRecord = await Xrm.WebApi.retrieveRecord(entityName, entityId);
         const processedNames = new Set(Object.keys(formAttributeMap));
 
-        // Process lookup fields — Web API exposes them as _fieldname_value
+        // Process lookup fields
         Object.keys(apiRecord).forEach(key => {
             if (!key.startsWith('_') || !key.endsWith('_value') || key.includes('@')) return;
-            const fieldName = key.slice(1, -6); // _primarycontactid_value → primarycontactid
+            const fieldName = key.slice(1, -6);
             if (processedNames.has(fieldName)) return;
-
             const guidValue = apiRecord[key];
             if (!guidValue) return;
 
             const displayNameValue = apiRecord[`${key}@OData.Community.Display.V1.FormattedValue`] || '';
             const entityType = apiRecord[`${key}@Microsoft.Dynamics.CRM.lookuplogicalname`] || '';
-
             fields.lookup.push({
                 name: fieldName,
                 displayName: fieldName,
@@ -134,7 +131,7 @@ async function analyzeAllFields(entityName, entityId) {
             processedNames.add(fieldName);
         });
 
-        // Process all other (non-lookup, non-metadata) fields
+        // Process non-lookup
         Object.keys(apiRecord).forEach(key => {
             if (key.startsWith('@') || key.includes('@') || key.startsWith('_')) return;
             if (processedNames.has(key)) return;
@@ -149,8 +146,7 @@ async function analyzeAllFields(entityName, entityId) {
 
             if (typeof value === 'boolean') {
                 attrType = 'boolean';
-            } else if (typeof value === 'number') {
-                // If the API provides a text formatted value it's an option set, not a plain number
+            } else if (typeof value === 'number') {                
                 if (formattedValue && isNaN(Number(formattedValue))) {
                     attrType = 'optionset';
                 } else {
@@ -178,7 +174,6 @@ async function analyzeAllFields(entityName, entityId) {
                 isFromApi: true,
                 formattedValue: formattedValue
             };
-
             if (fields[attrType] !== undefined) {
                 fields[attrType].push(fieldInfo);
             } else {
@@ -188,10 +183,8 @@ async function analyzeAllFields(entityName, entityId) {
         });
 
     } catch (error) {
-        console.error('Error fetching full record via Web API:', error);
-        // Continue with form-only fields if the API call fails
+        console.error('Error fetching full record via Web API:', error);        
     }
-
     return fields;
 }
 
@@ -489,7 +482,7 @@ async function handleCloneRecord(container, fieldAnalysis, entityName) {
             return;
         }
 
-        // Multi-clone path: create N records directly via Web API
+        //Multi-clone path
         if (cloneCount > 1) {
             container.remove();
             await cloneMultipleViaApi(fieldsToClone, fieldAnalysis, entityName, cloneCount);
@@ -613,9 +606,7 @@ async function cloneMultipleViaApi(fieldsToClone, fieldAnalysis, entityName, clo
     try {
         if (typeof showToast === 'function') {
             showToast(`Creating ${cloneCount} clone(s)...`, 'info', 3000);
-        }
-
-        // Resolve entity set names for all lookup entity types via metadata
+        }        
         const entityTypes = new Set();
         Object.keys(fieldsToClone).forEach(fieldName => {
             const value = fieldsToClone[fieldName];
@@ -641,10 +632,7 @@ async function cloneMultipleViaApi(fieldsToClone, fieldAnalysis, entityName, clo
         const recordData = {};
         Object.keys(fieldsToClone).forEach(fieldName => {
             if (skipApiFields.has(fieldName)) return;
-
-            const value = fieldsToClone[fieldName];
-
-            // Find the field type from fieldAnalysis
+            const value = fieldsToClone[fieldName];            
             let fieldType = null;
             for (const type of Object.keys(fieldAnalysis)) {
                 if (fieldAnalysis[type].find(f => f.name === fieldName)) {
@@ -666,7 +654,7 @@ async function cloneMultipleViaApi(fieldsToClone, fieldAnalysis, entityName, clo
             }
         });
 
-        // Create each clone sequentially
+        //Create each clone sequentially
         let successCount = 0;
         let lastCreatedId = null;
 
@@ -688,7 +676,7 @@ async function cloneMultipleViaApi(fieldsToClone, fieldAnalysis, entityName, clo
                     : `Successfully created ${successCount} clone(s)!`;
                 showToast(msg, failCount > 0 ? 'warning' : 'success', 4000);
             }
-            // Navigate to the last created record so the user can review it
+            //Navigate to the last created record
             if (lastCreatedId) {
                 Xrm.Navigation.openForm({
                     entityName: entityName,
@@ -890,4 +878,3 @@ function cleanupSkippedFieldsStorage() {
     sessionStorage.removeItem('adminplus_saved_record_id');
     sessionStorage.removeItem('adminplus_save_in_progress');
 }
-
