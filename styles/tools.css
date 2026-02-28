@@ -2091,7 +2091,7 @@
     background: #a0a0a0;
 }
 
-/* Persona Switcher */
+/* Persona Switcher (Impersonation) */
 .persona-layout {
     display: flex;
     flex-direction: column;
@@ -2106,10 +2106,6 @@
     background: white;
     border-bottom: 2px solid #e0e0e0;
     flex-shrink: 0;
-}
-
-.persona-header-basic {
-    border-bottom-color: #f59e0b;
 }
 
 .persona-user-badge {
@@ -2129,18 +2125,6 @@
     border-radius: 20px;
     font-size: 12px;
     font-weight: 600;
-}
-
-.persona-badge-admin {
-    background: #d1fae5;
-    color: #065f46;
-    border: 1px solid #10b981;
-}
-
-.persona-badge-basic {
-    background: #fef3c7;
-    color: #92400e;
-    border: 1px solid #f59e0b;
 }
 
 .persona-alert-banner {
@@ -2186,30 +2170,6 @@
     margin-bottom: 12px;
 }
 
-.persona-hint {
-    font-size: 13px;
-    color: #666;
-    margin: 0 0 12px 0;
-    line-height: 1.4;
-}
-
-.persona-warning-note {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 14px;
-    background: #fef3c7;
-    border: 2px solid #f59e0b;
-    border-radius: 6px;
-    font-size: 12px;
-    color: #92400e;
-    margin-bottom: 12px;
-}
-
-.persona-warning-note svg {
-    flex-shrink: 0;
-}
-
 .persona-roles-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -2239,28 +2199,89 @@
     background: #fffbeb;
 }
 
-.persona-chip-saved {
-    border-color: #a7f3d0;
-    background: #ecfdf5;
-}
-
 .persona-divider-line {
     height: 1px;
     background: #e0e0e0;
     margin: 20px 0;
 }
 
-.persona-select-list {
-    max-height: 250px;
-    overflow-y: auto;
-    column-count: 2;
-    column-gap: 12px;
-    padding: 4px;
+/* Recent user chips */
+.persona-recent-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
 }
 
-.persona-select-item {
-    break-inside: avoid;
-    page-break-inside: avoid;
+.persona-recent-chip {
+    padding: 7px 16px;
+    background: white;
+    border: 2px solid #e0e0e0;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    color: #2b2b2b;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.persona-recent-chip:hover {
+    border-color: #2b2b2b;
+    background: #f5f5f5;
+}
+
+.persona-recent-chip.selected {
+    border-color: #2b2b2b;
+    background: #e8f4f8;
+    font-weight: 600;
+}
+
+/* User list (search results) */
+.persona-user-list {
+    max-height: 200px;
+    overflow-y: auto;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    background: white;
+}
+
+.persona-user-item {
+    padding: 10px 14px;
+    font-size: 13px;
+    color: #2b2b2b;
+    cursor: pointer;
+    border-bottom: 1px solid #f0f0f0;
+    transition: background 0.1s;
+    display: flex;
+    align-items: center;
+}
+
+.persona-user-item:last-child {
+    border-bottom: none;
+}
+
+.persona-user-item:hover {
+    background: #f5f5f5;
+}
+
+.persona-user-item.selected {
+    background: #e8f4f8;
+    font-weight: 600;
+    border-left: 3px solid #2b2b2b;
+}
+
+/* Info note (blue) */
+.persona-info-note {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px 14px;
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    border-radius: 6px;
+    font-size: 12px;
+    color: #1e40af;
+    line-height: 1.5;
+    margin-top: 16px;
 }
 
 .persona-footer {
@@ -2278,46 +2299,26 @@
     justify-content: space-between;
 }
 
-.persona-counter {
-    display: flex;
-    align-items: center;
-    padding: 6px 14px;
-    background: #e8f4f8;
-    border: 2px solid #2b2b2b;
-    border-radius: 20px;
-    font-size: 13px;
-    font-weight: 600;
-    color: #2b2b2b;
-}
-
-.persona-btn-restore {
-    background: #10b981 !important;
-}
-
-.persona-btn-restore:hover {
-    background: #059669 !important;
-}
-
-/* Persona Switcher Scrollbars */
+/* Scrollbars */
 .persona-body::-webkit-scrollbar,
-.persona-select-list::-webkit-scrollbar {
+.persona-user-list::-webkit-scrollbar {
     width: 8px;
 }
 
 .persona-body::-webkit-scrollbar-track,
-.persona-select-list::-webkit-scrollbar-track {
+.persona-user-list::-webkit-scrollbar-track {
     background: #f0f0f0;
     border-radius: 4px;
 }
 
 .persona-body::-webkit-scrollbar-thumb,
-.persona-select-list::-webkit-scrollbar-thumb {
+.persona-user-list::-webkit-scrollbar-thumb {
     background: #c0c0c0;
     border-radius: 4px;
 }
 
 .persona-body::-webkit-scrollbar-thumb:hover,
-.persona-select-list::-webkit-scrollbar-thumb:hover {
+.persona-user-list::-webkit-scrollbar-thumb:hover {
     background: #a0a0a0;
 }
 

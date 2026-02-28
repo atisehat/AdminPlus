@@ -1,93 +1,241 @@
 /**
- * Persona Switcher Tool
- * Allows admins to temporarily switch to a basic user persona for testing,
- * then restore their original admin roles without needing another admin's help.
+ * Persona Switcher Tool - Impersonation Approach
  *
- * Key design: No System Administrator check is required to open this tool
- * or restore roles, since the user won't have admin when they need to restore.
+ * Allows admins to impersonate other D365 users by intercepting all Web API
+ * calls and injecting the MSCRMCallerID header. No roles are changed — the
+ * admin's own roles are never touched, so there is nothing to "restore."
  *
- * Roles are saved to localStorage so they persist across page refreshes.
+ * Architecture:
+ *   1. IIFE runs on script load — sets up the impersonation engine and
+ *      auto-restores any active session from sessionStorage.
+ *   2. personaSwitcher() — UI function called from the sidebar button.
  *
- * @requires fetchRolesForUser, fetchSecurityRoles from utils/api.js
- * @requires updateUserDetails from securityOperations.js
- * @requires makePopupMovable, showLoadingDialog, closeLoadingDialog, showToast from utils/ui.js
+ * @requires System Administrator role (grants prvActOnBehalfOfAnotherUser)
+ * @requires fetchUsers, fetchRolesForUser, fetchBusinessUnitName from utils/api.js
+ * @requires makePopupMovable, showToast from utils/ui.js
  */
-function personaSwitcher() {
-	const clientUrl = Xrm.Utility.getGlobalContext().getClientUrl();
-	const currentUserId = Xrm.Utility.getGlobalContext().userSettings.userId.replace(/[{}]/g, '');
-	const currentUserName = Xrm.Utility.getGlobalContext().userSettings.userName;
-	const STORAGE_KEY = `adminplus_persona_${currentUserId}`;
 
-	let businessUnitId = null;
-	let currentRoles = [];
-	let availableRoles = [];
-	let selectedBasicRoles = [];
+// ══════════════════════════════════════════════════════════════════════════════
+// ── Impersonation Engine (IIFE — runs immediately on script load) ──
+// ══════════════════════════════════════════════════════════════════════════════
+(function () {
+	const CALLER_HEADER = 'MSCRMCallerID';
+	const SESSION_KEY   = 'adminplus_impersonate_session';
+	const HISTORY_KEY   = 'adminplus_impersonate_history';
+	const BANNER_ID     = 'adminplus-impersonate-banner';
+	const API_PATH      = '/api/data/';
+	const MAX_HISTORY   = 10;
 
-	// ── Snapshot Management ──
+	// ── Session (per-tab, survives refresh within same tab) ──
 
-	function getSnapshot() {
+	function getSession() {
 		try {
-			const data = localStorage.getItem(STORAGE_KEY);
-			if (!data) return null;
-			const parsed = JSON.parse(data);
-			if (parsed.userId !== currentUserId) return null;
-			return parsed;
-		} catch (e) {
-			return null;
-		}
+			const d = sessionStorage.getItem(SESSION_KEY);
+			return d ? JSON.parse(d) : null;
+		} catch (e) { return null; }
 	}
 
-	function saveSnapshot(roles) {
-		localStorage.setItem(STORAGE_KEY, JSON.stringify({
-			userId: currentUserId,
-			userName: currentUserName,
-			roles: roles,
-			timestamp: new Date().toISOString()
+	function setSession(userId, userName) {
+		sessionStorage.setItem(SESSION_KEY, JSON.stringify({
+			id: userId, name: userName, timestamp: new Date().toISOString()
 		}));
 	}
 
-	function clearSnapshot() {
-		localStorage.removeItem(STORAGE_KEY);
+	function clearSession() {
+		try { sessionStorage.removeItem(SESSION_KEY); } catch (e) {}
 	}
 
-	// ── Data Loading ──
+	// ── History (persists across sessions for quick re-use) ──
 
-	async function loadCurrentUser() {
-		const response = await Xrm.WebApi.retrieveRecord("systemuser", currentUserId, "?$select=_businessunitid_value");
-		businessUnitId = response._businessunitid_value;
+	function getHistory() {
+		try {
+			const d = localStorage.getItem(HISTORY_KEY);
+			return d ? JSON.parse(d) : [];
+		} catch (e) { return []; }
 	}
 
-	async function loadCurrentRoles() {
-		return new Promise((resolve) => {
-			fetchRolesForUser(currentUserId, async function(response) {
-				currentRoles = [];
-				if (response && response.entities) {
-					const rolePromises = response.entities.map(role =>
-						Xrm.WebApi.retrieveRecord("role", role.roleid, "?$select=name,roleid")
-							.then(detail => currentRoles.push({ id: detail.roleid, name: detail.name }))
-					);
-					await Promise.all(rolePromises);
-					currentRoles.sort((a, b) => a.name.localeCompare(b.name));
+	function addToHistory(userId, userName) {
+		let h = getHistory().filter(x => x.id !== userId);
+		h.unshift({ id: userId, name: userName, lastUsed: new Date().toISOString() });
+		if (h.length > MAX_HISTORY) h = h.slice(0, MAX_HISTORY);
+		localStorage.setItem(HISTORY_KEY, JSON.stringify(h));
+	}
+
+	// ── Monkey-Patching ──
+
+	function applyPatches(userId) {
+		const w = window;
+		if (w.__adminplusImpersonating) return;
+
+		w.__adminplusImpersonating = true;
+		w.__adminplusOrigFetch   = w.fetch;
+		w.__adminplusOrigXHROpen = w.XMLHttpRequest.prototype.open;
+		w.__adminplusOrigXHRSend = w.XMLHttpRequest.prototype.send;
+
+		w.XMLHttpRequest.prototype.open = function () {
+			this.__xhrUrl = (typeof arguments[1] === 'string') ? arguments[1] : '';
+			return w.__adminplusOrigXHROpen.apply(this, arguments);
+		};
+
+		w.XMLHttpRequest.prototype.send = function () {
+			if (this.__xhrUrl && this.__xhrUrl.indexOf(API_PATH) !== -1) {
+				try { this.setRequestHeader(CALLER_HEADER, userId); } catch (e) {}
+			}
+			return w.__adminplusOrigXHRSend.apply(this, arguments);
+		};
+
+		w.fetch = function (input, init) {
+			var url = (typeof input === 'string') ? input
+				: (input instanceof Request ? input.url : '');
+			if (!url || url.indexOf(API_PATH) === -1) {
+				return w.__adminplusOrigFetch.call(w, input, init);
+			}
+			var opts = init ? Object.assign({}, init) : {};
+			var hdrs = {};
+			if (opts.headers instanceof Headers) {
+				opts.headers.forEach(function (v, k) { hdrs[k] = v; });
+			} else if (opts.headers) {
+				Object.assign(hdrs, opts.headers);
+			}
+			hdrs[CALLER_HEADER] = userId;
+			opts.headers = hdrs;
+			return w.__adminplusOrigFetch.call(w, input, opts);
+		};
+	}
+
+	function removePatches() {
+		const w = window;
+		try {
+			if (w.__adminplusOrigFetch) {
+				w.fetch = w.__adminplusOrigFetch;
+				delete w.__adminplusOrigFetch;
+			}
+			if (w.__adminplusOrigXHROpen) {
+				w.XMLHttpRequest.prototype.open = w.__adminplusOrigXHROpen;
+				delete w.__adminplusOrigXHROpen;
+			}
+			if (w.__adminplusOrigXHRSend) {
+				w.XMLHttpRequest.prototype.send = w.__adminplusOrigXHRSend;
+				delete w.__adminplusOrigXHRSend;
+			}
+			delete w.__adminplusImpersonating;
+		} catch (e) {}
+	}
+
+	// ── Floating Banner ──
+
+	function showBanner(userName) {
+		removeBanner();
+		const sidebarOffset = document.getElementById('MenuPopup') ? 60 : 0;
+
+		const banner = document.createElement('div');
+		banner.id = BANNER_ID;
+		banner.style.cssText = `
+			position: fixed; top: 0; left: 0; right: ${sidebarOffset}px; z-index: 999998;
+			background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+			color: white; padding: 8px 20px;
+			font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+			font-size: 13px; display: flex; align-items: center; justify-content: space-between;
+			box-shadow: 0 2px 8px rgba(220, 38, 38, 0.4);
+			animation: adminplus-banner-in 0.3s ease-out;
+		`;
+		banner.innerHTML = `
+			<div style="display:flex;align-items:center;gap:10px;">
+				<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+					<path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>
+				</svg>
+				<span>Impersonating: <strong>${userName}</strong></span>
+			</div>
+			<button id="adminplus-banner-stop" style="
+				background:rgba(255,255,255,0.2); border:1px solid rgba(255,255,255,0.4);
+				color:white; padding:4px 14px; border-radius:4px; font-size:12px;
+				font-weight:600; cursor:pointer; transition:all 0.2s;
+			">Stop</button>
+		`;
+
+		if (!document.getElementById('adminplus-banner-style')) {
+			const s = document.createElement('style');
+			s.id = 'adminplus-banner-style';
+			s.textContent = `
+				@keyframes adminplus-banner-in {
+					from { opacity:0; transform:translateY(-100%); }
+					to   { opacity:1; transform:translateY(0); }
 				}
-				resolve();
-			});
+			`;
+			document.head.appendChild(s);
+		}
+
+		document.body.appendChild(banner);
+
+		const btn = document.getElementById('adminplus-banner-stop');
+		btn.addEventListener('click', function (e) {
+			e.stopPropagation();
+			engine.stop();
 		});
+		btn.addEventListener('mouseenter', function () { this.style.background = 'rgba(255,255,255,0.35)'; });
+		btn.addEventListener('mouseleave', function () { this.style.background = 'rgba(255,255,255,0.2)'; });
 	}
 
-	async function loadAvailableRoles() {
-		if (!businessUnitId) return;
-		return new Promise((resolve) => {
-			fetchSecurityRoles(businessUnitId, function(response) {
-				availableRoles = [];
-				if (response && response.entities) {
-					availableRoles = response.entities
-						.map(role => ({ id: role.roleid, name: role.name }))
-						.sort((a, b) => a.name.localeCompare(b.name));
-				}
-				resolve();
-			});
-		});
+	function removeBanner() {
+		const b = document.getElementById(BANNER_ID);
+		if (b) b.remove();
 	}
+
+	// ── Public API ──
+
+	const engine = {
+		isActive:   function () { return !!window.__adminplusImpersonating; },
+		getSession: getSession,
+		getHistory: getHistory,
+
+		start: function (userId, userName) {
+			applyPatches(userId);
+			setSession(userId, userName);
+			addToHistory(userId, userName);
+			showBanner(userName);
+		},
+
+		stop: function (silent) {
+			removePatches();
+			clearSession();
+			removeBanner();
+			if (!silent && typeof showToast === 'function') {
+				showToast('Impersonation stopped. Navigate or refresh to see your own data.', 'info', 3000);
+			}
+		}
+	};
+
+	// ── Auto-restore on page load ──
+
+	const existing = getSession();
+	if (existing) {
+		applyPatches(existing.id);
+		var ready = function () { showBanner(existing.name); };
+		if (document.readyState === 'loading') {
+			document.addEventListener('DOMContentLoaded', ready);
+		} else {
+			ready();
+		}
+	}
+
+	window.__adminplusPersonaEngine = engine;
+})();
+
+
+// ══════════════════════════════════════════════════════════════════════════════
+// ── Persona Switcher UI ──
+// ══════════════════════════════════════════════════════════════════════════════
+
+function personaSwitcher() {
+	if (!checkSystemAdministratorRole()) {
+		showToast('System Administrator role required for persona switching.', 'error', 4000);
+		return;
+	}
+
+	const engine = window.__adminplusPersonaEngine;
+	const currentUserId = Xrm.Utility.getGlobalContext().userSettings.userId.replace(/[{}]/g, '');
+
+	let selectedUser = null;
 
 	// ── Popup ──
 
@@ -105,8 +253,8 @@ function personaSwitcher() {
 			</div>
 			<div class="popup-body">
 				<div class="persona-layout" id="personaContent">
-					<div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #999; font-style: italic; font-size: 14px;">
-						Loading security information...
+					<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#999;font-style:italic;font-size:14px;">
+						Loading...
 					</div>
 				</div>
 			</div>
@@ -114,401 +262,321 @@ function personaSwitcher() {
 
 		document.body.appendChild(popup);
 
-		const closeButton = popup.querySelector('.close-button');
-		closeButton.addEventListener('click', () => popup.remove());
-		closeButton.addEventListener('mouseenter', function() { this.style.backgroundColor = '#e81123'; });
-		closeButton.addEventListener('mouseleave', function() { this.style.backgroundColor = 'transparent'; });
+		const closeBtn = popup.querySelector('.close-button');
+		closeBtn.addEventListener('click', () => popup.remove());
+		closeBtn.addEventListener('mouseenter', function () { this.style.backgroundColor = '#e81123'; });
+		closeBtn.addEventListener('mouseleave', function () { this.style.backgroundColor = 'transparent'; });
 
 		makePopupMovable(popup);
 		return popup;
 	}
 
-	// ── Render ──
+	// ── Routing ──
 
 	function renderContent() {
 		const content = document.getElementById('personaContent');
-		const snapshot = getSnapshot();
-
-		if (snapshot) {
-			renderRestoreView(content, snapshot);
+		if (engine.isActive()) {
+			renderActiveView(content);
 		} else {
-			renderSwitchView(content);
+			renderSelectionView(content);
 		}
 	}
 
-	function renderSwitchView(content) {
-		const isAdmin = checkSystemAdministratorRole();
+	// ── Active Impersonation View ──
+
+	function renderActiveView(content) {
+		const session = engine.getSession();
+		const startedAt = session ? new Date(session.timestamp).toLocaleString() : '';
+
+		content.innerHTML = `
+			<div class="persona-header-bar" style="border-bottom-color:#dc2626;">
+				<div class="persona-user-badge">
+					<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2">
+						<path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>
+					</svg>
+					<span class="persona-badge-name">${session.name}</span>
+					<span class="persona-badge-status" style="background:#fee2e2;color:#991b1b;border:1px solid #dc2626;">Impersonating</span>
+				</div>
+			</div>
+
+			<div class="persona-alert-banner" style="background:#fef2f2;border-bottom-color:#dc2626;">
+				<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2" style="flex-shrink:0;">
+					<path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+					<line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+				</svg>
+				<div>
+					<strong style="color:#991b1b;">Impersonation is active.</strong>
+					<span style="color:#b91c1c;">All API calls execute as this user. Started ${startedAt}</span>
+				</div>
+			</div>
+
+			<div class="persona-body">
+				<div class="persona-section">
+					<div class="persona-section-title">
+						<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2b2b2b" stroke-width="2">
+							<path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z"/>
+							<path d="M8 11V7a4 4 0 118 0v4"/>
+						</svg>
+						User's Security Roles
+					</div>
+					<div class="persona-roles-grid" id="activeUserRoles">
+						<div class="empty-message" style="grid-column:1/-1;">Loading roles...</div>
+					</div>
+				</div>
+
+				<div class="persona-info-note">
+					<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" style="flex-shrink:0;">
+						<circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/>
+					</svg>
+					<span>Navigate to a different page or form to fully see the impersonated user's experience. Your admin roles are untouched.</span>
+				</div>
+			</div>
+
+			<div class="persona-footer persona-footer-restore">
+				<button id="personaSwitchUserBtn" class="btn-secondary">
+					<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+						<path d="M16 3h5v5M4 20L21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/>
+					</svg>
+					Switch User
+				</button>
+				<button id="personaStopBtn" class="btn-primary" style="background:#dc2626!important;">
+					<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+						<rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+					</svg>
+					Stop Impersonation
+				</button>
+			</div>
+		`;
+
+		loadUserRoles(session.id).then(roles => {
+			const grid = document.getElementById('activeUserRoles');
+			if (!grid) return;
+			grid.innerHTML = roles.length > 0
+				? roles.map(r => `
+					<div class="persona-role-chip persona-chip-basic">
+						<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2.5">
+							<polyline points="20 6 9 17 4 12"/>
+						</svg>
+						${r.name}
+					</div>`).join('')
+				: '<div class="empty-message" style="grid-column:1/-1;">No roles found</div>';
+		});
+
+		document.getElementById('personaStopBtn').addEventListener('click', () => {
+			engine.stop();
+			renderContent();
+		});
+
+		document.getElementById('personaSwitchUserBtn').addEventListener('click', () => {
+			engine.stop(true);
+			renderSelectionView(document.getElementById('personaContent'));
+		});
+	}
+
+	// ── User Selection View ──
+
+	function renderSelectionView(content) {
+		const history = engine.getHistory();
 
 		content.innerHTML = `
 			<div class="persona-header-bar">
 				<div class="persona-user-badge">
 					<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2b2b2b" stroke-width="2">
-						<path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
-						<circle cx="12" cy="7" r="4"/>
+						<path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>
 					</svg>
-					<span class="persona-badge-name">${currentUserName}</span>
-					<span class="persona-badge-status persona-badge-admin">
-						${isAdmin ? 'Admin' : 'Current'}
-					</span>
+					<span class="persona-badge-name">Select a User to Impersonate</span>
 				</div>
 			</div>
 
 			<div class="persona-body">
+				${history.length > 0 ? `
+					<div class="persona-section">
+						<div class="persona-section-title">
+							<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2b2b2b" stroke-width="2">
+								<polyline points="12 8 12 12 14 14"/><circle cx="12" cy="12" r="10"/>
+							</svg>
+							Recent
+						</div>
+						<div class="persona-recent-chips">
+							${history.map(h => `
+								<div class="persona-recent-chip" data-user-id="${h.id}" data-user-name="${h.name}">
+									${h.name}
+								</div>
+							`).join('')}
+						</div>
+					</div>
+					<div class="persona-divider-line"></div>
+				` : ''}
+
 				<div class="persona-section">
 					<div class="persona-section-title">
 						<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2b2b2b" stroke-width="2">
-							<path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z"/>
-							<path d="M8 11V7a4 4 0 118 0v4"/>
+							<circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
 						</svg>
-						Current Security Roles
+						All Users
 					</div>
-					<div class="persona-roles-grid">
-						${currentRoles.length > 0
-							? currentRoles.map(role => `
-								<div class="persona-role-chip">
-									<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5">
-										<polyline points="20 6 9 17 4 12"/>
-									</svg>
-									${role.name}
-								</div>
-							`).join('')
-							: '<div class="empty-message">No roles assigned</div>'
-						}
+					<input type="text" id="personaUserSearch" placeholder="Search by name..." class="search-input" style="margin-bottom:10px;">
+					<div class="persona-user-list" id="personaUserList">
+						<div class="empty-message">Loading users...</div>
 					</div>
 				</div>
 
-				<div class="persona-divider-line"></div>
-
-				<div class="persona-section">
-					<div class="persona-section-title">
-						<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2b2b2b" stroke-width="2">
-							<path d="M16 3h5v5M4 20L21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/>
-						</svg>
-						Select Basic Persona Roles
-					</div>
-					<p class="persona-hint">Choose the roles for your basic persona. Your current roles will be saved and can be restored anytime.</p>
-					${!isAdmin ? `
-						<div class="persona-warning-note">
-							<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2">
-								<path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
-								<line x1="12" y1="9" x2="12" y2="13"/>
-								<line x1="12" y1="17" x2="12.01" y2="17"/>
+				<div id="personaUserDetails" style="display:none;">
+					<div class="persona-divider-line"></div>
+					<div class="persona-section">
+						<div class="persona-section-title">
+							<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2b2b2b" stroke-width="2">
+								<path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>
 							</svg>
-							<span>System Administrator role is required to switch personas.</span>
+							<span id="personaDetailName">User Details</span>
 						</div>
-					` : ''}
-					<input type="text" id="personaRoleSearch" placeholder="Search roles..." class="search-input" style="margin-bottom: 10px;">
-					<div class="persona-select-list" id="personaRoleList">
-						${availableRoles.map(role => `
-							<div class="persona-select-item selectable-item" data-role-id="${role.id}" data-search-text="${role.name.toLowerCase()}">
-								<span>${role.name}</span>
-							</div>
-						`).join('')}
+						<div id="personaDetailBU" style="font-size:13px;margin-bottom:10px;"></div>
+						<div class="persona-roles-grid" id="personaDetailRoles">
+							<div class="empty-message" style="grid-column:1/-1;">Loading roles...</div>
+						</div>
 					</div>
 				</div>
 			</div>
 
 			<div class="persona-footer">
-				<div class="persona-counter" id="personaCounter" style="display: none;">
-					<span id="personaCounterText">0 selected</span>
-				</div>
-				<button id="personaSwitchBtn" class="btn-primary" disabled style="opacity: 0.5;">
+				<button id="personaImpersonateBtn" class="btn-primary" disabled style="opacity:0.5;">
 					<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-						<path d="M16 3h5v5M4 20L21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/>
+						<path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>
 					</svg>
-					Switch to Basic Persona
+					Start Impersonation
 				</button>
 			</div>
 		`;
 
-		// Role selection handlers
-		document.querySelectorAll('.persona-select-item').forEach(item => {
-			item.addEventListener('click', function() {
-				const roleId = this.dataset.roleId;
-				const idx = selectedBasicRoles.indexOf(roleId);
-				if (idx > -1) {
-					selectedBasicRoles.splice(idx, 1);
-					this.classList.remove('selected');
-				} else {
-					selectedBasicRoles.push(roleId);
-					this.classList.add('selected');
-				}
-				updateSwitchUI();
-			});
-		});
+		loadUsers();
 
-		// Search handler
-		const searchInput = document.getElementById('personaRoleSearch');
+		// Search
+		const searchInput = document.getElementById('personaUserSearch');
 		if (searchInput) {
-			searchInput.addEventListener('input', function() {
-				const query = this.value.toLowerCase().trim();
-				document.querySelectorAll('.persona-select-item').forEach(item => {
-					item.style.display = item.dataset.searchText.includes(query) ? 'flex' : 'none';
+			searchInput.addEventListener('input', function () {
+				const q = this.value.toLowerCase().trim();
+				document.querySelectorAll('.persona-user-item').forEach(el => {
+					el.style.display = el.dataset.searchText.includes(q) ? 'flex' : 'none';
 				});
 			});
 		}
 
-		document.getElementById('personaSwitchBtn').addEventListener('click', handleSwitch);
-	}
-
-	function renderRestoreView(content, snapshot) {
-		const switchedAt = new Date(snapshot.timestamp).toLocaleString();
-
-		content.innerHTML = `
-			<div class="persona-header-bar persona-header-basic">
-				<div class="persona-user-badge">
-					<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2">
-						<path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
-						<circle cx="12" cy="7" r="4"/>
-					</svg>
-					<span class="persona-badge-name">${currentUserName}</span>
-					<span class="persona-badge-status persona-badge-basic">Basic Persona</span>
-				</div>
-			</div>
-
-			<div class="persona-alert-banner">
-				<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" style="flex-shrink: 0;">
-					<path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
-					<line x1="12" y1="9" x2="12" y2="13"/>
-					<line x1="12" y1="17" x2="12.01" y2="17"/>
-				</svg>
-				<div>
-					<strong>Basic persona is currently active.</strong>
-					<span>Switched on ${switchedAt}</span>
-				</div>
-			</div>
-
-			<div class="persona-body">
-				<div class="persona-section">
-					<div class="persona-section-title">
-						<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2">
-							<circle cx="12" cy="12" r="10"/>
-							<path d="M12 16v-4M12 8h.01"/>
-						</svg>
-						Active Roles (Basic Persona)
-					</div>
-					<div class="persona-roles-grid">
-						${currentRoles.length > 0
-							? currentRoles.map(role => `
-								<div class="persona-role-chip persona-chip-basic">
-									<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2.5">
-										<polyline points="20 6 9 17 4 12"/>
-									</svg>
-									${role.name}
-								</div>
-							`).join('')
-							: '<div class="empty-message">No roles assigned</div>'
-						}
-					</div>
-				</div>
-
-				<div class="persona-divider-line"></div>
-
-				<div class="persona-section">
-					<div class="persona-section-title">
-						<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2">
-							<path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z"/>
-							<path d="M8 11V7a4 4 0 118 0v4"/>
-						</svg>
-						Saved Admin Roles (Will Be Restored)
-					</div>
-					<div class="persona-roles-grid">
-						${snapshot.roles.map(role => `
-							<div class="persona-role-chip persona-chip-saved">
-								<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5">
-									<polyline points="20 6 9 17 4 12"/>
-								</svg>
-								${role.name}
-							</div>
-						`).join('')}
-					</div>
-				</div>
-			</div>
-
-			<div class="persona-footer persona-footer-restore">
-				<button id="personaClearBtn" class="btn-secondary">
-					<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-						<line x1="18" y1="6" x2="6" y2="18"/>
-						<line x1="6" y1="6" x2="18" y2="18"/>
-					</svg>
-					Clear Saved Data
-				</button>
-				<button id="personaRestoreBtn" class="btn-primary persona-btn-restore">
-					<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-						<path d="M3 12a9 9 0 019-9 9.75 9.75 0 016.74 2.74L21 8"/>
-						<path d="M21 3v5h-5"/>
-						<path d="M21 12a9 9 0 01-9 9 9.75 9.75 0 01-6.74-2.74L3 16"/>
-						<path d="M3 21v-5h5"/>
-					</svg>
-					Restore Admin Persona
-				</button>
-			</div>
-		`;
-
-		document.getElementById('personaRestoreBtn').addEventListener('click', handleRestore);
-		document.getElementById('personaClearBtn').addEventListener('click', handleClearSnapshot);
-	}
-
-	// ── UI Updates ──
-
-	function updateSwitchUI() {
-		const counter = document.getElementById('personaCounter');
-		const counterText = document.getElementById('personaCounterText');
-		const switchBtn = document.getElementById('personaSwitchBtn');
-
-		if (selectedBasicRoles.length > 0) {
-			counter.style.display = 'flex';
-			counterText.textContent = `${selectedBasicRoles.length} role${selectedBasicRoles.length > 1 ? 's' : ''} selected`;
-			switchBtn.disabled = false;
-			switchBtn.style.opacity = '1';
-		} else {
-			counter.style.display = 'none';
-			switchBtn.disabled = true;
-			switchBtn.style.opacity = '0.5';
-		}
-	}
-
-	// ── Direct API Calls (bypass securityOperations which swallows errors) ──
-
-	async function associateRoleDirect(userId, roleId) {
-		try {
-			const url = `${clientUrl}/api/data/v9.2/systemusers(${userId})/systemuserroles_association/$ref`;
-			const response = await fetch(url, {
-				method: "POST",
-				headers: {
-					"OData-MaxVersion": "4.0",
-					"OData-Version": "4.0",
-					"Accept": "application/json",
-					"Content-Type": "application/json; charset=utf-8"
-				},
-				body: JSON.stringify({
-					"@odata.id": `${clientUrl}/api/data/v9.2/roles(${roleId})`
-				})
+		// Recent chip clicks
+		document.querySelectorAll('.persona-recent-chip').forEach(chip => {
+			chip.addEventListener('click', function () {
+				selectUser(this.dataset.userId, this.dataset.userName);
 			});
-			return response.ok;
-		} catch (e) {
-			return false;
-		}
+		});
+
+		// Impersonate button
+		document.getElementById('personaImpersonateBtn').addEventListener('click', handleImpersonate);
 	}
 
-	async function disassociateRoleDirect(userId, roleId) {
-		try {
-			const url = `${clientUrl}/api/data/v9.2/systemusers(${userId})/systemuserroles_association/$ref?$id=${clientUrl}/api/data/v9.2/roles(${roleId})`;
-			const response = await fetch(url, { method: "DELETE" });
-			return response.ok;
-		} catch (e) {
-			return false;
-		}
+	// ── Data Loading ──
+
+	function loadUsers() {
+		fetchUsers(function (response) {
+			const list = document.getElementById('personaUserList');
+			if (!list || !response || !response.entities) return;
+
+			const users = response.entities
+				.filter(u => u.systemuserid !== currentUserId)
+				.map(u => ({
+					id: u.systemuserid,
+					name: `${u.firstname || ''} ${u.lastname || ''}`.trim() || u.fullname || 'Unknown'
+				}))
+				.sort((a, b) => a.name.localeCompare(b.name));
+
+			list.innerHTML = users.map(u => `
+				<div class="persona-user-item selectable-item" data-user-id="${u.id}" data-user-name="${u.name}" data-search-text="${u.name.toLowerCase()}">
+					<span>${u.name}</span>
+				</div>
+			`).join('');
+
+			list.querySelectorAll('.persona-user-item').forEach(el => {
+				el.addEventListener('click', function () {
+					selectUser(this.dataset.userId, this.dataset.userName);
+				});
+			});
+		});
+	}
+
+	function loadUserRoles(userId) {
+		return new Promise(resolve => {
+			fetchRolesForUser(userId, async function (response) {
+				const roles = [];
+				if (response && response.entities) {
+					await Promise.all(response.entities.map(r =>
+						Xrm.WebApi.retrieveRecord('role', r.roleid, '?$select=name,roleid')
+							.then(d => roles.push({ id: d.roleid, name: d.name }))
+					));
+					roles.sort((a, b) => a.name.localeCompare(b.name));
+				}
+				resolve(roles);
+			});
+		});
+	}
+
+	// ── User Selection ──
+
+	async function selectUser(userId, userName) {
+		document.querySelectorAll('.persona-user-item,.persona-recent-chip').forEach(el => el.classList.remove('selected'));
+		const el = document.querySelector(`.persona-user-item[data-user-id="${userId}"]`);
+		if (el) el.classList.add('selected');
+		const chip = document.querySelector(`.persona-recent-chip[data-user-id="${userId}"]`);
+		if (chip) chip.classList.add('selected');
+
+		selectedUser = { id: userId, name: userName };
+
+		const btn = document.getElementById('personaImpersonateBtn');
+		btn.disabled = false;
+		btn.style.opacity = '1';
+
+		const details = document.getElementById('personaUserDetails');
+		details.style.display = 'block';
+
+		document.getElementById('personaDetailName').textContent = userName;
+
+		const buEl = document.getElementById('personaDetailBU');
+		buEl.innerHTML = '<span style="color:#999;font-size:12px;">Loading...</span>';
+		fetchBusinessUnitName(userId, function (res) {
+			if (res && res.entities && res.entities[0]) {
+				const buName = res.entities[0].businessunitid?.name || 'N/A';
+				buEl.innerHTML = `<strong>Business Unit:</strong> <span style="color:#10b981;">${buName}</span>`;
+			}
+		});
+
+		const rolesGrid = document.getElementById('personaDetailRoles');
+		rolesGrid.innerHTML = '<div class="empty-message" style="grid-column:1/-1;">Loading roles...</div>';
+		const roles = await loadUserRoles(userId);
+		rolesGrid.innerHTML = roles.length > 0
+			? roles.map(r => `
+				<div class="persona-role-chip">
+					<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5">
+						<polyline points="20 6 9 17 4 12"/>
+					</svg>
+					${r.name}
+				</div>`).join('')
+			: '<div class="empty-message" style="grid-column:1/-1;">No roles found</div>';
+
+		details.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 	}
 
 	// ── Actions ──
 
-	async function handleSwitch() {
-		if (selectedBasicRoles.length === 0) {
-			showToast('Please select at least one role for your basic persona.', 'warning', 3000);
+	function handleImpersonate() {
+		if (!selectedUser) {
+			showToast('Please select a user first.', 'warning', 3000);
 			return;
 		}
 
-		if (!checkSystemAdministratorRole()) {
-			showToast('System Administrator role is required to switch personas.', 'error', 4000);
-			return;
-		}
-
-		try {
-			showLoadingDialog('Switching to basic persona...');
-
-			saveSnapshot(currentRoles);
-
-			for (const role of currentRoles) {
-				await disassociateRoleDirect(currentUserId, role.id);
-			}
-			for (const roleId of selectedBasicRoles) {
-				await associateRoleDirect(currentUserId, roleId);
-			}
-
-			closeLoadingDialog();
-			showToast('Switched to basic persona. Page will reload...', 'success', 2500);
-			setTimeout(() => window.location.reload(), 2000);
-		} catch (error) {
-			closeLoadingDialog();
-			console.error('Error switching persona:', error);
-			showToast('Error switching persona. Please try again.', 'error', 4000);
-		}
-	}
-
-	async function handleRestore() {
-		const snapshot = getSnapshot();
-		if (!snapshot) {
-			showToast('No saved persona found.', 'error', 3000);
-			return;
-		}
-
-		try {
-			showLoadingDialog('Restoring admin persona...');
-
-			const roleIds = snapshot.roles.map(r => r.id);
-
-			// Add saved admin roles FIRST (before removing anything).
-			// If the add fails the user at least keeps their basic roles.
-			for (const roleId of roleIds) {
-				await associateRoleDirect(currentUserId, roleId);
-			}
-
-			// Verify by re-fetching actual roles from the server
-			await loadCurrentRoles();
-			const currentRoleIdSet = new Set(currentRoles.map(r => r.id));
-			const restoredCount = roleIds.filter(id => currentRoleIdSet.has(id)).length;
-
-			if (restoredCount === 0) {
-				closeLoadingDialog();
-				showToast('Could not restore roles. Your saved data is preserved — contact another admin to restore via the Assign Security tool.', 'error', 6000);
-				return;
-			}
-
-			// At least some roles restored — clean up extra basic-only roles
-			const savedIdSet = new Set(roleIds);
-			const extraRoles = currentRoles.filter(r => !savedIdSet.has(r.id));
-			for (const role of extraRoles) {
-				await disassociateRoleDirect(currentUserId, role.id);
-			}
-
-			clearSnapshot();
-			closeLoadingDialog();
-
-			if (restoredCount === roleIds.length) {
-				showToast('Admin persona restored. Page will reload...', 'success', 2500);
-			} else {
-				showToast(`Partially restored (${restoredCount}/${roleIds.length} roles). Page will reload...`, 'warning', 3500);
-			}
-			setTimeout(() => window.location.reload(), 2500);
-		} catch (error) {
-			closeLoadingDialog();
-			console.error('Error restoring persona:', error);
-			showToast('Error restoring persona. Your saved data is preserved.', 'error', 5000);
-		}
-	}
-
-	function handleClearSnapshot() {
-		clearSnapshot();
-		showToast('Saved persona data cleared.', 'info', 2000);
+		engine.start(selectedUser.id, selectedUser.name);
+		showToast(`Now impersonating ${selectedUser.name}. Navigate to see their experience.`, 'success', 3500);
 		renderContent();
 	}
 
-	// ── Initialize ──
+	// ── Init ──
 
-	const popup = createPopup();
-
-	showLoadingDialog('Loading security information...');
-
-	Promise.all([loadCurrentUser(), loadCurrentRoles()])
-		.then(() => loadAvailableRoles())
-		.then(() => {
-			closeLoadingDialog();
-			renderContent();
-		})
-		.catch(error => {
-			closeLoadingDialog();
-			console.error('Error loading persona data:', error);
-			showToast('Failed to load security information.', 'error', 4000);
-		});
+	createPopup();
+	renderContent();
 }
