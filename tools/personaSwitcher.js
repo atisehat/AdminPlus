@@ -192,10 +192,52 @@
 		if (b) b.remove();
 	}
 
-	// ── No reload needed ──
-	// Patches are on window.fetch / XHR — they stay alive as long as this
-	// browser tab is open. Every D365 navigation the user makes after starting
-	// impersonation goes through the patched APIs automatically.
+	// ── SPA Page Refresh ──
+	// Detects the current D365 page type from the URL and re-navigates using
+	// D365's own SPA router. Patches stay alive in memory (no browser reload),
+	// and D365 re-fetches all data through them with the impersonation header.
+
+	function refreshCurrentPage() {
+		try {
+			if (typeof Xrm === 'undefined') return;
+
+			var search = window.location.search || window.parent.location.search;
+			var params = new URLSearchParams(search);
+			var pagetype = params.get('pagetype');
+			var etn      = params.get('etn');
+			var id       = params.get('id');
+
+			if (pagetype === 'entityrecord' && etn && id) {
+				Xrm.Navigation.openForm({
+					entityName: etn,
+					entityId: id.replace(/[{}]/g, '')
+				});
+				return;
+			}
+
+			if (pagetype === 'entitylist' && etn) {
+				Xrm.Navigation.navigateTo({
+					pageType: 'entityList',
+					entityName: etn
+				});
+				return;
+			}
+
+			if (pagetype === 'dashboard') {
+				var target = { pageType: 'dashboard' };
+				if (id) target.dashboardId = id.replace(/[{}]/g, '');
+				Xrm.Navigation.navigateTo(target);
+				return;
+			}
+
+			// Fallback: try Xrm.Page.data.refresh for classic pages
+			if (Xrm.Page && Xrm.Page.data && Xrm.Page.data.refresh) {
+				Xrm.Page.data.refresh(false).then(function () {
+					try { Xrm.Page.ui.refreshRibbon(); } catch (e) {}
+				});
+			}
+		} catch (e) {}
+	}
 
 	// ── Public API ──
 
@@ -215,10 +257,15 @@
 			removePatches();
 			clearSession();
 			removeBanner();
-			if (!silent && typeof showToast === 'function') {
-				showToast('Impersonation stopped. Navigate to refresh the current page data.', 'info', 3000);
+			if (!silent) {
+				if (typeof showToast === 'function') {
+					showToast('Impersonation stopped. Refreshing page...', 'info', 2000);
+				}
+				setTimeout(refreshCurrentPage, 800);
 			}
-		}
+		},
+
+		refreshPage: refreshCurrentPage
 	};
 
 	// ── Auto-restore on load ──
@@ -596,7 +643,8 @@ function personaSwitcher() {
 
 		engine.start(selectedUser.id, selectedUser.name);
 		document.querySelectorAll('.commonPopup[data-popup-id="personaSwitcher"]').forEach(p => p.remove());
-		showToast(`Impersonating ${selectedUser.name}. Navigate to any form, view or dashboard to see their experience.`, 'success', 5000);
+		showToast(`Impersonating ${selectedUser.name}. Refreshing page...`, 'success', 2000);
+		setTimeout(engine.refreshPage, 800);
 	}
 
 	// ── Init ──
