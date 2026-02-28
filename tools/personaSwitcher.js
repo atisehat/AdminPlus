@@ -99,7 +99,12 @@
 			}
 			hdrs[CALLER_HEADER] = userId;
 			opts.headers = hdrs;
-			return w.__adminplusOrigFetch.call(w, input, opts);
+			return w.__adminplusOrigFetch.call(w, input, opts).then(function (resp) {
+				if (resp.status === 403 && typeof w.__adminplus403Handler === 'function') {
+					w.__adminplus403Handler();
+				}
+				return resp;
+			});
 		};
 	}
 
@@ -192,6 +197,76 @@
 		if (b) b.remove();
 	}
 
+	// ── Access Denied Overlay ──
+	// D365 silently renders a blank page when an impersonated user lacks
+	// privilege for an entity list. We intercept the 403 responses from our
+	// patched fetch and show our own overlay so the user understands why.
+
+	function showAccessDeniedOverlay(userName) {
+		const OVERLAY_ID = 'adminplus-access-denied';
+		const prev = document.getElementById(OVERLAY_ID);
+		if (prev) prev.remove();
+
+		const el = document.createElement('div');
+		el.id = OVERLAY_ID;
+		el.style.cssText = `
+			position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+			z-index: 999997; background: #1e293b; color: white;
+			padding: 14px 20px; border-radius: 8px; border-left: 4px solid #f87171;
+			font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+			font-size: 13px; display: flex; align-items: center; gap: 14px;
+			box-shadow: 0 4px 24px rgba(0,0,0,0.4); max-width: 540px;
+			animation: adminplus-banner-in 0.25s ease-out;
+		`;
+		el.innerHTML = `
+			<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f87171" stroke-width="2" style="flex-shrink:0">
+				<circle cx="12" cy="12" r="10"/>
+				<line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+			</svg>
+			<span style="flex:1;line-height:1.5">
+				<strong style="color:#f87171">Access Denied</strong> —
+				<em>${userName}</em> does not have permission to view this page.
+			</span>
+			<button id="adminplus-access-denied-close" style="
+				background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2);
+				color:white; padding:4px 12px; border-radius:4px; font-size:11px;
+				cursor:pointer; flex-shrink:0; white-space:nowrap;
+			">Dismiss</button>
+		`;
+		document.body.appendChild(el);
+
+		document.getElementById('adminplus-access-denied-close')
+			.addEventListener('click', () => el.remove());
+
+		// Auto-dismiss after 8s or when the user navigates away
+		const autoDismiss = setTimeout(() => el.remove(), 8000);
+		window.addEventListener('popstate', function onNav() {
+			clearTimeout(autoDismiss);
+			el.remove();
+			window.removeEventListener('popstate', onNav);
+		});
+	}
+
+	function setupAccessDeniedHandler(userName) {
+		var timer = null;
+		var count = 0;
+		window.__adminplus403Handler = function () {
+			count++;
+			clearTimeout(timer);
+			timer = setTimeout(function () {
+				// 2+ rapid 403s = failed page load, not an isolated API check
+				if (count >= 2) showAccessDeniedOverlay(userName);
+				count = 0;
+			}, 1500);
+		};
+	}
+
+	function clearAccessDeniedHandler() {
+		window.__adminplus403Handler = null;
+		const el = document.getElementById('adminplus-access-denied');
+		if (el) el.remove();
+	}
+
 	// ── SPA Page Refresh ──
 	// Detects the current D365 page type from the URL and re-navigates using
 	// D365's own SPA router. Patches stay alive in memory (no browser reload),
@@ -263,9 +338,11 @@
 			setSession(userId, userName);
 			addToHistory(userId, userName);
 			showBanner(userName);
+			setupAccessDeniedHandler(userName);
 		},
 
 		stop: function (silent) {
+			clearAccessDeniedHandler();
 			removePatches();
 			clearSession();
 			removeBanner();
@@ -288,6 +365,7 @@
 	const existing = getSession();
 	if (existing) {
 		applyPatches(existing.id);
+		setupAccessDeniedHandler(existing.name);
 		var ready = function () {
 			showBanner(existing.name);
 			if (typeof showToast === 'function') {

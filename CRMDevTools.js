@@ -23,7 +23,12 @@
 			else if (opts.headers) { Object.assign(hdrs, opts.headers); }
 			hdrs[HDR] = uid;
 			opts.headers = hdrs;
-			return oFetch.call(window, input, opts);
+			return oFetch.call(window, input, opts).then(function (resp) {
+				if (resp.status === 403 && typeof window.__adminplus403Handler === 'function') {
+					window.__adminplus403Handler();
+				}
+				return resp;
+			});
 		};
 		var oOpen = XMLHttpRequest.prototype.open;
 		var oSend = XMLHttpRequest.prototype.send;
