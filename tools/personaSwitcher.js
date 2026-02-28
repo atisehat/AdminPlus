@@ -270,16 +270,15 @@
 	// Blocks F5, Ctrl/Cmd+R and the browser beforeunload event while
 	// impersonation is active so the user doesn't accidentally lose the patches.
 
-	var _beforeUnload = null;
-	var _keyDown      = null;
+	// ── Refresh Guard ──
+	// F5 and Ctrl/Cmd+R are intercepted via keydown (capture phase) and truly
+	// blocked. The browser toolbar refresh button cannot be blocked by any
+	// web page — the browser always owns that button.
+
+	var _keyDown = null;
 
 	function enableRefreshGuard() {
-		if (_beforeUnload) return;
-
-		_beforeUnload = function (e) {
-			e.preventDefault();
-			e.returnValue = '';
-		};
+		if (_keyDown) return;
 
 		_keyDown = function (e) {
 			var isRefresh = e.key === 'F5' ||
@@ -288,17 +287,15 @@
 			e.preventDefault();
 			e.stopPropagation();
 			if (typeof showToast === 'function') {
-				showToast('Page refresh is disabled while impersonation is active. Stop impersonation first.', 'warning', 3500);
+				showToast('Keyboard refresh blocked. Stop impersonation first, then refresh.', 'warning', 3500);
 			}
 		};
 
-		window.addEventListener('beforeunload', _beforeUnload);
-		window.addEventListener('keydown', _keyDown, true); // capture phase beats D365
+		window.addEventListener('keydown', _keyDown, true);
 	}
 
 	function disableRefreshGuard() {
-		if (_beforeUnload) { window.removeEventListener('beforeunload', _beforeUnload); _beforeUnload = null; }
-		if (_keyDown)      { window.removeEventListener('keydown', _keyDown, true);     _keyDown      = null; }
+		if (_keyDown) { window.removeEventListener('keydown', _keyDown, true); _keyDown = null; }
 	}
 
 	// ── SPA Page Refresh ──
