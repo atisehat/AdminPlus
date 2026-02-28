@@ -362,7 +362,7 @@
 
 function personaSwitcher() {
 	if (!checkSystemAdministratorRole()) {
-		showToast('System Administrator role required for persona switching.', 'error', 4000);
+		showToast('System Administrator role required for this action.', 'error', 4000);
 		return;
 	}
 
