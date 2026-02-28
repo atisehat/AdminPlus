@@ -126,29 +126,29 @@
 
 	function showBanner(userName) {
 		removeBanner();
-		const sidebarOffset = document.getElementById('MenuPopup') ? 60 : 0;
 
 		const banner = document.createElement('div');
 		banner.id = BANNER_ID;
 		banner.style.cssText = `
-			position: fixed; top: 0; left: 0; right: ${sidebarOffset}px; z-index: 999998;
+			position: fixed; top: 6px; left: 50%; transform: translateX(-50%); z-index: 999998;
 			background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
-			color: white; padding: 8px 20px;
+			color: white; padding: 5px 10px 5px 16px; border-radius: 24px;
 			font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
-			font-size: 13px; display: flex; align-items: center; justify-content: space-between;
-			box-shadow: 0 2px 8px rgba(220, 38, 38, 0.4);
+			font-size: 12px; display: flex; align-items: center; gap: 12px;
+			box-shadow: 0 2px 12px rgba(220, 38, 38, 0.45);
 			animation: adminplus-banner-in 0.3s ease-out;
+			white-space: nowrap;
 		`;
 		banner.innerHTML = `
-			<div style="display:flex;align-items:center;gap:10px;">
-				<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+			<div style="display:flex;align-items:center;gap:8px;">
+				<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5">
 					<path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>
 				</svg>
 				<span>Impersonating: <strong>${userName}</strong></span>
 			</div>
 			<button id="adminplus-banner-stop" style="
 				background:rgba(255,255,255,0.2); border:1px solid rgba(255,255,255,0.4);
-				color:white; padding:4px 14px; border-radius:4px; font-size:12px;
+				color:white; padding:3px 12px; border-radius:14px; font-size:11px;
 				font-weight:600; cursor:pointer; transition:all 0.2s;
 			">Stop</button>
 		`;
@@ -158,8 +158,8 @@
 			s.id = 'adminplus-banner-style';
 			s.textContent = `
 				@keyframes adminplus-banner-in {
-					from { opacity:0; transform:translateY(-100%); }
-					to   { opacity:1; transform:translateY(0); }
+					from { opacity:0; transform:translateX(-50%) translateY(-20px); }
+					to   { opacity:1; transform:translateX(-50%) translateY(0); }
 				}
 			`;
 			document.head.appendChild(s);
@@ -210,7 +210,12 @@
 	const existing = getSession();
 	if (existing) {
 		applyPatches(existing.id);
-		var ready = function () { showBanner(existing.name); };
+		var ready = function () {
+			showBanner(existing.name);
+			if (typeof showToast === 'function') {
+				showToast(`Impersonation restored for ${existing.name}. Navigate to a page to apply.`, 'info', 4000);
+			}
+		};
 		if (document.readyState === 'loading') {
 			document.addEventListener('DOMContentLoaded', ready);
 		} else {
@@ -571,8 +576,8 @@ function personaSwitcher() {
 		}
 
 		engine.start(selectedUser.id, selectedUser.name);
+		document.querySelectorAll('.commonPopup[data-popup-id="personaSwitcher"]').forEach(p => p.remove());
 		showToast(`Now impersonating ${selectedUser.name}. Navigate to see their experience.`, 'success', 3500);
-		renderContent();
 	}
 
 	// ── Init ──
