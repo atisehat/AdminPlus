@@ -46,10 +46,10 @@ async function setupHolidayScheduleDropdown() {
     loadingOption.disabled = true;
     dropdown.appendChild(loadingOption);
     
-    // Initialize calendar with empty data immediately
+    // Initialize calendar
     initCalendar([]);
     
-    // Fetch schedules asynchronously
+    // Fetch schedules 
     const schedules = await fetchAllHolidaySchedules();
     
     // Remove loading option
@@ -129,8 +129,7 @@ async function displayHolidays(scheduleName) {
         const holidays = await getHolidaysForSchedule(scheduleName);       
         listOfHolidays = holidays.map(holiday => holiday.date.toISOString());              
         holidays.sort((a, b) => a.date - b.date);
-
-        // Use DocumentFragment for better performance
+                
         const fragment = document.createDocumentFragment();
         const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
@@ -636,11 +635,7 @@ async function dateCalc() {
         });
     } catch (error) {
         console.error('Error opening Date Calculator:', error);
-        if (typeof showToast === 'function') {
-            showToast('Error opening Date Calculator. Check console for details.', 'error', 3000);
-        } else {
-            alert('Error opening Date Calculator: ' + error.message);
-        }
+        showToast('Error opening Date Calculator. Check console for details.', 'error', 3000);
     }
 }
 

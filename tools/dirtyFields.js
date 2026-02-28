@@ -23,7 +23,7 @@ async function showDirtyFields() {
         appendDirtyFieldsPopupToBody(entityName, recordId, dirtyFields.length, fieldListHtml);        
     } catch (error) {
         console.error('Error showing dirty fields:', error);
-        alert(`Error: ${error.message}`);
+        showToast('Error loading dirty fields: ' + error.message, 'error', 4000);
     }
 }
 

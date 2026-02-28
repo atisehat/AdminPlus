@@ -63,7 +63,7 @@ async function fetchEntityFields() {
         const fieldListHtml = generateFieldListHtml(metadata.value, fieldValues, fieldMetadata);
         appendEntityInfoPopupToBody(entityName, cleanRecordId, pluralName, fieldListHtml);        
     } catch (error) {
-        alert(`Error: ${error.message}`);
+        showToast('Error loading entity info: ' + error.message, 'error', 4000);
     }
 }
 
@@ -416,7 +416,7 @@ function appendEntityInfoPopupToBody(entityName, recordId, pluralName, fieldList
                     setTimeout(() => card.setAttribute('data-tooltip', originalTooltip), 1500);
                 }
             }).catch(() => {
-                alert('Failed to copy to clipboard');
+                showToast('Failed to copy to clipboard', 'error', 3000);
             });
         });
 
