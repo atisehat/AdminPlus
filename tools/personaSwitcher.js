@@ -1,32 +1,10 @@
-/**
- * Persona Switcher Tool - Impersonation Approach
- *
- * Allows admins to impersonate other D365 users by intercepting all Web API
- * calls and injecting the MSCRMCallerID header. No roles are changed — the
- * admin's own roles are never touched, so there is nothing to "restore."
- *
- * Architecture:
- *   1. IIFE runs on script load — sets up the impersonation engine and
- *      auto-restores any active session from sessionStorage.
- *   2. personaSwitcher() — UI function called from the sidebar button.
- *
- * @requires System Administrator role (grants prvActOnBehalfOfAnotherUser)
- * @requires fetchUsers, fetchRolesForUser, fetchBusinessUnitName from utils/api.js
- * @requires makePopupMovable, showToast from utils/ui.js
- */
-
-// ══════════════════════════════════════════════════════════════════════════════
-// ── Impersonation Engine (IIFE — runs immediately on script load) ──
-// ══════════════════════════════════════════════════════════════════════════════
 (function () {
 	const CALLER_HEADER = 'MSCRMCallerID';
-	const SESSION_KEY   = 'adminplus_impersonate_session';
-	const HISTORY_KEY   = 'adminplus_impersonate_history';
-	const BANNER_ID     = 'adminplus-impersonate-banner';
+	const SESSION_KEY   = 'devplus_impersonate_session';
+	const HISTORY_KEY   = 'devplus_impersonate_history';
+	const BANNER_ID     = 'devplus-impersonate-banner';
 	const API_PATH      = '/api/data/';
 	const MAX_HISTORY   = 10;
-
-	// ── Session (localStorage so it survives full page reloads) ──
 
 	function getSession() {
 		try {
@@ -45,8 +23,6 @@
 		try { localStorage.removeItem(SESSION_KEY); } catch (e) {}
 	}
 
-	// ── History (persists across sessions for quick re-use) ──
-
 	function getHistory() {
 		try {
 			const d = localStorage.getItem(HISTORY_KEY);
@@ -61,34 +37,32 @@
 		localStorage.setItem(HISTORY_KEY, JSON.stringify(h));
 	}
 
-	// ── Monkey-Patching ──
-
 	function applyPatches(userId) {
 		const w = window;
-		if (w.__adminplusImpersonating) return;
+		if (w.__devplusImpersonating) return;
 
-		w.__adminplusImpersonating = true;
-		w.__adminplusOrigFetch   = w.fetch;
-		w.__adminplusOrigXHROpen = w.XMLHttpRequest.prototype.open;
-		w.__adminplusOrigXHRSend = w.XMLHttpRequest.prototype.send;
+		w.__devplusImpersonating = true;
+		w.__devplusOrigFetch   = w.fetch;
+		w.__devplusOrigXHROpen = w.XMLHttpRequest.prototype.open;
+		w.__devplusOrigXHRSend = w.XMLHttpRequest.prototype.send;
 
 		w.XMLHttpRequest.prototype.open = function () {
 			this.__xhrUrl = (typeof arguments[1] === 'string') ? arguments[1] : '';
-			return w.__adminplusOrigXHROpen.apply(this, arguments);
+			return w.__devplusOrigXHROpen.apply(this, arguments);
 		};
 
 		w.XMLHttpRequest.prototype.send = function () {
 			if (this.__xhrUrl && this.__xhrUrl.indexOf(API_PATH) !== -1) {
 				try { this.setRequestHeader(CALLER_HEADER, userId); } catch (e) {}
 			}
-			return w.__adminplusOrigXHRSend.apply(this, arguments);
+			return w.__devplusOrigXHRSend.apply(this, arguments);
 		};
 
 		w.fetch = function (input, init) {
 			var url = (typeof input === 'string') ? input
 				: (input instanceof Request ? input.url : '');
 			if (!url || url.indexOf(API_PATH) === -1) {
-				return w.__adminplusOrigFetch.call(w, input, init);
+				return w.__devplusOrigFetch.call(w, input, init);
 			}
 			var opts = init ? Object.assign({}, init) : {};
 			var hdrs = {};
@@ -99,9 +73,9 @@
 			}
 			hdrs[CALLER_HEADER] = userId;
 			opts.headers = hdrs;
-			return w.__adminplusOrigFetch.call(w, input, opts).then(function (resp) {
-				if (resp.status === 403 && typeof w.__adminplus403Handler === 'function') {
-					w.__adminplus403Handler();
+			return w.__devplusOrigFetch.call(w, input, opts).then(function (resp) {
+				if (resp.status === 403 && typeof w.__devplus403Handler === 'function') {
+					w.__devplus403Handler();
 				}
 				return resp;
 			});
@@ -111,23 +85,21 @@
 	function removePatches() {
 		const w = window;
 		try {
-			if (w.__adminplusOrigFetch) {
-				w.fetch = w.__adminplusOrigFetch;
-				delete w.__adminplusOrigFetch;
+			if (w.__devplusOrigFetch) {
+				w.fetch = w.__devplusOrigFetch;
+				delete w.__devplusOrigFetch;
 			}
-			if (w.__adminplusOrigXHROpen) {
-				w.XMLHttpRequest.prototype.open = w.__adminplusOrigXHROpen;
-				delete w.__adminplusOrigXHROpen;
+			if (w.__devplusOrigXHROpen) {
+				w.XMLHttpRequest.prototype.open = w.__devplusOrigXHROpen;
+				delete w.__devplusOrigXHROpen;
 			}
-			if (w.__adminplusOrigXHRSend) {
-				w.XMLHttpRequest.prototype.send = w.__adminplusOrigXHRSend;
-				delete w.__adminplusOrigXHRSend;
+			if (w.__devplusOrigXHRSend) {
+				w.XMLHttpRequest.prototype.send = w.__devplusOrigXHRSend;
+				delete w.__devplusOrigXHRSend;
 			}
-			delete w.__adminplusImpersonating;
+			delete w.__devplusImpersonating;
 		} catch (e) {}
 	}
-
-	// ── Floating Banner ──
 
 	var bannerObserver = null;
 
@@ -143,7 +115,7 @@
 			font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
 			font-size: 12px; display: flex; align-items: center; gap: 12px;
 			box-shadow: 0 2px 12px rgba(220, 38, 38, 0.45);
-			animation: adminplus-banner-in 0.3s ease-out;
+			animation: devplus-banner-in 0.3s ease-out;
 			white-space: nowrap;
 		`;
 		banner.innerHTML = `
@@ -153,18 +125,18 @@
 				</svg>
 				<span>Impersonating: <strong>${userName}</strong></span>
 			</div>
-			<button id="adminplus-banner-stop" style="
+			<button id="devplus-banner-stop" style="
 				background:rgba(255,255,255,0.2); border:1px solid rgba(255,255,255,0.4);
 				color:white; padding:3px 12px; border-radius:14px; font-size:11px;
 				font-weight:600; cursor:pointer; transition:all 0.2s;
 			">Stop</button>
 		`;
 
-		if (!document.getElementById('adminplus-banner-style')) {
+		if (!document.getElementById('devplus-banner-style')) {
 			const s = document.createElement('style');
-			s.id = 'adminplus-banner-style';
+			s.id = 'devplus-banner-style';
 			s.textContent = `
-				@keyframes adminplus-banner-in {
+				@keyframes devplus-banner-in {
 					from { opacity:0; transform:translateX(-50%) translateY(-20px); }
 					to   { opacity:1; transform:translateX(-50%) translateY(0); }
 				}
@@ -174,7 +146,7 @@
 
 		document.body.appendChild(banner);
 
-		const btn = document.getElementById('adminplus-banner-stop');
+		const btn = document.getElementById('devplus-banner-stop');
 		btn.addEventListener('click', function (e) {
 			e.stopPropagation();
 			engine.stop();
@@ -197,13 +169,8 @@
 		if (b) b.remove();
 	}
 
-	// ── Access Denied Overlay ──
-	// D365 silently renders a blank page when an impersonated user lacks
-	// privilege for an entity list. We intercept the 403 responses from our
-	// patched fetch and show our own overlay so the user understands why.
-
 	function showAccessDeniedOverlay(userName) {
-		const OVERLAY_ID = 'adminplus-access-denied';
+		const OVERLAY_ID = 'devplus-access-denied';
 		const prev = document.getElementById(OVERLAY_ID);
 		if (prev) prev.remove();
 
@@ -226,7 +193,7 @@
 				<strong style="color:#f87171">Access Denied</strong> —
 				<em>${userName}</em> does not have permission to view this page.
 			</span>
-			<button id="adminplus-access-denied-close" style="
+			<button id="devplus-access-denied-close" style="
 				background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2);
 				color:white; padding:4px 12px; border-radius:4px; font-size:11px;
 				cursor:pointer; flex-shrink:0; white-space:nowrap;
@@ -234,10 +201,9 @@
 		`;
 		document.body.appendChild(el);
 
-		document.getElementById('adminplus-access-denied-close')
+		document.getElementById('devplus-access-denied-close')
 			.addEventListener('click', () => el.remove());
 
-		// Auto-dismiss after 8s or when the user navigates away
 		const autoDismiss = setTimeout(() => el.remove(), 8000);
 		window.addEventListener('popstate', function onNav() {
 			clearTimeout(autoDismiss);
@@ -249,11 +215,10 @@
 	function setupAccessDeniedHandler(userName) {
 		var timer = null;
 		var count = 0;
-		window.__adminplus403Handler = function () {
+		window.__devplus403Handler = function () {
 			count++;
 			clearTimeout(timer);
 			timer = setTimeout(function () {
-				// 2+ rapid 403s = failed page load, not an isolated API check
 				if (count >= 2) showAccessDeniedOverlay(userName);
 				count = 0;
 			}, 1500);
@@ -261,23 +226,10 @@
 	}
 
 	function clearAccessDeniedHandler() {
-		window.__adminplus403Handler = null;
-		const el = document.getElementById('adminplus-access-denied');
+		window.__devplus403Handler = null;
+		const el = document.getElementById('devplus-access-denied');
 		if (el) el.remove();
 	}
-
-	// ── Refresh Guard ──
-	// Blocks F5, Ctrl/Cmd+R and the browser beforeunload event while
-	// impersonation is active so the user doesn't accidentally lose the patches.
-
-	// ── Refresh Guard ──
-	// F5 / Ctrl+R: fully blocked via keydown capture — shows our toast.
-	// Browser toolbar button: cannot be blocked by any web page. We attach
-	// a beforeunload handler so the browser at least shows its native
-	// "Reload site?" confirmation. Custom text in that dialog is not supported
-	// by modern browsers regardless of what is passed to e.returnValue.
-	// After a reload, the auto-restore below shows a toast telling the user
-	// to re-open the tool if they want to continue impersonating.
 
 	var _beforeUnload = null;
 	var _keyDown      = null;
@@ -287,7 +239,7 @@
 
 		_beforeUnload = function (e) {
 			e.preventDefault();
-			e.returnValue = '';   // triggers the browser's native reload dialog
+			e.returnValue = '';
 		};
 
 		_keyDown = function (e) {
@@ -310,14 +262,7 @@
 		if (_keyDown)      { window.removeEventListener('keydown', _keyDown, true);     _keyDown      = null; }
 	}
 
-	// ── SPA Page Refresh ──
-	// Detects the current D365 page type from the URL and re-navigates using
-	// D365's own SPA router. Patches stay alive in memory (no browser reload),
-	// and D365 re-fetches all data through them with the impersonation header.
-
 	function resolveUrlParams() {
-		// D365 UCI puts navigation state in the query string.
-		// Try window first, fall back to parent (iframe context).
 		var sources = [window.location.search];
 		try { if (window.parent && window.parent !== window) sources.push(window.parent.location.search); } catch (e) {}
 		for (var i = 0; i < sources.length; i++) {
@@ -337,20 +282,16 @@
 			var etn      = params.get('etn');
 			var id       = (params.get('id') || '').replace(/[{}]/g, '');
 
-			// ── Entity Record (Form) ──
 			if (pagetype === 'entityrecord' && etn && id) {
 				Xrm.Navigation.openForm({ entityName: etn, entityId: id });
 				return;
 			}
 
-			// ── Entity List (View) ──
 			if (pagetype === 'entitylist' && etn) {
-				// navigateTo pageType must be lowercase 'entitylist'
 				Xrm.Navigation.navigateTo({ pageType: 'entitylist', entityName: etn });
 				return;
 			}
 
-			// ── Dashboard ──
 			if (pagetype === 'dashboard') {
 				var dashTarget = { pageType: 'dashboard' };
 				if (id) dashTarget.dashboardId = id;
@@ -358,21 +299,18 @@
 				return;
 			}
 
-			// ── Fallback: classic Xrm.Page refresh ──
 			if (Xrm.Page && Xrm.Page.data && Xrm.Page.data.refresh) {
 				Xrm.Page.data.refresh(false).then(function () {
 					try { Xrm.Page.ui.refreshRibbon(); } catch (e) {}
 				});
 			}
 		} catch (e) {
-			console.warn('[AdminPlus] Page refresh failed:', e);
+			console.warn('[Dev+] Page refresh failed:', e);
 		}
 	}
 
-	// ── Public API ──
-
 	const engine = {
-		isActive:   function () { return !!window.__adminplusImpersonating; },
+		isActive:   function () { return !!window.__devplusImpersonating; },
 		getSession: getSession,
 		getHistory: getHistory,
 
@@ -402,11 +340,6 @@
 		refreshPage: refreshCurrentPage
 	};
 
-	// ── Auto-restore on load ──
-	// When AdminPlus is re-loaded (e.g. after the user re-injects it),
-	// patches are re-applied from localStorage and the banner is shown
-	// automatically — no need to open the popup.
-
 	const existing = getSession();
 	if (existing) {
 		applyPatches(existing.id);
@@ -423,13 +356,9 @@
 		}
 	}
 
-	window.__adminplusPersonaEngine = engine;
+	window.__devplusPersonaEngine = engine;
 })();
 
-
-// ══════════════════════════════════════════════════════════════════════════════
-// ── Persona Switcher UI ──
-// ══════════════════════════════════════════════════════════════════════════════
 
 function personaSwitcher() {
 	if (!checkSystemAdministratorRole()) {
@@ -437,12 +366,10 @@ function personaSwitcher() {
 		return;
 	}
 
-	const engine = window.__adminplusPersonaEngine;
+	const engine = window.__devplusPersonaEngine;
 	const currentUserId = Xrm.Utility.getGlobalContext().userSettings.userId.replace(/[{}]/g, '');
 
 	let selectedUser = null;
-
-	// ── Popup ──
 
 	function createPopup() {
 		document.querySelectorAll('.commonPopup').forEach(p => p.remove());
@@ -476,8 +403,6 @@ function personaSwitcher() {
 		return popup;
 	}
 
-	// ── Routing ──
-
 	function renderContent() {
 		const content = document.getElementById('personaContent');
 		if (engine.isActive()) {
@@ -486,8 +411,6 @@ function personaSwitcher() {
 			renderSelectionView(content);
 		}
 	}
-
-	// ── Active Impersonation View ──
 
 	function renderActiveView(content) {
 		const session = engine.getSession();
@@ -578,8 +501,6 @@ function personaSwitcher() {
 		});
 	}
 
-	// ── User Selection View ──
-
 	function renderSelectionView(content) {
 		const history = engine.getHistory();
 
@@ -658,7 +579,6 @@ function personaSwitcher() {
 
 		loadUsers();
 
-		// Search
 		const searchInput = document.getElementById('personaUserSearch');
 		if (searchInput) {
 			searchInput.addEventListener('input', function () {
@@ -669,18 +589,14 @@ function personaSwitcher() {
 			});
 		}
 
-		// Recent chip clicks
 		document.querySelectorAll('#personaRecentChips .persona-recent-chip').forEach(chip => {
 			chip.addEventListener('click', function () {
 				selectUser(this.dataset.userId, this.dataset.userName);
 			});
 		});
 
-		// Impersonate button
 		document.getElementById('personaImpersonateBtn').addEventListener('click', handleImpersonate);
 	}
-
-	// ── Data Loading ──
 
 	function loadUsers() {
 		fetchUsers(function (response) {
@@ -725,8 +641,6 @@ function personaSwitcher() {
 		});
 	}
 
-	// ── User Selection ──
-
 	async function selectUser(userId, userName) {
 		document.querySelectorAll('.persona-user-item,.persona-recent-chip').forEach(el => el.classList.remove('selected'));
 		const el = document.querySelector(`.persona-user-item[data-user-id="${userId}"]`);
@@ -740,7 +654,6 @@ function personaSwitcher() {
 		btn.disabled = false;
 		btn.style.opacity = '1';
 
-		// Show right panel content, hide empty state
 		const emptyEl = document.getElementById('personaDetailEmpty');
 		const contentEl = document.getElementById('personaDetailContent');
 		if (emptyEl) emptyEl.style.display = 'none';
@@ -771,8 +684,6 @@ function personaSwitcher() {
 			: '<div class="empty-message" style="grid-column:1/-1;">No roles assigned</div>';
 	}
 
-	// ── Actions ──
-
 	function handleImpersonate() {
 		if (!selectedUser) {
 			showToast('Please select a user first.', 'warning', 3000);
@@ -784,8 +695,6 @@ function personaSwitcher() {
 		showToast(`Impersonating ${selectedUser.name}. Refreshing page...`, 'success', 2000);
 		setTimeout(engine.refreshPage, 800);
 	}
-
-	// ── Init ──
 
 	createPopup();
 	renderContent();

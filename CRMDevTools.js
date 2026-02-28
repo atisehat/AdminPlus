@@ -3,17 +3,17 @@
 // calls — so the MSCRMCallerID header is injected from the first request.
 (function () {
 	try {
-		var raw = localStorage.getItem('adminplus_impersonate_session');
+		var raw = localStorage.getItem('devplus_impersonate_session');
 		if (!raw) return;
 		var data = JSON.parse(raw);
 		if (!data || !data.id) return;
 		var uid = data.id;
 		var API = '/api/data/';
 		var HDR = 'MSCRMCallerID';
-		if (window.__adminplusImpersonating) return;
-		window.__adminplusImpersonating = true;
+		if (window.__devplusImpersonating) return;
+		window.__devplusImpersonating = true;
 		var oFetch = window.fetch;
-		window.__adminplusOrigFetch = oFetch;
+		window.__devplusOrigFetch = oFetch;
 		window.fetch = function (input, init) {
 			var url = typeof input === 'string' ? input : (input instanceof Request ? input.url : '');
 			if (!url || url.indexOf(API) === -1) return oFetch.call(window, input, init);
@@ -24,16 +24,16 @@
 			hdrs[HDR] = uid;
 			opts.headers = hdrs;
 			return oFetch.call(window, input, opts).then(function (resp) {
-				if (resp.status === 403 && typeof window.__adminplus403Handler === 'function') {
-					window.__adminplus403Handler();
+				if (resp.status === 403 && typeof window.__devplus403Handler === 'function') {
+					window.__devplus403Handler();
 				}
 				return resp;
 			});
 		};
 		var oOpen = XMLHttpRequest.prototype.open;
 		var oSend = XMLHttpRequest.prototype.send;
-		window.__adminplusOrigXHROpen = oOpen;
-		window.__adminplusOrigXHRSend = oSend;
+		window.__devplusOrigXHROpen = oOpen;
+		window.__devplusOrigXHRSend = oSend;
 		XMLHttpRequest.prototype.open = function () {
 			this.__xhrUrl = typeof arguments[1] === 'string' ? arguments[1] : '';
 			return oOpen.apply(this, arguments);
@@ -84,6 +84,7 @@ function onUtilScriptLoaded() {
     loadScript('tools/fieldsControl.js');
     loadScript('tools/dirtyFields.js');
     loadScript('tools/copySecurity.js');
+    loadScript('tools/personaSwitcher.js');
     loadScript('tools/assignSecurity.js');
     loadScript('tools/securityOperations.js');
     loadScript('tools/dateCalculator.js');
@@ -92,7 +93,6 @@ function onUtilScriptLoaded() {
     loadScript('tools/cloneRecord.js');
     loadScript('tools/commandChecker.js');
     loadScript('tools/performanceDiagnostics.js');
-    loadScript('tools/personaSwitcher.js');
   }
 }
 
@@ -203,6 +203,9 @@ function openPopup() {
 	    <button onclick="openWebApi();" class="app-button" title="Open Web API Endpoint">
 	      <span class="app-icon">🌐</span>
 	    </button>
+	    <button onclick="personaSwitcher();" class="app-button" title="Persona Switcher">
+	      <span class="app-icon">🎭</span>
+	    </button>
 	    <button onclick="editSecurity();" class="app-button" title="Assign Security">
 	      <span class="app-icon">🔑</span>
 	    </button>
@@ -217,9 +220,6 @@ function openPopup() {
 	    </button>
 	    <button onclick="performanceDiagnostics();" class="app-button" title="Performance Diagnostics">
 	      <span class="app-icon">⚡</span>
-	    </button>
-	    <button onclick="personaSwitcher();" class="app-button" title="Persona Switcher">
-	      <span class="app-icon">🎭</span>
 	    </button>
 	  </div>
 	</div>
