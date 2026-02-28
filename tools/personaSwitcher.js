@@ -197,46 +197,58 @@
 	// D365's own SPA router. Patches stay alive in memory (no browser reload),
 	// and D365 re-fetches all data through them with the impersonation header.
 
+	function resolveUrlParams() {
+		// D365 UCI puts navigation state in the query string.
+		// Try window first, fall back to parent (iframe context).
+		var sources = [window.location.search];
+		try { if (window.parent && window.parent !== window) sources.push(window.parent.location.search); } catch (e) {}
+		for (var i = 0; i < sources.length; i++) {
+			if (!sources[i]) continue;
+			var p = new URLSearchParams(sources[i]);
+			if (p.get('pagetype') || p.get('etn')) return p;
+		}
+		return new URLSearchParams(window.location.search);
+	}
+
 	function refreshCurrentPage() {
 		try {
 			if (typeof Xrm === 'undefined') return;
 
-			var search = window.location.search || window.parent.location.search;
-			var params = new URLSearchParams(search);
+			var params   = resolveUrlParams();
 			var pagetype = params.get('pagetype');
 			var etn      = params.get('etn');
-			var id       = params.get('id');
+			var id       = (params.get('id') || '').replace(/[{}]/g, '');
 
+			// ── Entity Record (Form) ──
 			if (pagetype === 'entityrecord' && etn && id) {
-				Xrm.Navigation.openForm({
-					entityName: etn,
-					entityId: id.replace(/[{}]/g, '')
-				});
+				Xrm.Navigation.openForm({ entityName: etn, entityId: id });
 				return;
 			}
 
+			// ── Entity List (View) ──
 			if (pagetype === 'entitylist' && etn) {
-				Xrm.Navigation.navigateTo({
-					pageType: 'entityList',
-					entityName: etn
-				});
+				// navigateTo pageType must be lowercase 'entitylist'
+				Xrm.Navigation.navigateTo({ pageType: 'entitylist', entityName: etn });
 				return;
 			}
 
+			// ── Dashboard ──
 			if (pagetype === 'dashboard') {
-				var target = { pageType: 'dashboard' };
-				if (id) target.dashboardId = id.replace(/[{}]/g, '');
-				Xrm.Navigation.navigateTo(target);
+				var dashTarget = { pageType: 'dashboard' };
+				if (id) dashTarget.dashboardId = id;
+				Xrm.Navigation.navigateTo(dashTarget);
 				return;
 			}
 
-			// Fallback: try Xrm.Page.data.refresh for classic pages
+			// ── Fallback: classic Xrm.Page refresh ──
 			if (Xrm.Page && Xrm.Page.data && Xrm.Page.data.refresh) {
 				Xrm.Page.data.refresh(false).then(function () {
 					try { Xrm.Page.ui.refreshRibbon(); } catch (e) {}
 				});
 			}
-		} catch (e) {}
+		} catch (e) {
+			console.warn('[AdminPlus] Page refresh failed:', e);
+		}
 	}
 
 	// ── Public API ──
