@@ -68,20 +68,21 @@ window.devplusTrack = (function() {
 
   return function(eventName, params) {
     try {
-      var eventParams = Object.assign({ engagement_time_msec: 1 }, params || {});
-      var origFetch = window.__devplusOrigFetch || window.fetch;
-      origFetch(GA_ENDPOINT, {
-        method: 'POST',
-        body: JSON.stringify({
-          client_id: cid,
-          events: [{ name: eventName, params: eventParams }]
-        })
-      }).catch(function() {});
+      var payload = JSON.stringify({
+        client_id: cid,
+        events: [{ name: eventName, params: Object.assign({ engagement_time_msec: 1 }, params || {}) }]
+      });
+      if (navigator.sendBeacon) {
+        navigator.sendBeacon(GA_ENDPOINT, new Blob([payload], { type: 'application/json' }));
+      } else {
+        var origFetch = window.__devplusOrigFetch || window.fetch;
+        origFetch(GA_ENDPOINT, { method: 'POST', body: payload }).catch(function() {});
+      }
     } catch(e) {}
   };
 })();
 
-window.devplusTrack('devplus_launch');
+setTimeout(function() { window.devplusTrack('devplus_launch'); }, 0);
 
 
 function loadCSS(href) {
