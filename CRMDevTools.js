@@ -48,7 +48,34 @@
 })();
 
 const baseUrl = 'https://atisehat.github.io/AdminPlus/';
-const cacheBuster = '?v=' + new Date().getTime(); // Force refresh - dateCalc test version added
+const cacheBuster = '?v=' + new Date().getTime();
+
+(function trackLaunch() {
+  try {
+    var GA_MEASUREMENT_ID = 'G-ZBR94D8S0S';
+    var GA_API_SECRET     = '6CE5enB3RrKmaFLqXsrfgg';
+    var GA_ENDPOINT       = 'https://www.google-analytics.com/mp/collect'
+                          + '?measurement_id=' + GA_MEASUREMENT_ID
+                          + '&api_secret='     + GA_API_SECRET;
+
+    var cid = localStorage.getItem('devplus_ga_cid');
+    if (!cid) {
+      cid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        var r = Math.random() * 16 | 0;
+        return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+      });
+      localStorage.setItem('devplus_ga_cid', cid);
+    }
+
+    fetch(GA_ENDPOINT, {
+      method: 'POST',
+      body: JSON.stringify({
+        client_id: cid,
+        events: [{ name: 'devplus_launch' }]
+      })
+    });
+  } catch(e) {}
+})();
 
 
 function loadCSS(href) {
