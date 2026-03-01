@@ -66,6 +66,9 @@
 			}
 			var opts = init ? Object.assign({}, init) : {};
 			var hdrs = {};
+			if (input instanceof Request && input.headers) {
+				try { input.headers.forEach(function (v, k) { hdrs[k] = v; }); } catch(e) {}
+			}
 			if (opts.headers instanceof Headers) {
 				opts.headers.forEach(function (v, k) { hdrs[k] = v; });
 			} else if (opts.headers) {

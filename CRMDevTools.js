@@ -11,22 +11,25 @@
 		window.__devplusImpersonating = true;
 		var oFetch = window.fetch;
 		window.__devplusOrigFetch = oFetch;
-		window.fetch = function (input, init) {
-			var url = typeof input === 'string' ? input : (input instanceof Request ? input.url : '');
-			if (!url || url.indexOf(API) === -1) return oFetch.call(window, input, init);
-			var opts = init ? Object.assign({}, init) : {};
-			var hdrs = {};
-			if (opts.headers instanceof Headers) { opts.headers.forEach(function (v, k) { hdrs[k] = v; }); }
-			else if (opts.headers) { Object.assign(hdrs, opts.headers); }
-			hdrs[HDR] = uid;
-			opts.headers = hdrs;
-			return oFetch.call(window, input, opts).then(function (resp) {
-				if (resp.status === 403 && typeof window.__devplus403Handler === 'function') {
-					window.__devplus403Handler();
-				}
-				return resp;
-			});
-		};
+	window.fetch = function (input, init) {
+		var url = typeof input === 'string' ? input : (input instanceof Request ? input.url : '');
+		if (!url || url.indexOf(API) === -1) return oFetch.call(window, input, init);
+		var opts = init ? Object.assign({}, init) : {};
+		var hdrs = {};
+		if (input instanceof Request && input.headers) {
+			try { input.headers.forEach(function (v, k) { hdrs[k] = v; }); } catch(e) {}
+		}
+		if (opts.headers instanceof Headers) { opts.headers.forEach(function (v, k) { hdrs[k] = v; }); }
+		else if (opts.headers) { Object.assign(hdrs, opts.headers); }
+		hdrs[HDR] = uid;
+		opts.headers = hdrs;
+		return oFetch.call(window, input, opts).then(function (resp) {
+			if (resp.status === 403 && typeof window.__devplus403Handler === 'function') {
+				window.__devplus403Handler();
+			}
+			return resp;
+		});
+	};
 		var oOpen = XMLHttpRequest.prototype.open;
 		var oSend = XMLHttpRequest.prototype.send;
 		window.__devplusOrigXHROpen = oOpen;
