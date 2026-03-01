@@ -516,10 +516,10 @@ function personaSwitcher() {
 
 			${history.length > 0 ? `
 				<div class="persona-recent-bar">
-					<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="2" style="flex-shrink:0;">
+					<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#444" stroke-width="2" style="flex-shrink:0;">
 						<polyline points="12 8 12 12 14 14"/><circle cx="12" cy="12" r="10"/>
 					</svg>
-					<span style="font-size:11px;font-weight:600;color:#666;text-transform:uppercase;letter-spacing:0.4px;flex-shrink:0;">Recent</span>
+					<span style="font-size:11px;font-weight:600;color:#444;text-transform:uppercase;letter-spacing:0.4px;flex-shrink:0;">Recent</span>
 					<div class="persona-recent-chips" id="personaRecentChips">
 						${history.map(h => `
 							<div class="persona-recent-chip" data-user-id="${h.id}" data-user-name="${h.name}">
@@ -533,7 +533,7 @@ function personaSwitcher() {
 			<div class="persona-split">
 				<div class="persona-split-left">
 					<div class="persona-split-search">
-						<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2" style="flex-shrink:0;">
+						<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#555" stroke-width="2" style="flex-shrink:0;">
 							<circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
 						</svg>
 						<input type="text" id="personaUserSearch" placeholder="Search users..." class="persona-split-search-input">
