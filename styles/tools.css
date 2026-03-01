@@ -2297,6 +2297,7 @@
 .persona-user-list {
     flex: 1;
     overflow-y: auto;
+    overflow-x: hidden;
     background: white;
 }
 
@@ -2344,6 +2345,15 @@
     transition: background 0.1s;
     display: flex;
     align-items: center;
+    overflow: hidden;
+    min-width: 0;
+}
+
+.persona-user-item span {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
 }
 
 .persona-user-item:last-child {
