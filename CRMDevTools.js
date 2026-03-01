@@ -141,30 +141,132 @@ function checkSystemAdministratorRole() {
   }
 }
 
-function openPopup() {  
-  if (!isD365Context()) {    
+var _sidebarWidth = 60;
+
+var _d365Selectors = [
+  'div[id*="shell-container"]',
+  'div[data-id="AppLandingPage"]',
+  'div[id*="ApplicationShell"]',
+  'div[id*="app-host"]',
+  'header[role="banner"]',
+  'div[id*="navbar"]',
+  'div[id*="navigation"]',
+  'nav[role="navigation"]'
+];
+
+function findD365Containers() {
+  var containers = [];
+  var vw = window.innerWidth;
+
+  _d365Selectors.forEach(function(selector) {
+    try {
+      document.querySelectorAll(selector).forEach(function(el) {
+        if (!el || containers.indexOf(el) !== -1) return;
+        var rect = el.getBoundingClientRect();
+        if (rect.width < vw * 0.8) return;
+        var alreadyContained = containers.some(function(c) { return c.contains(el); });
+        if (alreadyContained) return;
+        containers = containers.filter(function(c) { return !el.contains(c); });
+        containers.push(el);
+      });
+    } catch(e) {}
+  });
+
+  if (containers.length === 0) {
+    document.querySelectorAll('body > *').forEach(function(el) {
+      if (!(el instanceof HTMLElement) || el.id === 'MenuPopup') return;
+      var rect = el.getBoundingClientRect();
+      var pos = getComputedStyle(el).position;
+      if (rect.width >= vw * 0.8 && (pos === 'fixed' || pos === 'absolute' || pos === 'relative')) {
+        containers.push(el);
+      }
+    });
+  }
+
+  return containers;
+}
+
+function pushContainer(el) {
+  if (!el || !document.body.contains(el)) return;
+  if (el.getAttribute('data-adminplus-target') === 'true') return;
+
+  var cs = getComputedStyle(el);
+  el.setAttribute('data-adminplus-original-right',      el.style.right     || '');
+  el.setAttribute('data-adminplus-original-left',       el.style.left      || '');
+  el.setAttribute('data-adminplus-original-position',   el.style.position  || '');
+  el.setAttribute('data-adminplus-original-boxsizing',  el.style.boxSizing || '');
+  el.setAttribute('data-adminplus-computed-position',   cs.position);
+  el.setAttribute('data-adminplus-target', 'true');
+
+  el.style.boxSizing = 'border-box';
+
+  if (cs.position === 'fixed' || cs.position === 'absolute') {
+    el.style.right = _sidebarWidth + 'px';
+    if (!el.style.left || el.style.left === 'auto') {
+      el.style.left = '0';
+    }
+  } else {
+    el.style.marginRight = _sidebarWidth + 'px';
+  }
+}
+
+function restoreContainer(el) {
+  if (!el || el.getAttribute('data-adminplus-target') !== 'true') return;
+
+  var origRight      = el.getAttribute('data-adminplus-original-right');
+  var origLeft       = el.getAttribute('data-adminplus-original-left');
+  var origPosition   = el.getAttribute('data-adminplus-original-position');
+  var origBoxSizing  = el.getAttribute('data-adminplus-original-boxsizing');
+
+  origRight     === '' ? el.style.removeProperty('right')      : (el.style.right     = origRight);
+  origLeft      === '' ? el.style.removeProperty('left')       : (el.style.left      = origLeft);
+  origPosition  === '' ? el.style.removeProperty('position')   : (el.style.position  = origPosition);
+  origBoxSizing === '' ? el.style.removeProperty('box-sizing') : (el.style.boxSizing = origBoxSizing);
+  el.style.removeProperty('margin-right');
+
+  el.removeAttribute('data-adminplus-target');
+  el.removeAttribute('data-adminplus-original-right');
+  el.removeAttribute('data-adminplus-original-left');
+  el.removeAttribute('data-adminplus-original-position');
+  el.removeAttribute('data-adminplus-original-boxsizing');
+  el.removeAttribute('data-adminplus-computed-position');
+
+  void el.offsetHeight;
+}
+
+function pushAllD365Containers() {
+  findD365Containers().forEach(pushContainer);
+}
+
+function restoreAllD365Containers() {
+  var byAttr = Array.from(document.querySelectorAll('[data-adminplus-target="true"]'));
+  byAttr.forEach(restoreContainer);
+}
+
+function openPopup() {
+  if (!isD365Context()) {
     if (typeof showToast === 'function') {
-      showToast('DevPlus can only run inside Dynamics 365. Please open this tool from within your D365 environment.', 'warning', 4000);
-    } else {      
+      showToast('Dev+ can only run inside Dynamics 365. Please open this tool from within your D365 environment.', 'warning', 4000);
+    } else {
       setTimeout(function() {
         if (typeof showToast === 'function') {
-          showToast('DevPlus can only run inside Dynamics 365. Please open this tool from within your D365 environment.', 'warning', 4000);
+          showToast('Dev+ can only run inside Dynamics 365. Please open this tool from within your D365 environment.', 'warning', 4000);
         }
       }, 100);
     }
     return;
-  }  
-  
+  }
+
   if (document.getElementById('MenuPopup')) {
     closePopup();
     return;
   }
-  
+
   closeSubPopups();
-  
+
   var popupHtml = `
     <div class="popup">
-	<div class="commonPopup-header" onclick="closePopup();" style="cursor: pointer;" title="Click to close">	            
+	<div class="commonPopup-header" onclick="closePopup();" style="cursor: pointer;" title="Click to close">
 	    <span class="header-text">Dev<sup>+</sup></span>
 	    <span class="header-close">✖</span>
 	</div>
@@ -221,207 +323,38 @@ function openPopup() {
 	  </div>
 	</div>
    </div>
-  `;	  
-    
-  var sidebarWidth = 60;  
+  `;
+
   var newContainer = document.createElement('div');
   newContainer.id = 'MenuPopup';
   newContainer.innerHTML = popupHtml;
   document.body.appendChild(newContainer);
-  
-  function findD365Containers() {
-    var containers = [];
-    var vw = window.innerWidth;    
-    var prioritySelectors = [      
-      'div[id*="shell-container"]',
-      'div[data-id="AppLandingPage"]',      
-      'div[id*="ApplicationShell"]',
-      'div[id*="app-host"]',      
-      'header[role="banner"]',
-      'div[id*="navbar"]',
-      'div[id*="navigation"]',
-      'nav[role="navigation"]'
-    ];
-    
-    var processedAncestors = new Set();        
-    prioritySelectors.forEach(function(selector) {
-      try {
-        var elements = document.querySelectorAll(selector);
-        elements.forEach(function(el) {
-          if (!el || containers.includes(el)) return;
-          
-          var rect = el.getBoundingClientRect();          
-          if (rect.width >= vw * 0.8) {            
-            var isNested = false;
-            for (var i = 0; i < containers.length; i++) {
-              if (containers[i].contains(el)) {
-                isNested = true;
-                break;
-              }
-            }
-                        
-            if (!isNested) {              
-              containers = containers.filter(function(existing) {
-                return !el.contains(existing);
-              });
-              containers.push(el);
-            }
-          }
-        });
-      } catch (e) {        
-      }
-    });    
-    
-    if (containers.length === 0) {
-      document.querySelectorAll('body > *').forEach(function(el) {
-        if (!(el instanceof HTMLElement)) return;
-        if (el.id === 'MenuPopup') return;
-        
-        var rect = el.getBoundingClientRect();
-        var style = getComputedStyle(el);        
-        if (rect.width >= vw * 0.8 && 
-            ['fixed', 'absolute', 'relative'].includes(style.position)) {
-          containers.push(el);
-        }
-      });
-    }
-    
-    return containers;
-  }  
-  
-  function adjustContentPosition() {    
-    var existingContainers = window.adminPlusTargetElements;
-    if (!existingContainers || existingContainers.length === 0) {
-      existingContainers = findD365Containers();      
-      window.adminPlusTargetElements = existingContainers;
-    }    
-    
-    existingContainers.forEach(function(container) {
-      if (!container || !document.body.contains(container)) return;      
-      if (!container.getAttribute('data-adminplus-original-right')) {
-        var cs = getComputedStyle(container);
-        container.setAttribute('data-adminplus-original-right', container.style.right || '');
-        container.setAttribute('data-adminplus-original-left', container.style.left || '');
-        container.setAttribute('data-adminplus-original-position', container.style.position || '');
-        container.setAttribute('data-adminplus-original-boxsizing', container.style.boxSizing || '');
-        container.setAttribute('data-adminplus-original-width', container.style.width || '');
-        container.setAttribute('data-adminplus-computed-position', cs.position);
-        container.setAttribute('data-adminplus-target', 'true');
-      }
-      
-      var computedPosition = container.getAttribute('data-adminplus-computed-position');      
-      container.style.boxSizing = 'border-box';
-            
-      if (computedPosition === 'fixed' || computedPosition === 'absolute') {        
-        if (computedPosition === 'static') {
-          container.style.position = 'relative';
-        }
-        
-        container.style.right = sidebarWidth + 'px';                
-        var originalLeft = container.getAttribute('data-adminplus-original-left');
-        if (!originalLeft || originalLeft === '' || originalLeft === 'auto') {
-          container.style.left = '0';
-        }
-      } else {        
-        container.style.marginRight = sidebarWidth + 'px';
-      }
-    });
-  }
-  
+
   document.body.classList.add('adminplus-sidebar-open');
-  adjustContentPosition();
-  
+  pushAllD365Containers();
+
   window.adminPlusResizeHandler = function() {
     if (document.getElementById('MenuPopup')) {
-      adjustContentPosition();
+      pushAllD365Containers();
     }
   };
   window.addEventListener('resize', window.adminPlusResizeHandler);
 }
 
 function closePopup() {
-    document.body.classList.remove('adminplus-sidebar-open');    
-    var targetElements = window.adminPlusTargetElements;    
-    if (!targetElements || targetElements.length === 0) {
-        targetElements = Array.from(document.querySelectorAll('[data-adminplus-target="true"]'));
-    }
-    
-    
-    targetElements.forEach(function(targetElement) {
-        if (!targetElement || !document.body.contains(targetElement)) return;        
-        
-        var originalRight = targetElement.getAttribute('data-adminplus-original-right');
-        var originalLeft = targetElement.getAttribute('data-adminplus-original-left');
-        var originalPosition = targetElement.getAttribute('data-adminplus-original-position');
-        var originalBoxSizing = targetElement.getAttribute('data-adminplus-original-boxsizing');
-        var originalWidth = targetElement.getAttribute('data-adminplus-original-width');
-                
-        if (originalRight !== null) {
-            if (originalRight === '') {
-                targetElement.style.removeProperty('right');
-            } else {
-                targetElement.style.right = originalRight;
-            }
-            targetElement.removeAttribute('data-adminplus-original-right');
-        }
-        
-        if (originalLeft !== null) {
-            if (originalLeft === '') {
-                targetElement.style.removeProperty('left');
-            } else {
-                targetElement.style.left = originalLeft;
-            }
-            targetElement.removeAttribute('data-adminplus-original-left');
-        }
-        
-        if (originalPosition !== null) {
-            if (originalPosition === '') {
-                targetElement.style.removeProperty('position');
-            } else {
-                targetElement.style.position = originalPosition;
-            }
-            targetElement.removeAttribute('data-adminplus-original-position');
-        }
-        
-        if (originalBoxSizing !== null) {
-            if (originalBoxSizing === '') {
-                targetElement.style.removeProperty('box-sizing');
-            } else {
-                targetElement.style.boxSizing = originalBoxSizing;
-            }
-            targetElement.removeAttribute('data-adminplus-original-boxsizing');
-        }
-        
-        if (originalWidth !== null) {
-            if (originalWidth === '') {
-                targetElement.style.removeProperty('width');
-            } else {
-                targetElement.style.width = originalWidth;
-            }
-            targetElement.removeAttribute('data-adminplus-original-width');
-        }        
-        
-        targetElement.style.removeProperty('margin-right');        
-        targetElement.removeAttribute('data-adminplus-target');
-        targetElement.removeAttribute('data-adminplus-computed-position');
-                
-        void targetElement.offsetHeight;
-    });    
-    
-    window.adminPlusTargetElements = null;   
-    
-    if (window.adminPlusResizeHandler) {
-        window.removeEventListener('resize', window.adminPlusResizeHandler);
-        window.adminPlusResizeHandler = null;
-    }
-    
-    // Remove sidebar
-    var menuPopup = document.getElementById('MenuPopup');
-    if (menuPopup) {
-        menuPopup.remove();
-    }
-    
-    closeSubPopups();
+  document.body.classList.remove('adminplus-sidebar-open');
+
+  restoreAllD365Containers();
+
+  if (window.adminPlusResizeHandler) {
+    window.removeEventListener('resize', window.adminPlusResizeHandler);
+    window.adminPlusResizeHandler = null;
+  }
+
+  var menuPopup = document.getElementById('MenuPopup');
+  if (menuPopup) menuPopup.remove();
+
+  closeSubPopups();
 }
 
 function closeSubPopups() { 
