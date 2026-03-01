@@ -1,13 +1,5 @@
-//CommonFetch - API Functions
-
 // User API calls
-function fetchUsers(callback) {
-    // Filter: 
-    // - Status equals Enabled (isdisabled eq false)
-    // - Access Mode Does not equal Support User (accessmode ne 3)
-    // - Access Mode Does not equal Delegated Admin (accessmode ne 5)
-    // - Application ID Does not contain data (applicationid eq null)
-    // Access Mode values: 0=Read-Write, 1=Administrative, 3=Support User, 4=Non-Interactive, 5=Delegated Admin
+function fetchUsers(callback) {        
     Xrm.WebApi.retrieveMultipleRecords('systemuser', '?$select=systemuserid,firstname,lastname,fullname,_businessunitid_value,applicationid&$filter=(isdisabled eq false) and (accessmode ne 3) and (accessmode ne 5) and (applicationid eq null)').then(callback);
 }
 
