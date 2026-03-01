@@ -50,35 +50,38 @@
 const baseUrl = 'https://atisehat.github.io/AdminPlus/';
 const cacheBuster = '?v=' + new Date().getTime();
 
-(function trackLaunch() {
-  try {
-    var GA_MEASUREMENT_ID = 'G-ZBR94D8S0S';
-    var GA_API_SECRET     = '6CE5enB3RrKmaFLqXsrfgg';
-    var GA_ENDPOINT       = 'https://www.google-analytics.com/mp/collect'
-                          + '?measurement_id=' + GA_MEASUREMENT_ID
-                          + '&api_secret='     + GA_API_SECRET;
+window.devplusTrack = (function() {
+  var GA_MEASUREMENT_ID = 'G-ZBR94D8S0S';
+  var GA_API_SECRET     = '6CE5enB3RrKmaFLqXsrfgg';
+  var GA_ENDPOINT       = 'https://www.google-analytics.com/mp/collect'
+                        + '?measurement_id=' + GA_MEASUREMENT_ID
+                        + '&api_secret='     + GA_API_SECRET;
 
-    var cid = localStorage.getItem('devplus_ga_cid');
-    if (!cid) {
-      cid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-        var r = Math.random() * 16 | 0;
-        return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
-      });
-      localStorage.setItem('devplus_ga_cid', cid);
-    }
+  var cid = localStorage.getItem('devplus_ga_cid');
+  if (!cid) {
+    cid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+      var r = Math.random() * 16 | 0;
+      return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+    });
+    localStorage.setItem('devplus_ga_cid', cid);
+  }
 
-    fetch(GA_ENDPOINT, {
-      method: 'POST',
-      body: JSON.stringify({
-        client_id: cid,
-        events: [{
-          name: 'devplus_launch',
-          params: { engagement_time_msec: 1 }
-        }]
-      })
-    }).catch(function() {});
-  } catch(e) {}
+  return function(eventName, params) {
+    try {
+      var eventParams = Object.assign({ engagement_time_msec: 1 }, params || {});
+      var origFetch = window.__devplusOrigFetch || window.fetch;
+      origFetch(GA_ENDPOINT, {
+        method: 'POST',
+        body: JSON.stringify({
+          client_id: cid,
+          events: [{ name: eventName, params: eventParams }]
+        })
+      }).catch(function() {});
+    } catch(e) {}
+  };
 })();
+
+window.devplusTrack('devplus_launch');
 
 
 function loadCSS(href) {
@@ -305,52 +308,52 @@ function openPopup() {
 	</div>
 	<div class="button-container">
 	  <div class="app-grid">
-	    <button onclick="openUrl('advanceFind');" class="app-button" title="Advanced Find">
+	    <button onclick="devplusTrack('devplus_tool_use',{tool_name:'advanced_find'}); openUrl('advanceFind');" class="app-button" title="Advanced Find">
 	      <span class="app-icon">🕵️</span>
 	    </button>
-	    <button onclick="setTimeout(fetchEntityFields, 0);" class="app-button" title="Entity Info">
+	    <button onclick="devplusTrack('devplus_tool_use',{tool_name:'entity_info'}); setTimeout(fetchEntityFields, 0);" class="app-button" title="Entity Info">
 	      <span class="app-icon">📋</span>
 	    </button>
-	    <button onclick="openRecord();" class="app-button" title="Open Record">
+	    <button onclick="devplusTrack('devplus_tool_use',{tool_name:'open_record'}); openRecord();" class="app-button" title="Open Record">
 	      <span class="app-icon">🔍</span>
 	    </button>
-	    <button onclick="cloneRecord();" class="app-button" title="Clone Record">
+	    <button onclick="devplusTrack('devplus_tool_use',{tool_name:'clone_record'}); cloneRecord();" class="app-button" title="Clone Record">
 	      <span class="app-icon">🧬</span>
 	    </button>
-	    <button onclick="showDirtyFields();" class="app-button" title="Dirty Fields">
+	    <button onclick="devplusTrack('devplus_tool_use',{tool_name:'dirty_fields'}); showDirtyFields();" class="app-button" title="Dirty Fields">
 	      <span class="app-icon">✏️</span>
 	    </button>
-	    <button onclick="showAllTabsAndSections();" class="app-button" title="Show Hidden Items">
+	    <button onclick="devplusTrack('devplus_tool_use',{tool_name:'show_hidden'}); showAllTabsAndSections();" class="app-button" title="Show Hidden Items">
 	      <span class="app-icon">👁️</span>
 	    </button>
-	    <button onclick="unlockAllFields();" class="app-button" title="Unlock Fields">
+	    <button onclick="devplusTrack('devplus_tool_use',{tool_name:'unlock_fields'}); unlockAllFields();" class="app-button" title="Unlock Fields">
 	      <span class="app-icon">🔓</span>
 	    </button>
-	    <button onclick="renameTabsSectionsFields();" class="app-button" title="Logical Names">
+	    <button onclick="devplusTrack('devplus_tool_use',{tool_name:'logical_names'}); renameTabsSectionsFields();" class="app-button" title="Logical Names">
 	      <span class="app-icon">🏷️</span>
 	    </button>
-	    <button onclick="showEntityAutomations();" class="app-button" title="Table Automations">
+	    <button onclick="devplusTrack('devplus_tool_use',{tool_name:'table_automations'}); showEntityAutomations();" class="app-button" title="Table Automations">
 	      <span class="app-icon">🤖</span>
 	    </button>
-	    <button onclick="personaSwitcher();" class="app-button" title="Persona Switcher">
+	    <button onclick="devplusTrack('devplus_tool_use',{tool_name:'persona_switcher'}); personaSwitcher();" class="app-button" title="Persona Switcher">
 	      <span class="app-icon">🎭</span>
 	    </button>
-	    <button onclick="editSecurity();" class="app-button" title="Assign Security">
+	    <button onclick="devplusTrack('devplus_tool_use',{tool_name:'assign_security'}); editSecurity();" class="app-button" title="Assign Security">
 	      <span class="app-icon">🔑</span>
 	    </button>
-	    <button onclick="copySecurity();" class="app-button" title="Copy Security">
+	    <button onclick="devplusTrack('devplus_tool_use',{tool_name:'copy_security'}); copySecurity();" class="app-button" title="Copy Security">
 	      <span class="app-icon">🛡️</span>
 	    </button>
-	    <button onclick="dateCalc();" class="app-button" title="Date Calculator">
+	    <button onclick="devplusTrack('devplus_tool_use',{tool_name:'date_calculator'}); dateCalc();" class="app-button" title="Date Calculator">
 	      <span class="app-icon">📅</span>
 	    </button>
-	    <button onclick="openWebApi();" class="app-button" title="Open Web API Endpoint">
+	    <button onclick="devplusTrack('devplus_tool_use',{tool_name:'web_api'}); openWebApi();" class="app-button" title="Open Web API Endpoint">
 	      <span class="app-icon">🌐</span>
 	    </button>
-	    <button onclick="commandChecker();" class="app-button" title="Command Checker">
+	    <button onclick="devplusTrack('devplus_tool_use',{tool_name:'command_checker'}); commandChecker();" class="app-button" title="Command Checker">
 	      <span class="app-icon">🐛</span>
 	    </button>
-	    <button onclick="performanceDiagnostics();" class="app-button" title="Performance Diagnostics">
+	    <button onclick="devplusTrack('devplus_tool_use',{tool_name:'performance_diagnostics'}); performanceDiagnostics();" class="app-button" title="Performance Diagnostics">
 	      <span class="app-icon">⚡</span>
 	    </button>
 	  </div>
