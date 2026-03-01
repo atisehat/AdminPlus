@@ -71,9 +71,12 @@ const cacheBuster = '?v=' + new Date().getTime();
       method: 'POST',
       body: JSON.stringify({
         client_id: cid,
-        events: [{ name: 'devplus_launch' }]
+        events: [{
+          name: 'devplus_launch',
+          params: { engagement_time_msec: 1 }
+        }]
       })
-    });
+    }).catch(function() {});
   } catch(e) {}
 })();
 
