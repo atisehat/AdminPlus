@@ -47,7 +47,7 @@
 	} catch (e) {}
 })();
 
-const baseUrl = 'https://atisehat.github.io/AdminPlus/';
+const baseUrl = 'https://atisehat-va.github.io/DevToolsPublic/';
 const cacheBuster = '?v=' + new Date().getTime();
 
 window.devplusTrack = (function() {
